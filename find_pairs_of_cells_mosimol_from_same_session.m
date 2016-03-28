@@ -13,10 +13,12 @@ function find_pairs_of_cells_mosimol
 
 
 params.dir_load =...
-    'C:\Users\noam\Desktop\proj\muscimol\DB_musc_MEC\';
+    'C:\Noam\muscimol\DB_musc_MEC\';
+    %'C:\Users\noam\Desktop\proj\muscimol\DB_musc_MEC\';
 
 params.dir_save =....
-   'C:\Users\noam\Desktop\proj\muscimol\noam_output';
+    'C:\Noam\muscimol\noam_output\';
+    %'C:\Users\noam\Desktop\proj\muscimol\noam_output';
 %
 tic
  files = dir(strcat(params.dir_load,'DB*.mat'));
@@ -57,12 +59,15 @@ end
 disp(grid_cells);
 disp('fin!');
 
-spike plot
+%spike plot
 %%
 a = data{1}.db.B(2) % B session is combination of all recordings. has 3 structs: before, during, after muscomol injection
 plot( mean([a.pos_data.x1, a.pos_data.x2] ,2) , mean([a.pos_data.y1, a.pos_data.y2] ,2) );
 hold on;
 plot( mean([a.spike_data.x, a.spike_data.x2] ,2) , mean([a.spike_data.y, a.spike_data.y2] ,2), 'r.' );
+
+c1.x =  data{1}.db.B(2).mean([a.pos_data.x1, a.pos_data.x2], 2); 
+
 %%
 for i=1:length(pairs_by_file_index)
     
@@ -74,5 +79,7 @@ end
                     && (tetrode(i)~=tetrode(j) || cell(i)~=cell(j)) && ...
                     (p_gridness(i)<0.05  && p_gridness(j)<0.05)
             %} 
+
+end
 
             
