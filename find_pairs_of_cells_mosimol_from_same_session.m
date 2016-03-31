@@ -99,7 +99,8 @@ plot( c1.pos_x ,c1.pos_y );
 hold on;
 plot( c1.spike_x, c1.spike_y, 'r.' );
 
-num_bins = 20;
+%%%%%
+num_bins = 100;
 rate_map_time =   zeros(num_bins, num_bins);
 rate_map_spikes = zeros(num_bins, num_bins);
 for i = 1:length(c1.pos_time);
@@ -119,12 +120,23 @@ for i = 1:length(c1.spike_time);
     %rate_map_time(row, col) = rate_map_time(row, col) + 1; %% IS THIS VALID? double counting???
 end
 rate_map = (rate_map_spikes ./ rate_map_time);
-max(rate_map(:))
-
 rate_map(isnan(rate_map)) = 0;
+max(rate_map(:));
+rate_map = rate_map/max(rate_map(:)); %normalize
 
-figure();
-imshow(rate_map);
+% GAUSS SMOOTHE
+ N = num_bins;
+ sigma = 1;
+ [x y]=meshgrid(round(-N/2):round(N/2), round(-N/2):round(N/2));
+ f=exp(-x.^2/(2*sigma^2)-y.^2/(2*sigma^2));
+ f=f./sum(f(:));
+ figure();
+ imagesc(conv2(rate_map,f,'same'));
+%
+
+
+figure('Position', [100, 100, 400, 400]);
+imshow(imgaussfilt(rate_map, 2));
 colormap default;
 
 
@@ -143,5 +155,13 @@ end
             %} 
 
 end
+
+function f=gaussian2d(N,sigma)
+  % N is grid size, sigma speaks for itself
+ [x y]=meshgrid(round(-N/2):round(N/2), round(-N/2):round(N/2));
+ f=exp(-x.^2/(2*sigma^2)-y.^2/(2*sigma^2));
+ f=f./sum(f(:));
+end
+ 
 
             
