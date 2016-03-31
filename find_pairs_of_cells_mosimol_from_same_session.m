@@ -60,15 +60,77 @@ disp(grid_cells);
 disp('fin!');
 
 %spike plot
-%%
+%
 a = data{1}.db.B(2) % B session is combination of all recordings. has 3 structs: before, during, after muscomol injection
-plot( mean([a.pos_data.x1, a.pos_data.x2] ,2) , mean([a.pos_data.y1, a.pos_data.y2] ,2) );
+figure();
+%plot( mean([a.pos_data.x1, a.pos_data.x2] ,2) , mean([a.pos_data.y1, a.pos_data.y2] ,2) );
+%hold on;
+%plot( mean([a.spike_data.x, a.spike_data.x2] ,2) , mean([a.spike_data.y, a.spike_data.y2] ,2), 'r.' );
+
+temp = data{1}.db.B(2);
+c1.pos_x =  mean([temp.pos_data.x1, temp.pos_data.x2], 2)';
+c1.pos_x = c1.pos_x - min(c1.pos_x) + 0.00001;
+c1.pos_y =  mean([temp.pos_data.y1, temp.pos_data.y2], 2)';
+c1.pos_y = c1.pos_y - min(c1.pos_y) + 0.00001;
+
+c1.pos_time = temp.pos_data.t;
+c1.spike_x =  mean([temp.spike_data.x, temp.spike_data.x2], 2)';
+c1.spike_x = c1.spike_x - min(c1.spike_x) + 0.00001;
+c1.spike_y =  mean([temp.spike_data.y, temp.spike_data.y2], 2)';
+c1.spike_y = c1.spike_y - min(c1.spike_y) + 0.00001;
+c1.spike_time = temp.spike_data.ts;
+
+figure();
+plot(c1.pos_x, c1.pos_y);
+hold on
+plot(c1.spike_x, c1.spike_y,'r.');
+
+% fix spike position NaN's
+for i = 1:length(c1.spike_time);
+    if isnan(c1.spike_x(i)) %assumes NaN's happen in x and y at same time
+        %find closest time value to spike time, use that as x and y
+        [~, ind] = min(abs(c1.pos_time(:)-c1.spike_time(i)));
+        c1.spike_x(i) = c1.pos_x(ind);
+        c1.spike_y(i) = c1.pos_y(ind);  
+    end
+end
+
+plot( c1.pos_x ,c1.pos_y );
 hold on;
-plot( mean([a.spike_data.x, a.spike_data.x2] ,2) , mean([a.spike_data.y, a.spike_data.y2] ,2), 'r.' );
+plot( c1.spike_x, c1.spike_y, 'r.' );
 
-c1.x =  data{1}.db.B(2).mean([a.pos_data.x1, a.pos_data.x2], 2); 
+num_bins = 20;
+rate_map_time =   zeros(num_bins, num_bins);
+rate_map_spikes = zeros(num_bins, num_bins);
+for i = 1:length(c1.pos_time);
+    col =            ceil(c1.pos_x(i)/max(c1.pos_x) * num_bins);
+    row = num_bins - ceil(c1.pos_y(i)/max(c1.pos_y) * num_bins) +1; %flips y
+    rate_map_time(row, col) = rate_map_time(row, col) + 1;
+end
 
-%%
+for i = 1:length(c1.spike_time);
+    col =            ceil(c1.spike_x(i)/max(c1.spike_x) * num_bins);
+    row = num_bins - ceil(c1.spike_y(i)/max(c1.spike_y) * num_bins) + 1;
+    rate_map_spikes(row, col) = rate_map_spikes(row, col) + 1;
+    % because some spikes are in other positions by interpolation
+    if(rate_map_time(row, col) < rate_map_spikes(row, col))
+         rate_map_time(row, col) = rate_map_time(row, col) + 1;
+    end
+    %rate_map_time(row, col) = rate_map_time(row, col) + 1; %% IS THIS VALID? double counting???
+end
+rate_map = (rate_map_spikes ./ rate_map_time);
+max(rate_map(:))
+
+rate_map(isnan(rate_map)) = 0;
+
+figure();
+imshow(rate_map);
+colormap default;
+
+
+
+
+%
 for i=1:length(pairs_by_file_index)
     
 end
