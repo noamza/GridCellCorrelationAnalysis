@@ -5,6 +5,7 @@
 % grid cells: 228
 % pairs: 749
 
+%%% DATASTATS() !!
 
 %%%%%%%%%
 
@@ -83,7 +84,7 @@ c1.spike_time = temp.spike_data.ts;
 figure();
 plot(c1.pos_x, c1.pos_y);
 hold on
-plot(c1.spike_x, c1.spike_y,'r.');
+plot(c1.spike_x, c1.spike_y,'.');
 
 % fix spike position NaN's
 for i = 1:length(c1.spike_time);
@@ -126,21 +127,32 @@ rate_map = rate_map/max(rate_map(:)); %normalize
 
 % GAUSS SMOOTHE
  N = num_bins;
- sigma = 1;
+ sigma = 2;
  [x y]=meshgrid(round(-N/2):round(N/2), round(-N/2):round(N/2));
  f=exp(-x.^2/(2*sigma^2)-y.^2/(2*sigma^2));
  f=f./sum(f(:));
  figure();
  imagesc(conv2(rate_map,f,'same'));
+ colormap jet;
 %
-
-
 figure('Position', [100, 100, 400, 400]);
-imshow(imgaussfilt(rate_map, 2));
-colormap default;
+figure();
+imshow(imgaussfilt(rate_map, 1));
+colormap jet;
+
+imshow([0,0.2,0.3;0.4,0.5,0.6;0.7,0.8,0.9;-1,0.1,-10])
+colormap jet;
 
 
+% CORRELATION
+imagesc(corrcoef(rate_map));
+imagesc(xcorr2(rate_map,rate_map));
 
+a = xcorr2(rate_map);
+a(a > 0.1) = 0.1; imagesc(a);
+figure();
+imshow(imgaussfilt( a, 1));
+colormap jet;
 
 %
 for i=1:length(pairs_by_file_index)
@@ -149,7 +161,7 @@ end
 
 
             %{
-            if strcmp(rat{i},rat{j}) && strcmp(date{i},date{j}) && strcmp(session{i},session{j})...
+            ift strcmp(rat{i},rat{j}) && strcmp(date{i},date{j}) && strcmp(session{i},session{j})...
                     && (tetrode(i)~=tetrode(j) || cell(i)~=cell(j)) && ...
                     (p_gridness(i)<0.05  && p_gridness(j)<0.05)
             %} 
