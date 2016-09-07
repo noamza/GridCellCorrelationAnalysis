@@ -29,12 +29,14 @@ read/study:
 %}
 
 function musciomol()
-
+    warning off;
     params.dir_load =...
         'C:\Noam\Data\muscimol\DB_musc_MEC\';
     params.dir_save =....
         'C:\Noam\Data\muscimol\noam_output\';
-
+    
+    binsize = 10;
+    fn = sprintf('C:\\Noam\\Data\\muscimol\\noam\\cells_%dmin_a.mat',binsize);
     %    tic %1800 sec   %LOAD FROM FILES
     %{
     tic;
@@ -42,31 +44,79 @@ function musciomol()
     for i= 1:length(files)
         data{i} = load(strcat(params.dir_load,files(i).name));
         data{i}.db.ind = i;
-        cells{i} = process(data{i}.db);
+        cells{i} = process(data{i}.db, binsize); 
         fprintf('%d %.1f \n',i, (i*100/length(files)));
     end
-    save(strcat('C:\Noam\Data\muscimol\noam\cells_10min.mat',''),'cells');
+    save(fn,'cells');
     toc
     %}
-    tic; cells = load('C:\Noam\Data\muscimol\noam\cells_10min.mat'); cells = cells.cells; toc;
+    
+    fprintf('loading **bin size**%d*\n',binsize); %ascii 48
+    tic; cells = load(fn); cells = cells.cells; toc;
+    
     groups = find_simultaneously_recorded_cells(cells);
     k = fieldnames(groups);
-    %i = 13; plot_group(groups.(k{i}), k{i}, i);
+   
+    %TEMPORAL CORRELATION
+    %{
+    figure();
+    tic
+    for i = 1:length(k)
+        %disp(i);
+        colormap jet;
+        g = groups.(k{i});
+        [mc, lc] = plotGroupTemporralCorrs(g, 500);
+%         subplot(10,9,2*i-1);
+%         imagesc(lc./max(lc(:))); axis off; axis equal; caxis([-1 1]);
+%         title(sprintf('i%d:[%.1f %.1f]',i, min(lc(:)), max(lc(:))));
+%         set(gca,'FontSize',8)
+%         subplot(10,9,2*i);
+%         imagesc(mc); axis off; axis equal; %caxis([-1 1]);
+%         [m, ind] = max(mc(:));
+%         title(sprintf('i%d:[%.1f %.3f]',i, lc(ind), m));
+%         set(gca,'FontSize',8)
+         subplot(5,8,i);
+         imagesc(mc,[0,0.5]); axis off; axis equal; %caxis([-1 1]);
+         [m, ind] = max(mc(:));
+         title(sprintf('i%d(%.3f)(%.1f)',i, m, lc(ind)));
+         set(gca,'FontSize',9); 
+        
+        fprintf('%d %.1f %.3f\n',i,lc(ind),m);
+    end
+    set(suptitle('Highest Temporal-Correlation/Lag for Each Pair in Group, Normalized'),'Interpreter', 'none');
+    toc; disp('time corr');
+    %}
+    
+    %find width of plot
+    midmax = 0;
+    for i = 1:length(k)
+        g = groups.(k{i});
+        g = sortByMiddle(g);
+        length(g(1).middle);
+        midmax = max(midmax ,length(g(1).middle)); 
+    end
+    %disp(midmax); %lots of 8
+    %%%%
+    midmax = 6;%%%%%%%
+    
+    %i = 5; plot_group(groups.(k{i}), k{i}, i, binsize, midmax);
+    
     %plot groups
     for i = 1:length(k)
         fprintf('%s %d %d\n', k{i}, i, length(groups.(k{i})));
-        plot_group(groups.(k{i}), k{i}, i);
+        plot_group(groups.(k{i}), k{i}, i, binsize, midmax);
     end
 
-    for i = 1:length(k);
+    %print group properties
+    for i = 5%1:length(k);
         g = groups.(k{i});
         t = g(1); t = length(t.middle); %t = length(g);
-        %t.a; length(t.after.trajectory.px) .exists length(t.middle)
+        %t.a; length(t.after.px) .exists length(t.middle)
         fprintf('%s * %d \n',k{i} ,t);
         %fprintf('%s %d', k{i}, length(g));
         for j = 1:length(g) %in group
             tt = g(j); tt = length(tt.middle);
-            %.a length(tt.after.trajectory.px) .exists length(tt.middle)
+            %.a length(tt.after.px) .exists length(tt.middle)
             if t ~= tt               %not(strcmp(t,tt))
                 fprintf('%d ', tt);
                 t = tt;
@@ -84,7 +134,7 @@ function musciomol()
         fprintf('%.1f of %d ',i*100/length(pairs),length(pairs));
         r1 = cells{r1i};%process(data{r1i}.db);
         r2 = cells{r2i};%process(data{r2i}.db);
-        plot_pair(r1, r2, i);
+        %plot_pair(r1, r2, i);
     end
     toc
     disp('muscimol done');
@@ -96,10 +146,52 @@ function musciomol()
     %}
 end
 
+function [pearson_xcor, count_xcor] = time_correlation(spkt1,spkt2)
+    % generating trains
+    spkt1=floor(spkt1*1000)+1;
+    spkt2=floor(spkt2*1000)+1;
+    max_time=max(max(spkt1),max(spkt2));
+
+    %generating the spike train
+    train=zeros(2,max_time);
+    train(1,spkt1)=1;
+    train(2,spkt2)=1;
+    train1=train(1,:);
+    train2=train(2,:);
+    %[train1,train2,count_xcor,pearson_xcor] = My_Xcor(train(1,:),train(2,:));
+    win=hamming(3); %light, could make 5
+    train1=conv(train1,win,'same');
+    train2=conv(train2,win,'same');
+
+    %generating the cross corelations normelized to pearson
+    lag = 500;
+    pearson_xcor=xcov(train1,train2,lag,'coef')'; %500 parms.max_lag NEED THIS <<<
+    count_xcor=xcorr(train1,train2, lag)'; %how many times spike at same point <<<
+end
+
+
+function [maxcorr, lagcorr] = plotGroupTemporralCorrs(g,lag)
+    maxcorr = zeros(length(g));
+    lagcorr = zeros(length(g));
+    for i=1:length(g) 
+        t1 = g(i).before.st;
+        for j=i+1:length(g)
+            t2 = g(j).before.st;
+            [p, c] = time_correlation(t1,t2);
+            %A(i,j) = corr(t1, t2);           
+            [m, ind] = max(p);
+            maxcorr(i,j) = m;
+            lagcorr(i,j) = ind - (lag + 1); %+1 so that 1 - (500 + 1) = -500
+        end
+    end  
+end
+
+
 function [fig]= plotAcorrModule(c, fig, sub, s)%m,n,l
     subplot(sub(1), sub(2), sub(3)); %(m,n,l);
-    imagesc(c.ac'); axis equal; axis off; hold on; xlim(xlim); ylim(ylim);%axis('xy'); axis ij;
-    title(sprintf('%s%.2f',s, c.gridscore));
+    imagesc(c.ac');  hold on; xlim(xlim); ylim(ylim);%axis('xy'); axis ij; axis equal; axis off;
+    x=xlim; y=ylim;
+    title(sprintf('%s%.2f(%d)',s, c.gridscore, length(c.sx)));
     colormap jet;
     lw = 0.5;
     major = c.module.major_ax; minor = c.module.minor_ax; hex_peaks = c.module.hex_peaks;
@@ -125,8 +217,10 @@ function [fig]= plotAcorrModule(c, fig, sub, s)%m,n,l
         p11=xMinor1:(xMinor2-xMinor1)/10:xMinor2; p21=yMinor1:(yMinor2-yMinor1)/10:yMinor2;
         if ~isempty(p11) & ~isempty(p21)
             plot(p11,p21, co,'LineWidth',lw); hold on;
+            REMOVE POINTS OUT OF RANFE
         end
     end
+    xlim(x); ylim(y);
 end
 
 function g = sortByMiddle(g)
@@ -144,25 +238,67 @@ function g = sortByMiddle(g)
    g = cell2struct(a, fs, 1);
 end
 
+function g = sortByEllipse(g)
+   fs = fieldnames(g);
+   a = struct2cell(g);
+   s = size(a);
+   a = reshape(a, s(1), []);
+   a = a';
+   for i = 1:length(a(:,1));
+      %sort by ellipse size of *before*
+      a(i,11) = {a{i,8}.('module').('major_ax') * a{i,8}.('module').('minor_ax')*pi};
+      if isnan(a{i,8}.('module').('major_ax'))  || isnan(a{i,8}.('module').('minor_ax'))
+          a(i,11) = {10000}; %make unknown max
+      end
+   end
+   a = sortrows(a, 11); %-11 for backwards
+   a = a(:,1:10);
+   a = reshape(a', s);
+   g = cell2struct(a, fs, 1);
+end
+
+function b=goodCell(c, rmt)
+    b= c.exists && ...
+    not(isnan(c.gridscore) || ...
+         c.gridscore == -2 || ... 
+         c.max_r < rmt     || ...
+         c.max_r == 50        ...
+     );
+end
+
 %{
 remove corner cases
 %}
-function plot_group(g, key, iter)
-    rmt = 0.1; % Rate Map Threshold
+function plot_group(g, key, iter, bs, m)
+    prnt = true;
+    rmt = 1.5; % Rate Map Threshold Hz
     %get dimensions of plot
     r = 6; %default plot length
     if (mod(length(g), r) ~= 0 & length(g) > 2*r) || length(g) == r+1
         r = r+1;
     end
-    db = '';
+    debug = '';
     g = sortByMiddle(g);
-    m = length(g(1).middle);
-    r = 6; m = 5; %NZA
-    c = 2*(2+m) + 1; %width of figure, before + max middle + after * 2 for ratemap + autocorr + mcross
-    %assums longest middle vector contains times of others
-    for j = 1:length(g(1).middle)
+    %TODO: move to end if 0.3 gridness or less for before
+    for j = 1:length(g(1).middle) %used to align middles
         t(j) = g(1).middle{j}.pt(1); %CHECK TIMES ALL ALIGN??
     end
+    %m = length(g(1).middle);
+    r = 6; %m = 5; %m = # makes all plots same size 
+    c = 2*(2+m) + 1; % width of figure: (before + max middle + after) * 2, for ratemap + autocorr + mcross
+    %assums longest middle vector contains times of others
+    g = sortByEllipse(g);
+    gridThresh =  0.7;
+    good = [g(1)]; bad = [g(1)];
+    for j = 1:length(g) %put low grid scores at end
+        if g(j).before.gridscore > gridThresh
+            good(end+1) = g(j);
+        else
+            bad(end+1) = g(j);
+        end
+    end
+    g = good; %[good(2:end) bad(2:end)]; Only show good sells
+    
     %PLOT
     tot = 0;
     page = 0; height = 0';
@@ -176,7 +312,7 @@ function plot_group(g, key, iter)
         h = figure('Position', [0, 0, 2000, 1000]);%(2*m+5)*120 , 140*r + height]); %
         set(gca,'LooseInset', get(gca,'TightInset'));
         colormap jet;
-        titl = sprintf('%s_cells%d_pg%dof%d',key, length(g), page, ceil(length(g)/r));
+        titl = sprintf('%dmin_i%d_%s_cells%d_pg%dof%d',bs,iter,key,length(g),page,ceil(length(g)/r));
         set(suptitle(titl),'Interpreter', 'none');
         %%% plot each cell %%%
         for z = 1:rr % 
@@ -185,69 +321,96 @@ function plot_group(g, key, iter)
             mcross = {};
             %%%plot rm
             subplot(r, c, c*(z-1) + 1);
-            imagesc(r1.before.rm), title(sprintf('c%d: t(-1) %.0fHz', r1.ind, r1.before.max_r)); axis off; axis equal;
+            gc = '';
+            if r1.before.gridscore < gridThresh
+                gc = '*';
+            end
+            imagesc(r1.before.rm), title(sprintf('%sc%d: t(-1) %.0fHz',gc, r1.ind, r1.before.max_r)); 
             mcross{1} = r1.before.rm;
             %plot middle rms
-            for i = 1: length(r1.middle);
-                if not(r1.middle{i}.max_r < rmt || r1.middle{i}.max_r == 50)
-                    ind = find(t == r1.middle{i}.pt(1));
+            for i = 1: min(length(r1.middle), m);
+                if  goodCell(r1.middle{i}, rmt)
+                    %not(r1.middle{i}.max_r < rmt || r1.middle{i}.max_r == 50)
+                    ind = find(t == r1.middle{i}.pt(1)); %align middles;
                     subplot(r, c, c*(z-1) + 1 + ind);
                     imagesc(r1.middle{i}.rm);
                     title(sprintf('%.0f-%.0f(%0.fHz)', r1.middle{i}.pt(1)/60,...
                         r1.middle{i}.pt(length(r1.middle{i}.pt))/60, r1.middle{i}.max_r));
                     %title(sprintf('%.0fHz', r1.middle{i}.max_r));
-                    axis off; axis equal;
                     mcross{end + 1} = r1.middle{i}.rm;
+                else
+                 ind = find(t == r1.middle{i}.pt(1)); %align middles;
+                 subplot(r, c, c*(z-1) + 1 + ind);
+                 %imagesc(-1);
+                 %title(sprintf('%.0f-%.0f(>%0.fHz)', r1.middle{i}.pt(1)/60,...
+                        %r1.middle{i}.pt(length(r1.middle{i}.pt))/60, rmt));
                 end
+                
             end                           %after
             if r1.after.exists == 1 %will be fixed
                 subplot(r, c, c*(z-1) + 1 + m + 1);
-                imagesc(r1.after.rm);title(sprintf('t(n+1) %.0fHz', r1.after.max_r));
-                axis off; axis equal;
+                imagesc(r1.after.rm);title(sprintf('t(+1) %.0fHz', r1.after.max_r));
                 mcross{end + 1} = r1.after.rm; 
             end
             %%%plot ac 
-            plotAcorrModule(r1.before, h, [r, c, c*(z-1) + 3 + m], 't(-1): ');
+            plotAcorrModule(r1.before, h, [r, c, c*(z-1) + 3 + m], 't(-1):');
             %plot middle ac
-            for i = 1: length(r1.middle);
-                if not(isnan(r1.middle{i}.gridscore) || r1.middle{i}.gridscore == -2)
+            for i = 1: min(length(r1.middle), m);
+                if goodCell(r1.middle{i}, rmt)
                     ind = find(t == r1.middle{i}.pt(1));
                     %subplot(r, c, c*(z-1) + 1 + ind);
                     plotAcorrModule(r1.middle{i}, h, [r, c, c*(z-1) + 3 + m + ind], '');
-                    axis off; axis equal;
+                else
+                 ind = find(t == r1.middle{i}.pt(1)); %align middles;
+                 subplot(r, c, c*(z-1) + 3 + m + ind); %(m,n,l);
+                 %title(sprintf('%s%.2f(%d)','', r1.middle{i}.gridscore, length((r1.middle{i}.sx))));
                 end
             end                           %after
             if r1.after.exists == 1  %will be fixed
                 %subplot(r, c, c*(z-1) + 3 + 2*m + 1);
-                plotAcorrModule(r1.after, h, [r, c, c*(z-1) + 2 + 2*m + 2], 't(n+1): ');
-                axis off; axis equal;
+                plotAcorrModule(r1.after, h, [r, c, c*(z-1) + 2 + 2*m + 2], 't(+1):');
+                
             end
             %mcross
             subplot(r, c, c*(z-1) + 2 + 2*m + 3); mc = allCorr(mcross,mcross);
-            imagesc(mc);title(sprintf('[%.1f %.1f]', min(mc(:)), max(mc(:))));
-            axis off; axis equal; caxis([-1 1]);
+            mc =  padarray(mc,m+2-size(mc),-1,'post'); %HEREEHHE
+            imagesc(mc, [0, 1]);  caxis([-1 1]);
+            title(sprintf('[%.1f %.1f]', min(mc(:)), max(mc(:))));
+            
+            ax = findobj(gcf,'Type','Axes');
+            for i=1:length(ax)
+                set(ax(i),'FontSize',9);
+                axis(ax(i),'equal')
+                axis(ax(i),'off')
+                %axis off; axis equal;
+                %title(ax(i),{'Very Nice'})
+            end
          
-        end %% end plotting loop %%
+        end %% END PLOTTING PAGE %%
+        
+        %[maxc maxl] = plotGroupTemporralCorrs(g, 500);
+        
         %subplot(r,c,r*c);
         %plot(1,1);
         %axis off; axis equal;
         % ********* 
         sdir = 'C:\Noam\Output\muscimol\groups\';
-        filename = sprintf('%s%s%d_%s.png',sdir, db, iter, titl);
-        titl = sprintf('cells%d_pg%dof%d\n', length(g), page, ceil(length(g)/r));
+        filename = sprintf('%s%s%s.png',sdir, debug, titl);
+        %titl = sprintf('cells%d_pg%dof%d\n', length(g), page, ceil(length(g)/r));
         disp(filename);
         h.PaperPositionMode = 'auto'; %fig %fig = gcf;
-        print(filename, '-dpng','-r0');
+        if prnt 
+            print(filename, '-dpng','-r0');
+            close(h);
+        end
         %}
-        close(h);
-    end
+    end %END PLOTTING GROUP
     %}
 end
 
 
 function groups = find_simultaneously_recorded_cells(cells)
     groups = [];
-    gi = 1;
     for i=1:length(cells)
         a = cells{i};
         if ~isempty(a.middle) %skip cells with non middle
@@ -269,10 +432,10 @@ function groups = find_simultaneously_recorded_cells(cells)
         k = keys{i};
         group = groups.(k);
         t = group(1);
-        t = length(t.before.trajectory.px);
+        t = length(t.before.px);
         for j = 1:length(group) %CHECK TIMES !!
             tt = group(j); %cells{group(j)};
-            tt = length(tt.before.trajectory.px);
+            tt = length(tt.before.px);
             if t ~= tt
                 fprintf('%f %f whats up with this group b.length %s?\n',t, tt, k);
             end
@@ -287,7 +450,8 @@ function plot_pair(r1, r2, id)
     set(gca,'LooseInset',get(gca,'TightInset'));
     colormap jet; bad = '';
     rmt = 0.1; % Rate Map Threshold
-
+    %%% set(gca,'YDir','normal') instead of flip???
+    
     %n = min(length(r2.middle), length(r1.middle));
     if length(r2.middle) ~= length(r1.middle)
         %fprintf('%d: error plotting, middle sessions different lengths', id);%bad = '*';
@@ -330,18 +494,18 @@ function plot_pair(r1, r2, id)
 
     %%%plot trajectory
     subplot(r, n, 1 + n*0);
-    plot(r1.before.trajectory.px, flip(r1.before.trajectory.py));
+    plot(r1.before.px, flip(r1.before.py));
     hold on
-    scatter(r1.before.trajectory.sx, flip(r1.before.trajectory.sy), '.'),...
+    scatter(r1.before.sx, flip(r1.before.sy), '.'),...
         xlim([0 100]), ylim([0 100]), ...
-        title(sprintf('c1: before %d',length(r1.before.trajectory.st)));
+        title(sprintf('c1: before %d',length(r1.before.st)));
     axis off; axis equal;
     subplot(r, n, 1 + n*1);
-    plot(r2.before.trajectory.px, flip(r2.before.trajectory.py));
+    plot(r2.before.px, flip(r2.before.py));
     hold on
-    scatter(r2.before.trajectory.sx, flip(r2.before.trajectory.sy), '.'),...
+    scatter(r2.before.sx, flip(r2.before.sy), '.'),...
         xlim([0 100]), ylim([0 100]), axis off; axis equal;
-    title(sprintf('c2: %d',length(r2.before.trajectory.st))); %TITLE
+    title(sprintf('c2: %d',length(r2.before.st))); %TITLE
     for i = 1:m;
         %if length(r1.middle{i}.px) > 1 && length(r2.middle{i}.px) > 1 %Display if more than one spike
         subplot(r, n, i+1 + n*0);
@@ -362,20 +526,20 @@ function plot_pair(r1, r2, id)
             r2.middle{i}.pt(length(r2.middle{i}.pt))/60, length(r2.middle{i}.st)));
         axis off; axis equal;
     end
-    %if length(r1.after.trajectory.px) > 1 && length(r2.after.trajectory.px) > 1
+    %if length(r1.after.px) > 1 && length(r2.after.px) > 1
     if after
         subplot(r, n, n*1-1);
-        plot(r1.after.trajectory.px, flip(r1.after.trajectory.py));
+        plot(r1.after.px, flip(r1.after.py));
         hold on
-        scatter(r1.after.trajectory.sx, flip(r1.after.trajectory.sy), '.'),...
+        scatter(r1.after.sx, flip(r1.after.sy), '.'),...
             xlim([0 100]), ylim([0 100]), axis off; axis equal;
-        title(sprintf('after %d',length(r1.after.trajectory.st)));
+        title(sprintf('after %d',length(r1.after.st)));
         subplot(r, n, n*2-1);
-        plot(r2.after.trajectory.px, flip(r2.after.trajectory.py));
+        plot(r2.after.px, flip(r2.after.py));
         hold on
-        scatter(r2.after.trajectory.sx, flip(r2.after.trajectory.sy), '.'),...
+        scatter(r2.after.sx, flip(r2.after.sy), '.'),...
             xlim([0 100]), ylim([0 100]); axis off; axis equal;
-        title(sprintf('%d',length(r2.after.trajectory.st)));
+        title(sprintf('%d',length(r2.after.st)));
     end
 
     %%%plot rm
@@ -473,7 +637,7 @@ function plot_pair(r1, r2, id)
 
 
 
-    sdir = 'C:\Noam\Output\muscimol\';
+    sdir = 'C:\Noam\Output\muscimol\pairs\';
     filename = sprintf('%s%d_Rat_%s_date_%s_C%d_t%d_c%d_C%d_t%d_c%d.png',sdir, id, r1.id, r1.date, r1.ind, r1.tet, r1.cel, r2.ind, r2.tet, r2.cel);
     disp(filename);
     fig = gcf;
@@ -517,7 +681,7 @@ function A = allCorr(a, b) %
                 t1 = [t1; zeros(length(t2)-length(t1),1)];
             end
             %}
-            A(i,j) = corr(t1, t2);
+            A(i,j) = corr(t1, t2); 
             if length(a{i}(:)) == length(b{j}(:))
                 %A(i,j) = corr(a{i}(:), b{j}(:));
             else
@@ -530,19 +694,20 @@ end
 
 
 
-function r = process(data)
+function r = process(data, binsize)
 r.id   = data.rat;
 r.date = data.date;
 r.tet  = data.tetrode;
-r.cel  = data.cell;
+r.cell  = data.cell;
 r.type = data.cell_type_obj_new;
 r.a = data.area;
 r.ind = data.ind;
 p = data.B(1).pos_data;
 s = data.B(1).spike_data;
 %before
-r.before.trajectory = rat_trajectory(p.x1, p.x2, p.y1, p.y2, p.t, s.x, s.x2, s.y, s.y2, s.ts);
-tr = r.before.trajectory;
+tr = rat_trajectory(p.x1, p.x2, p.y1, p.y2, p.t, s.x, s.x2, s.y, s.y2, s.ts);
+r.before.px = tr.px; r.before.py = tr.py; r.before.pt = tr.pt;
+r.before.sx = tr.sx; r.before.sy = tr.sy; r.before.st = tr.st;  
 r.before.rm = Create_Rate_Map(tr.px, tr.py, tr.pt, tr.sx, tr.sy, tr.st);
 r.before.ac = Cross_Correlation(r.before.rm, r.before.rm);
 r.before.max_r = max(r.before.rm(:));
@@ -553,7 +718,7 @@ r.before.module = Find_Module(r.before.ac);
 p = data.B(2).pos_data;
 s = data.B(2).spike_data;
 tr = rat_trajectory(p.x1, p.x2, p.y1, p.y2, p.t, s.x, s.x2, s.y, s.y2, s.ts);
-binLength = 10; %minutes,
+binLength = binsize; %minutes,
 maxTime =  45;% minutes
 bins = bin_trajactory(tr, binLength*60, maxTime*60); %BIN LENGTH
 for i = 1:length(bins)
@@ -575,8 +740,9 @@ r.middle = bins;
 if length(data.B) == 3               %after exists
     p = data.B(3).pos_data;
     s = data.B(3).spike_data;
-    r.after.trajectory = rat_trajectory(p.x1, p.x2, p.y1, p.y2, p.t, s.x, s.x2, s.y, s.y2, s.ts);
-    tr = r.after.trajectory;
+    tr = rat_trajectory(p.x1, p.x2, p.y1, p.y2, p.t, s.x, s.x2, s.y, s.y2, s.ts);
+    r.after.px = tr.px; r.after.py = tr.py; r.after.pt = tr.pt;
+    r.after.sx = tr.sx; r.after.sy = tr.sy; r.after.st = tr.st;  
     r.after.rm = Create_Rate_Map(tr.px, tr.py, tr.pt, tr.sx, tr.sy, tr.st);
     r.after.ac = Cross_Correlation(r.after.rm, r.after.rm);
     r.after.max_r = max(r.after.rm(:));
@@ -584,8 +750,9 @@ if length(data.B) == 3               %after exists
     r.after.exists = true;
     r.after.module = Find_Module(r.after.ac);
 else                                %after doesn't exist
-    r.after.trajectory = rat_trajectory([0],[0],[0],[0],[0],[0],[0],[0],[0],[0]);
-    tr = r.after.trajectory;
+    tr = rat_trajectory([0],[0],[0],[0],[0],[0],[0],[0],[0],[0]);
+    r.after.px = tr.px; r.after.py = tr.py; r.after.pt = tr.pt;
+    r.after.sx = tr.sx; r.after.sy = tr.sy; r.after.st = tr.st;  
     r.after.rm = false; %Create_Rate_Map(tr.px, tr.py, tr.pt, tr.sx, tr.sy, tr.st);
     r.after.ac = false; %Cross_Correlation(r.after.rm, r.after.rm);
     r.after.max_r = -1; %max(r.after.rm(:));
@@ -596,34 +763,36 @@ end
 
 end
 
-
 function score = gridscore(ac, ind)
-try
-    score = GridnessRadius(ac, FindROuter(ac));
-catch ME
-    fprintf('%d: error calculting grid score %s\n', ind, ME.message);
-    score = -2;
-end
+    try
+        score = GridnessRadius(ac, FindROuter(ac));
+    catch ME
+        fprintf('%d: error calculting grid score %s\n', ind, ME.message);
+        score = -2;
+    end
 end
 
 function test()
-sa=0, sb= 0;
-for i = 1:length(bins)
-    fprintf('%d: min %.3f max %.3f \n',i, min(bins{i}.pt)/60, max(bins{i}.pt)/60);
-    sa = sa + length(bins{i}.pt);
-    sb = sb + length(bins{i}.st);
-end
-fprintf('%d  %d \n',sa, sb);
+    sa=0, sb= 0;
+    for i = 1:length(bins)
+        fprintf('%d: min %.3f max %.3f \n',i, min(bins{i}.pt)/60, max(bins{i}.pt)/60);
+        sa = sa + length(bins{i}.pt);
+        sb = sb + length(bins{i}.st);
+    end
+    fprintf('%d  %d \n',sa, sb);
 end
 
 %bin size in seconds, max time
-%tr = trajectory; bs = bin size in seconds; mt = max size
+%tr = trajectory; bs = bin size in seconds; mt = max time
 function bins = bin_trajactory(tr, bs, mt)%
+minSpikes = 10;%min  spikes to be a bin
+minBinLength = 1; %in minutes
 bins{1,1} = []; b = 1;
-ind = 0;
+ind = 0; %index in current bin
 t = tr.pt; st = tr.st;
-t0 = ceil(tr.pt(1)/(5*60))*5*60 - bs; %stars at 5min intervals %tr.pt(1);
-for i = 1: length(t)
+%t0 = ceil(tr.pt(1)/(5*60))*5*60 - bs; %statrs at 5min intervals %tr.pt(1);
+t0 = tr.pt(1);
+for i = 1: length(t) %index in entire series
     if t(i) <= mt
         %breaks up bins based on bin length or 15min interval cutoffs
         if t(i) < t0 + bs %&& mod(t(i), bs) %mod breaks up bins on even intervals, non 0 means continue
@@ -655,11 +824,9 @@ for i = 1:length(st)
         bins{b}.st(ind) = tr.st(i);
     end
 end
-%remove weak bins
-minSpikes = 10;
+%remove weak bins less than minspikes, min lengths 
 b = 1;
 t = {};
-minBinLength = 1; %in minutes
 for i = 1:length(bins)
     %conditions
     if isfield(bins{i},'sx') == 1 && length(bins{i}.st) > minSpikes &&... %if isfield(bins{i},'sx') == 0
@@ -675,69 +842,69 @@ bins = t;
 end
 
 function c = rat_trajectory(px1, px2, py1, py2, pt, sx1, sx2, sy1, sy2, st)
-c.px =  mean([px1, px2], 2)';
-c.px = c.px - min(c.px) + 0.00001; %no zeros
-c.py =  mean([py1, py2], 2)';
-c.py = c.py - min(c.py) + 0.00001;
-c.pt = pt;
-c.sx =  mean([sx1, sx2], 2)';
-c.sx = c.sx - min(c.sx) + 0.00001;
-c.sy =  mean([sy2, sy2], 2)';
-c.sy =c.sy - min(c.sy) + 0.00001;
-c.st = st;
-%{figure();plot(c.px, c.py);hold on; plot(c.sx, c.sy,'.');%}
+    c.px =  mean([px1, px2], 2)';
+    c.px = c.px - min(c.px) + 0.00001; %no zeros
+    c.py =  mean([py1, py2], 2)';
+    c.py = c.py - min(c.py) + 0.00001;
+    c.pt = pt;
+    c.sx =  mean([sx1, sx2], 2)';
+    c.sx = c.sx - min(c.sx) + 0.00001;
+    c.sy =  mean([sy2, sy2], 2)';
+    c.sy =c.sy - min(c.sy) + 0.00001;
+    c.st = st;
+    %{figure();plot(c.px, c.py);hold on; plot(c.sx, c.sy,'.');%}
 end
 
 function rate_mat = Create_Rate_Map(px, py, pt, sx, sy, st)
-posx = px; posy = py; post = pt;
-spkx = sx; spky = sy; spkt = st;
-parms.sigma = 3; % gaussiam smoothing factor
-parms.time_per_bin=0.02; %defult size of bin time sampeling (1/sampeling rate)(updated in Read_Examples_2 function)
-% Minimum radius used in the auto-correlogram when finding the best
-parms.bin_size = 3; % size of spacial bin (for create the rate map)
-parms.num_of_direction_bins=60; % for head-direction calculatino
-parms.max_lag=500; % max lag (in msec) for temporal autocorrelation
-parms.bin_num=50;
+    posx = px; posy = py; post = pt;
+    spkx = sx; spky = sy; spkt = st;
+    parms.sigma = 3; % gaussiam smoothing factor
+    parms.time_per_bin=0.02; %defult size of bin time sampeling (1/sampeling rate)(updated in Read_Examples_2 function)
+    % Minimum radius used in the auto-correlogram when finding the best
+    parms.bin_size = 3; % size of spacial bin (for create the rate map)
+    parms.num_of_direction_bins=60; % for head-direction calculatino
+    parms.max_lag=500; % max lag (in msec) for temporal autocorrelation
+    parms.bin_num=50;
 
-max_x = ceil(max(posx));
-max_y = ceil(max(posy));
-min_x = min(floor(posx));
-min_y = min(floor(posy));
+    min_x = min(floor(posx)); max_x = ceil(max(posx));  
+    min_y = min(floor(posy)); max_y = ceil(max(posy));
 
-% divid the environment into spatial bins
-axis_x = min_x:parms.bin_size:max_x;
-axis_y = min_y:parms.bin_size:max_y;
+    % divide the environment into spatial bins
+    axis_x = min_x : parms.bin_size : max_x;
+    axis_y = min_y : parms.bin_size : max_y;
 
-time_mat = zeros(length(axis_y),length(axis_x));
-spike_mat = zeros(length(axis_y),length(axis_x));
-rate_mat = zeros(length(axis_y),length(axis_x));
+    time_mat =  zeros(length(axis_y),length(axis_x));
+    spike_mat = zeros(length(axis_y),length(axis_x));
+    rate_mat =  zeros(length(axis_y),length(axis_x));
 
-%create time mat (compute how much time the rat spends in each bin)
-% find in each moment(time_per_bin) what spatial bin the rat is at and add the time_per_bin to
-%
-for i = 1:length(post)
-    if ~isnan(posx(i)) && ~isnan(posy(i))
-        [min_val,x_ind] =  min(abs(posx(i) - axis_x));
-        [min_val,y_ind] =  min(abs(posy(i) - axis_y));
-        time_mat(y_ind,x_ind) = time_mat(y_ind,x_ind) + parms.time_per_bin;
-        
+    %create time mat (compute how much time the rat spends in each bin)
+    % find in each moment(time_per_bin) what spatial bin the rat is at and add the time_per_bin to
+    for i = 1:length(post)
+        if ~isnan(posx(i)) && ~isnan(posy(i))
+            [min_val,x_ind] =  min(abs(posx(i) - axis_x));
+            [min_val,y_ind] =  min(abs(posy(i) - axis_y));
+            time_mat(y_ind,x_ind) = time_mat(y_ind,x_ind) + parms.time_per_bin;
+            %if ~isnan(min_val)
+        end
     end
-end
-%create conut mat( count the num of spikes in each bin)
-for i = 1:length(spkt)
-    [min_val,x_ind] =  min(abs(spkx(i)-axis_x));
-    [min_val,y_ind] =  min(abs(spky(i)-axis_y));
-    spike_mat(y_ind,x_ind)= spike_mat(y_ind,x_ind)+1;
-end
-% create rate mat
-rate_mat=spike_mat./time_mat;
-rate_mat(rate_mat==inf)=NaN;
-rate_mat_unsmoothed = rate_mat;
-%create window
-h=fspecial('gaussian',3*[parms.sigma,parms.sigma],parms.sigma);
-rate_mat = nanconv2(rate_mat,h);
-rate_mat(isnan(rate_mat))=0; %bad??????nza
-disp('');
+    %create conut mat( count the num of spikes in each bin)
+    for i = 1:length(spkt)
+        if ~isnan(spkx(i)) && ~isnan(spky(i))
+            [min_val,x_ind] =  min(abs(spkx(i) - axis_x));
+            [min_val,y_ind] =  min(abs(spky(i) - axis_y));
+            spike_mat(y_ind,x_ind)= spike_mat(y_ind,x_ind)+1;
+            %if ~isnan(min_val)
+        end
+    end
+    % create rate mat
+    rate_mat=spike_mat./time_mat;
+    rate_mat(rate_mat==inf)=NaN;
+    rate_mat_unsmoothed = rate_mat;
+    %create window
+    h=fspecial('gaussian',3*[parms.sigma,parms.sigma],parms.sigma);
+    rate_mat = nanconv2(rate_mat,h);
+    rate_mat(isnan(rate_mat))=0; %bad??????nza
+    disp('');
 end
 
 function pairs_by_file_index = find_pairs(cells)
@@ -754,7 +921,7 @@ for i=1:length(cells) %a = load(strcat(params.dir_load,files(i).name));
                     && strcmp(a.id, b.id) && strcmp(a.date, b.date)...
                     ... && (strcmp(a.cell_type_subj, 'GRID') || strcmp(a.cell_type_subj, 'CONJ'))  ...
                     && strcmp(a.a, b.a)  ...  %area????
-                    && ( a.tet ~= b.tet || a.cel ~= b.cel) ...
+                    && ( a.tet ~= b.tet || a.cell ~= b.cell) ...
                     ... && length(a.B) == 3 &&  length(b.B) == 3 ... %ignore cells without before/after
                     )
                 %fprintf('same rat:%s date:%s a:%d,%d b:%d,%d \n', a.rat, ...
@@ -1134,8 +1301,8 @@ if length(auto_max_inds) >= 7
     
     %find point closest to center
     min_distance_index = find(auto_distances==min(auto_distances));
-    middle_pt(1) = auto_max_inds(min_distance_index,1);
-    middle_pt(2) = auto_max_inds(min_distance_index,2);
+    middle_pt(1) = auto_max_inds(min_distance_index(1),1); %NZA Added(1) because rarely there are two vals
+    middle_pt(2) = auto_max_inds(min_distance_index(1),2); %same
     
     %repeats find distances with more accurate center point
     cen = 1:length(auto_max_inds);
