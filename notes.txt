@@ -1,0 +1,11 @@
+muscimol
+_______
+
+
+Correct head direction by moving direction
+
+Annotate computeMovingDirection
+
+Correlate cells by direction
+
+Refresh on time correlation
