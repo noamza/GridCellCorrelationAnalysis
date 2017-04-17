@@ -224,66 +224,7 @@ function saveSpikesByDirection(params, degbins)
     disp(fn);
     save(fn,'cellByDeg');
 end
-function correlation_sanity_check(c1, c2)
-    nbins = 4;
-    %MOVING DIRECTION
-    smooth = 10e-7;%10e-3 %10e-5; %Empiracally so bins don't change rapidly for 8 bins!
-    tx = csaps( 1:length(c1.pt),double(c1.px), smooth);%10e-3; %10e-5;
-    ty = csaps( 1:length(c1.pt),double(c1.py), smooth);
-    dt = median(diff(c1.pt));
-    vx = fnval( fnder(tx),1:length(c1.pt))/dt; 
-    vy = fnval( fnder(ty),1:length(c1.pt))/dt;
-    pos_md = atan2d(vy,vx);%wrapTo360(rad2deg(atan2d(vy,vx)));    
-    %TO 360 
-    pos_md = wrapTo360(rad2deg(pos_md)); %check??
-    %BIN BY DIRECTIONS
-    bin_edges = (0:360/nbins:360);% - 180/nbins; bin_edges(1) = 0; bin_edges(end +1) = 360; 
-    pos_by_bin = discretize(pos_md, bin_edges)';% pos_by_bin(pos_by_bin==nbins+1) = 1; %conbines two last bins into one, to wrap pi
-    a = diff(c1.pt);
-    unique(a)
-    
-    
-    
-    edges = round(edges);
-    direction_array = interp1(c1.pt, unwrap(pos_md'),edges);
-    
-    %SPIKES
-    c1.st = c1.st(c1.st>=min(c1.pt)&c1.st<=max(c1.pt)); %removes spikes out of bound pos times
-    c2.st = c2.st(c2.st>=min(c1.pt)&c2.st<=max(c1.pt)); %removes spikes out of bound pos times
-    %to 360
-    spk1_md = interp1(c1.pt, unwrap(pos_md'),c1.st);
-    spk2_md = interp1(c1.pt, unwrap(pos_md'),c2.st);
-    spk1_md = wrapTo360(rad2deg(spk1_md)); spk2_md = wrapTo360(rad2deg(spk2_md));
-    %FIRING RATE
-    spkt1 = c1.st; spkt2 = c2.st;
-    spkt1 = floor(spkt1*1000)+1; spkt2=floor(spkt2*1000)+1; %in MILLISECS
-    max_time=max(max(spkt1),max(spkt2));
-    %firing rate;
-    bin_msecs = 100;
-    firing1 = zeros(max_time,1); firing2 = zeros(max_time,1);
-    firing1(spkt1) = spkt1;  firing2(spkt2) = spkt2;    
-    [firing1, edges] = histcounts(firing1,round(max_time/bin_msecs));%(x,nbins) 
-    firing2 = histcounts(firing2,round(max_time/bin_msecs));%now in units of binsecs
-    firing1(1) = 0; firing2(1) = 0; %spikes in first bin_msecs ignored
-    
-    %   
-    spk1_by_bin = discretize(spk1_md, bin_edges);  %spk1_by_bin(spk1_by_bin==nbins+1) = 1;
-    spk2_by_bin = discretize(spk2_md, bin_edges);    
-    
-    [P,F] = pwelch(y);
-    helperFilterIntroductionPlot1(F,P,[60 60],[-9.365 -9.365],...
-  {'Original signal power spectrum', '60 Hz Tone'})
-    fc = 500;
-    fs = 10000;
-    figure;
-    plot(y); hold on;
-    plot(filter(b,a,t));
-    [z,p,k] = butter(10,0.05);
-    sos = zp2sos(z,p,k);
-    grpdelay(sos,128);
-    
-    
-end
+
 
 
 %{
@@ -309,9 +250,9 @@ function plotByDirectionMain()
     %PARAMETERS
     groups = find_simultaneously_recorded_cells(cells);
     k = fieldnames(groups); %dt = 0.02;
-    params.time_bin_secs = 0.3;%0.1;
-    params.lag_max_secs = 10;
-    nbins = 4; params.number_degree_bins = nbins; 
+    params.time_bin_secs = 0.06;%0.1;%.3
+    params.lag_max_secs = 2;
+    nbins = 12; params.number_degree_bins = nbins; 
     %load cells
     %%%% for each group x for each cell x for each direction x all other cells
     for l = 1:length(k)
@@ -328,7 +269,7 @@ function plotByDirectionMain()
         bad = bad(2:end); good = good(2:end); %[good(2:end) bad(2:end)]; Only show good cells  
         %FIGURE
         %%% plot each cell %%%
-        r = length(good)-1; c = r; if r == 1; r=2; end; 
+        c = length(good); r = c;  if r == 1; r=3; end; 
         prnt = 0;
         if ~isempty(good) && length(good) >= 2
             prnt = 1;
@@ -338,7 +279,7 @@ function plotByDirectionMain()
             %for each cell, for each direction x each other cell
             for i = 1:length(good)-1
                 for j = i+1:length(good)
-                    %i; j;
+                    c1 = good(i).before; c2 = good(j).before;
                     [p co] = compareByMovingDirection(good(i).before, ...
                         good(j).before, params); %j
 
@@ -361,19 +302,25 @@ function plotByDirectionMain()
                         %set(AX,'FontSize',8)
                         set(AX,'fontweight','bold');
                         ylabel(AX,sprintf('MD bin (b=%.1f°)',360/nbins));
-                        xlabel(AX,sprintf('%s sbin%.2f','Xcorr lag(s)', ...
+                        xlabel(AX,sprintf('%s sbin%.2fs','Xcorr lag(s)', ...
                             params.time_bin_secs));
                     end
-                    title(sprintf('c%d*c%d abs(maxxcorr)=%.3f',good(i).ind,good(j).ind,max(abs(Y(:)))));
-                    
+                    title(sprintf('c%d*c%d abs(maxxcorr)=%.3f',good(i).ind,good(j).ind,max(abs(Y(:))))); 
+                    %CROSS RMAT
+                    subplot(r, c, r*r-(c*(i-1) + j-1));
+                    imagesc(xcorr2(c1.rm,c2.rm));xlabel(sprintf('c%d x c%d',good(i).ind,good(j).ind));
+                    axis equal; axis tight; set(gca,'ydir','normal','xticklabel',[],'yticklabel',[]);colormap jet;
                 end
+                subplot(r,c,i*r); imagesc(good(i).before.rm);title(sprintf('c%d',good(i).ind));
+                axis equal; axis tight; set(gca,'ydir','normal','xticklabel',[],'yticklabel',[]);colormap jet;
             end
+            subplot(r,c,r*r); imagesc(good(r).before.rm);title(sprintf('c%d',good(r).ind)); 
+            axis equal; axis tight; set(gca,'ydir','normal','xticklabel',[],'yticklabel',[]);colormap jet;
         end
         if prnt
-            vers = 'b';
+            vers = 'e';
             titl = sprintf('%s_moving_direction_%dbin_xcorr_i%d_%s_ncells%d',vers,nbins,l,k{l},length(good));
             set(suptitle(titl),'Interpreter', 'none'); %PUT SUP TITLE AFTER ALL SUBPLOT COMMANDS << test    
-            subplot(r, c, c+1);%r*(r-1)+1);
             %ADD RATE MAP TO FIG
             rmt = good(1).before.rm;tick = size(rmt,1);
             xlab = [sprintf('c%d ',good(1).ind)];
@@ -381,11 +328,12 @@ function plotByDirectionMain()
                 rmt = [rmt ones(tick,1).*max(rmt(:)) good(i).before.rm];
                 xlab =[xlab; sprintf('c%d ', good(i).ind)];
             end
-            colormap jet;imagesc(rmt); pbaspect([i 1 1]);
-            set(gca,'xtick',[1:i]*(tick+1) - tick/2,'xticklabel',xlab,...
-                'xaxislocation','top','yticklabel',[],'fontsize',12);
-            
-            %SAVE
+%             subplot(r, c, c+1);%r*(r-1)+1);set(gca,'ydir','normal');
+%             colormap jet;imagesc(rmt); pbaspect([i 1 1]);
+%             set(gca,'xtick',[1:i]*(tick+1) - tick/2,'xticklabel',xlab,...
+%                 'xaxislocation','top','yticklabel',[],'fontsize',12);
+                
+            %SAVE     119, 126
             sdir = 'C:\Noam\Output\muscimol\HDMD\'; debug = '';
             filename = sprintf('%s%s%s.png',sdir, debug, titl); disp(filename);
             %stop above before save
@@ -403,6 +351,8 @@ function [pearson_xcov, count_xcor] = compareByMovingDirection(c1, c2, params)
     dt = median(diff(pt)); dt = round(dt*1e4)/1e4; % round to 10th of millisec
     vox = zeros(length(pt),1);
     voy = zeros(length(pt),1);
+    %figure;subplot(2,2,1); imagesc(c1.rm); title('c1');subplot(2,2,2); imagesc(c2.rm);title('c2');
+    %subplot(2,2,3); imagesc(xcorr2(c1.rm, c2.rm)); title('c1xc2'); colormap jet;
     for i = 2:length(vox);
         vox(i)=(px(i)-px(i-1))/(pt(i)-pt(i-1));
         voy(i)=(py(i)-py(i-1))/(pt(i)-pt(i-1));
@@ -647,6 +597,64 @@ function [pearson_xcov, count_xcor] = compareByMovingDirection(c1, c2, params)
     %binned_trains{i}(2,:) = z;
 end
 
+
+
+function correlation_sanity_check(c1, c2)
+    nbins = 4;
+    %MOVING DIRECTION
+    smooth = 10e-7;%10e-3 %10e-5; %Empiracally so bins don't change rapidly for 8 bins!
+    tx = csaps( 1:length(c1.pt),double(c1.px), smooth);%10e-3; %10e-5;
+    ty = csaps( 1:length(c1.pt),double(c1.py), smooth);
+    dt = median(diff(c1.pt));
+    vx = fnval( fnder(tx),1:length(c1.pt))/dt; 
+    vy = fnval( fnder(ty),1:length(c1.pt))/dt;
+    pos_md = atan2d(vy,vx);%wrapTo360(rad2deg(atan2d(vy,vx)));    
+    %TO 360 
+    pos_md = wrapTo360(rad2deg(pos_md)); %check??
+    %BIN BY DIRECTIONS
+    bin_edges = (0:360/nbins:360);% - 180/nbins; bin_edges(1) = 0; bin_edges(end +1) = 360; 
+    pos_by_bin = discretize(pos_md, bin_edges)';% pos_by_bin(pos_by_bin==nbins+1) = 1; %conbines two last bins into one, to wrap pi
+    a = diff(c1.pt);
+    unique(a)
+    edges = round(edges);
+    direction_array = interp1(c1.pt, unwrap(pos_md'),edges);   
+    %SPIKES
+    c1.st = c1.st(c1.st>=min(c1.pt)&c1.st<=max(c1.pt)); %removes spikes out of bound pos times
+    c2.st = c2.st(c2.st>=min(c1.pt)&c2.st<=max(c1.pt)); %removes spikes out of bound pos times
+    %to 360
+    spk1_md = interp1(c1.pt, unwrap(pos_md'),c1.st);
+    spk2_md = interp1(c1.pt, unwrap(pos_md'),c2.st);
+    spk1_md = wrapTo360(rad2deg(spk1_md)); spk2_md = wrapTo360(rad2deg(spk2_md));
+    %FIRING RATE
+    spkt1 = c1.st; spkt2 = c2.st;
+    spkt1 = floor(spkt1*1000)+1; spkt2=floor(spkt2*1000)+1; %in MILLISECS
+    max_time=max(max(spkt1),max(spkt2));
+    %firing rate;
+    bin_msecs = 100;
+    firing1 = zeros(max_time,1); firing2 = zeros(max_time,1);
+    firing1(spkt1) = spkt1;  firing2(spkt2) = spkt2;    
+    [firing1, edges] = histcounts(firing1,round(max_time/bin_msecs));%(x,nbins) 
+    firing2 = histcounts(firing2,round(max_time/bin_msecs));%now in units of binsecs
+    firing1(1) = 0; firing2(1) = 0; %spikes in first bin_msecs ignored
+    
+    %   
+    spk1_by_bin = discretize(spk1_md, bin_edges);  %spk1_by_bin(spk1_by_bin==nbins+1) = 1;
+    spk2_by_bin = discretize(spk2_md, bin_edges);    
+    
+    [P,F] = pwelch(y);
+    helperFilterIntroductionPlot1(F,P,[60 60],[-9.365 -9.365],...
+  {'Original signal power spectrum', '60 Hz Tone'})
+    fc = 500;
+    fs = 10000;
+    figure;
+    plot(y); hold on;
+    plot(filter(b,a,t));
+    [z,p,k] = butter(10,0.05);
+    sos = zp2sos(z,p,k);
+    grpdelay(sos,128);
+    
+    
+end
 
 %spkt1 = g(i).before.st;
 function [pxcsmooth, count_xcor] = time_correlation(spkt1,spkt2, params)
