@@ -250,9 +250,9 @@ function plotByDirectionMain()
     %PARAMETERS
     groups = find_simultaneously_recorded_cells(cells);
     k = fieldnames(groups); %dt = 0.02;
-    params.time_bin_secs = 0.06;%0.1;%.3
-    params.lag_max_secs = 2;
-    nbins = 12; params.number_degree_bins = nbins; 
+    params.time_bin_secs = 0.16;%0.06 0.1;%.3
+    params.lag_max_secs = 10;
+    nbins = 24; params.number_degree_bins = nbins; 
     %load cells
     %%%% for each group x for each cell x for each direction x all other cells
     for l = 1:length(k)
@@ -287,16 +287,29 @@ function plotByDirectionMain()
                     %X = [0:length(p{1})-1]'-(length(p{1})-1)/2; X=X*params.time_bin_secs;
                     X = p{1,2}';
                     Y = reshape(cell2mat(p(:,1)),[],nbins);
-                    [~,ax,AX] = plotmatrix(X,Y,'-');
+                    %[~,ax,AX] = plotmatrix(X,Y,'-');
+                    Y2 = Y'; ax = gca; AX = gca;
+                    %Plot correlation by degree figs
+                    %imagesc(Y2); set(gca,'ydir','normal');
+                    %imagesc(imgaussfilt(Y2, 2));set(gca,'ydir','normal'); colormap jet;
+                    sigma = 1;
+                    Y3 = imgaussfilt([Y2;Y2;Y2], sigma);
+                    Y3 = Y3(size(Y2,1)+1:size(Y2,1)*2+1,1:size(Y2,2));
+                    imagesc(Y3);set(gca,'ydir','normal'); colormap jet;
                     for q=1:length(ax)
                         %axis(ax(q),'off');
                         axis(ax(q),'tight')
-                        ylim(ax(q),[min(Y(:)) max(Y(:))]);
-                        ylabel(ax(q),sprintf('%.0f°',mean(p{q,3}))); %mean of bin edges (midway)
-                        set(ax(q),'ytick',[]);
-                        set(ax(q),'yticklabel',[]);
+                        %ylim(ax(q),[min(Y(:)) max(Y(:))]);
+                        %ylabel(ax(q),sprintf('%.0f°',mean(p{q,3}))); %mean of bin edges (midway)
+                        set(ax(q),'xtick',[1 round(length(X)/2) length(X)]);
+                        set(ax(q),'xticklabel',[X(1) 0 X(end)]);%for imagesc
+                        %set(ax(q),'ytick',[]);
+                        %set(ax(q),'yticklabel',[]);
+                        set(ax(q),'ytick',1:length(p(:,3)));
+                        set(ax(q),'yticklabel',mean(cell2mat(p(:,3))'));
                         set(ax(q),'FontSize',6);%axis(ax(q),'equal');%axis(ax(q),'off');%title(ax(i),{'Very Nice'})
                     end
+                    %}
                     if i==1 && j==2
                         axis(AX,'tight')
                         %set(AX,'FontSize',8)
@@ -308,30 +321,35 @@ function plotByDirectionMain()
                     title(sprintf('c%d*c%d abs(maxxcorr)=%.3f',good(i).ind,good(j).ind,max(abs(Y(:))))); 
                     %CROSS RMAT
                     subplot(r, c, r*r-(c*(i-1) + j-1));
-                    imagesc(xcorr2(c1.rm,c2.rm));xlabel(sprintf('c%d x c%d',good(i).ind,good(j).ind));
+                    cc = xcorr2(c1.rm,c2.rm);
+                    imagesc(cc);xlabel(sprintf('c%d x c%d',good(i).ind,good(j).ind)); %upside down?
                     axis equal; axis tight; set(gca,'ydir','normal','xticklabel',[],'yticklabel',[]);colormap jet;
+                    hold on; plot(size(cc,2)/2,size(cc,1)/2,'md','MarkerFaceColor','w','MarkerSize',7)
+
                 end
+                %plot last rate mat ?
                 subplot(r,c,i*r); imagesc(good(i).before.rm);title(sprintf('c%d',good(i).ind));
                 axis equal; axis tight; set(gca,'ydir','normal','xticklabel',[],'yticklabel',[]);colormap jet;
             end
+            %plot last rate mat ?
             subplot(r,c,r*r); imagesc(good(r).before.rm);title(sprintf('c%d',good(r).ind)); 
             axis equal; axis tight; set(gca,'ydir','normal','xticklabel',[],'yticklabel',[]);colormap jet;
         end
         if prnt
-            vers = 'e';
+            vers = 'f';
             titl = sprintf('%s_moving_direction_%dbin_xcorr_i%d_%s_ncells%d',vers,nbins,l,k{l},length(good));
             set(suptitle(titl),'Interpreter', 'none'); %PUT SUP TITLE AFTER ALL SUBPLOT COMMANDS << test    
-            %ADD RATE MAP TO FIG
-            rmt = good(1).before.rm;tick = size(rmt,1);
-            xlab = [sprintf('c%d ',good(1).ind)];
-            for i=2:length(good)
-                rmt = [rmt ones(tick,1).*max(rmt(:)) good(i).before.rm];
-                xlab =[xlab; sprintf('c%d ', good(i).ind)];
-            end
+            %ADD RATE MAT COLUMN TO FIG
+%             rmt = good(1).before.rm;tick = size(rmt,1);
+%             xlab = [sprintf('c%d ',good(1).ind)];
+%             for i=2:length(good)
+%                 rmt = [rmt ones(tick,1).*max(rmt(:)) good(i).before.rm];
+%                 xlab =[xlab; sprintf('c%d ', good(i).ind)];
+%             end
 %             subplot(r, c, c+1);%r*(r-1)+1);set(gca,'ydir','normal');
 %             colormap jet;imagesc(rmt); pbaspect([i 1 1]);
 %             set(gca,'xtick',[1:i]*(tick+1) - tick/2,'xticklabel',xlab,...
-%                 'xaxislocation','top','yticklabel',[],'fontsize',12);
+%                  'xaxislocation','top','yticklabel',[],'fontsize',12);
                 
             %SAVE     119, 126
             sdir = 'C:\Noam\Output\muscimol\HDMD\'; debug = '';

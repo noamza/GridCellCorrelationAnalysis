@@ -14,16 +14,16 @@ function find_pairs_of_cells_mosimol
 
 
 params.dir_load =...
-    'C:\Noam\muscimol\DB_musc_MEC\';
+    'C:\Noam\Data\muscimol\DB_musc_MEC\';
     %'C:\Users\noam\Desktop\proj\muscimol\DB_musc_MEC\';
 
 params.dir_save =....
-    'C:\Noam\muscimol\noam_output\';
+    'C:\Noam\Output\muscimol\noam_output\';
     %'C:\Users\noam\Desktop\proj\muscimol\noam_output';
 %
 tic
  files = dir(strcat(params.dir_load,'DB*.mat'));
- for i=1:length(files) 
+ for i=1 %1:length(files) %HOW MUCH DATA TO LOAD
     data{i} = load(strcat(params.dir_load,files(i).name));
     fprintf('%.1f \n',(i*100/length(files)));
  end
@@ -63,7 +63,7 @@ disp('fin!');
 %spike plot
 %
 a = data{1}.db.B(2) % B session is combination of all recordings. has 3 structs: before, during, after muscomol injection
-figure();
+%figure();
 %plot( mean([a.pos_data.x1, a.pos_data.x2] ,2) , mean([a.pos_data.y1, a.pos_data.y2] ,2) );
 %hold on;
 %plot( mean([a.spike_data.x, a.spike_data.x2] ,2) , mean([a.spike_data.y, a.spike_data.y2] ,2), 'r.' );
@@ -135,7 +135,7 @@ rate_map = rate_map/max(rate_map(:)); %normalize
  imagesc(conv2(rate_map,f,'same'));
  colormap jet;
 %
-figure('Position', [100, 100, 400, 400]);
+%figure('Position', [100, 100, 400, 400]);
 figure();
 imshow(imgaussfilt(rate_map, 1));
 colormap jet;
