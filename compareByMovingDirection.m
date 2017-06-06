@@ -1,5 +1,19 @@
 function [pearson_xcov, count_xcor] = compareByMovingDirection(c1, c2, params)
-    nbins = params.number_degree_bins; 
+    nbins = params.number_degree_bins;
+    if nbins == 1
+        pearson_xcov = cell(1,3); count_xcor = cell(1,3);
+        spkt1=floor(c1.st*1000)+1; spkt2=floor(c2.st*1000)+1; min_time=min(min(spkt1),min(spkt2));
+        spkt1 = spkt1-min_time+1; spkt2 = spkt2-min_time+1; max_time=max(max(spkt1),max(spkt2));
+        train1=zeros(1,max_time);train2 =zeros(1,max_time); train1(spkt1)=1; train2(spkt2)=1;
+        pearson_xcov{1,1}=xcov(train1,train2,round(1000*params.lag_max_secs),'coef')';
+        [b,a] = butter(6,0.002*1.7^params.sigma); %LOW PASS 0.15%6th order, fc/fs/2 determined empiracally 
+        pearson_xcov{1,1} = filtfilt(b,a,pearson_xcov{1,1});
+        count_xcor{1,1}=xcorr(train1,train2, round(1000*params.lag_max_secs))'; %how many times spike at same point
+        time_scale=( (1:length(pearson_xcov{1,1})) - ((length(pearson_xcov{1,1})-1)/2) - 1)/1000;
+        pearson_xcov{1,2} = time_scale; count_xcor{1,3}= time_scale;
+        pearson_xcov{1,3} = [0 360]; count_xcor{1,3}   = [0 360];
+        return
+    end
     px = double(c1.px); py = double(c1.py); pt = double(c1.pt);
     dt = median(diff(pt)); dt = round(dt*1e4)/1e4; % round to 10th of millisec
     vox = zeros(length(pt),1);
@@ -113,7 +127,7 @@ function [pearson_xcov, count_xcor] = compareByMovingDirection(c1, c2, params)
 %         win=hamming(5);t1smooth=conv(s1,win,'same');t2smooth=conv(s2,win,'same');
         pearson_xcov{i,1} = xcov(s1,s2,lag_units,'coef')';
         %LOW PASS 0.15%6th order, fc/fs/2 determined empiracally 
-        [b2,b1] = butter(6,0.03); pxcsmooth = filtfilt(b2,b1, pearson_xcov{i,1});
+        %[b2,b1] = butter(6,0.03); pxcsmooth = filtfilt(b2,b1, pearson_xcov{i,1});
         %plot(pxcsmooth); hold on; plot(pearson_xcov{i,1},'y'); legend('smooth','none');
         %pearson_xcov{i,1} = pxcsmooth;
         count_xcor{i,1} = xcorr(s1,s2, lag_units)'; %how many times spike at same point
