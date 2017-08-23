@@ -2,10 +2,6 @@ function out_mat=Cross_Correlation(mat1,mat2)
 
 [ma,na] = size(mat1);
 [mb,nb] = size(mat2);
-%mc = max([ma+mb-1,ma,mb]);
-%nc = max([na+nb-1,na,nb]);
-%m=min(mc,nc);
-%out_mat = nan(m,m);
 out_mat = nan(ma+mb-1,na+nb-1);
 
 i_size = size(mat2,1); j_size = size(mat2,2);

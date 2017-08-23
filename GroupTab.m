@@ -18,19 +18,32 @@ function GroupTab(fig, tab, m)
     set(viewLayout, 'Heights', t);
     %% PARAMETERS PANEL   
     paramsLayout = uix.VBox( 'Parent', gui.paramPanel,'Padding', 3, 'Spacing', 3 );
-    %GRID
+    %% GRID
     gridBoxV = uix.VBox( 'Parent', paramsLayout,'Padding', 3, 'Spacing', 3, 'Visible', 'On');
     uicontrol('Parent', gridBoxV,'Style','text',...
-        'HorizontalAlignment', 'left','String', 'Gridscore Threshold:');
-    gridBoxBoxH = uix.HBox( 'Parent', gridBoxV,'Padding', 3, 'Spacing', 3 );
+        'HorizontalAlignment', 'left','String', 'Gridscore Before > Threshold:');
+    gridBoxH = uix.HBox( 'Parent', gridBoxV,'Padding', 3, 'Spacing', 3 );
     step = .1; mn = -2; mx = 2; step = step/(mx-mn); %max-min
-    gui.gridSlider = uicontrol( 'Style', 'slider', 'Min', mn,'Max', mx,'Parent', gridBoxBoxH, ...
+    gui.gridSlider = uicontrol( 'Style', 'slider', 'Min', mn,'Max', mx,'Parent', gridBoxH, ...
         'Value', gui.Window.UserData.gridThresh,'SliderStep',[step 2*step],'Callback', @onGridSlide);
-    gui.gridEdit = uicontrol( 'Parent', gridBoxBoxH, 'Style', 'edit', 'String', gui.Window.UserData.gridThresh,...
+    gui.gridEdit = uicontrol( 'Parent', gridBoxH, 'Style', 'edit', 'String', gui.Window.UserData.gridThresh,...
         'Callback', @onGridEdit);
     addlistener(gui.gridSlider,'ContinuousValueChange',@(hObject, event) onGridSliding(hObject, event));
-    set( gridBoxBoxH, 'Widths', [-4 -1] );   
-    %LAG
+    set( gridBoxH, 'Widths', [-4 -1] );
+    %% GRID MID
+    gridMidBoxV = uix.VBox( 'Parent', paramsLayout,'Padding', 3, 'Spacing', 3, 'Visible', 'On');
+    uicontrol('Parent', gridMidBoxV,'Style','text',...
+        'HorizontalAlignment', 'left','String', 'Gridscore Middle < Threshold:');
+    gridMidBoxH = uix.HBox( 'Parent', gridMidBoxV,'Padding', 3, 'Spacing', 3 );
+    step = .1; mn = -2; mx = 2; step = step/(mx-mn); %max-min
+    gui.gridMidSlider = uicontrol( 'Style', 'slider', 'Min', mn,'Max', mx,'Parent', gridMidBoxH, ...
+        'Value', gui.Window.UserData.gridThreshMid,'SliderStep',[step 2*step],'Callback', @onGridMidSlide);
+    gui.gridMidEdit = uicontrol( 'Parent', gridMidBoxH, 'Style', 'edit', 'String', gui.Window.UserData.gridThreshMid,...
+        'Callback', @onGridMidEdit);
+    addlistener(gui.gridMidSlider,'ContinuousValueChange',@(hObject, event) onGridMidSliding(hObject, event));
+    set( gridMidBoxH, 'Widths', [-4 -1] );
+    gui.Window.UserData.gridThreshMid = 0.5;
+    %% LAG
     lagBoxV = uix.VBox( 'Parent', paramsLayout,'Padding', 3, 'Spacing', 3 , 'Visible', 'off');       
     uicontrol('Parent', lagBoxV,'Style','text',...
         'HorizontalAlignment', 'left','String', 'Correlation Lag(s):');
@@ -42,7 +55,7 @@ function GroupTab(fig, tab, m)
         'Callback', @onLagEdit);
     addlistener(gui.lagSlider,'ContinuousValueChange',@(hObject, event) onLagSliding(hObject, event));
     set( lagBoxH, 'Widths', [-4 -1] );
-    %SPIKE
+    %% SPIKE
     spikeBinBoxV = uix.VBox( 'Parent', paramsLayout,'Padding', 3, 'Spacing', 3, 'Visible', 'off');
     uicontrol('Parent', spikeBinBoxV,'Style','text',...
         'HorizontalAlignment', 'left','String', 'Spike Time Bin(s):');
@@ -55,7 +68,7 @@ function GroupTab(fig, tab, m)
         'Callback', @onSpikeBinEdit);
     addlistener(gui.spikeBinSlider,'ContinuousValueChange',@(hObject, event) onSpikeSliding(hObject, event));
     set( spikeBinBoxH, 'Widths', [-4 -1] );
-    %SIGMA
+    %% SIGMA
     sigmaBoxV = uix.VBox( 'Parent', paramsLayout,'Padding', 3, 'Spacing', 3, 'Visible', 'off' );
     uicontrol('Parent', sigmaBoxV,'Style','text',...
         'HorizontalAlignment', 'left','String', 'Gaussian(sigma):');
@@ -67,20 +80,23 @@ function GroupTab(fig, tab, m)
         'Callback', @onSigmaEdit);
     addlistener(gui.sigmaSlider,'ContinuousValueChange',@(hObject, event) onSigmaSliding(hObject, event));
     set( sigmaBoxH, 'Widths', [-4 -1] );
-    %GROUP
+    %% GROUP
     groupBoxV = uix.VBox( 'Parent', paramsLayout,'Padding', 3, 'Spacing', 3 );
     uicontrol('Parent', groupBoxV,'Style','text',...
         'HorizontalAlignment', 'left','String', 'Group:'); %num2str((1:length(gui.m.groups))')
     gui.groupListBox = uicontrol( 'Style', 'list','BackgroundColor', 'w','Parent', groupBoxV, ...
         'String', gui.Window.UserData.gids,'Value', 1,'Callback', @onGroupListSelection);
-    %MID
+    %% MID
     midBoxV = uix.VBox( 'Parent', paramsLayout,'Padding', 3, 'Spacing', 3, 'Visible', 'off');
     uicontrol('Parent', midBoxV,'Style','text','HorizontalAlignment', ...
         'left', 'String','Muscimol Bin:');
     gui.midListBox = uicontrol( 'Style', 'list','BackgroundColor', 'w', ...
-        'Parent', midBoxV,'String', ['before';cellstr((num2str(1:length(gui.m.g(1).middle),'%d'))');'after'], ...
+        'Parent', midBoxV,'String', {'before','midall','after'}, ...
         'Value', 1,'Callback', @onMidListSelection, 'Enable', 'on');
-    %RUN
+    if ~gui.m.g(1).after.exists
+        set(gui.midListBox,'String', {'before';'midall'});
+    end
+    %% RUN
     runBoxV = uix.VBox( 'Parent', paramsLayout,'Padding', 3, 'Spacing', 3 );
     gui.RunButton = uicontrol( 'Style', 'PushButton','Parent', runBoxV,'String', 'Analysis!', ...
         'Callback', @onRunButton );
@@ -90,6 +106,7 @@ function GroupTab(fig, tab, m)
     %Tighten UP
     t = [];
     set(gridBoxV, 'Heights', [20 -1]); t = [t 50]; % Make the list fill the space
+    set(gridMidBoxV, 'Heights', [20 -1]); t = [t 50]; % Make the list fill the space
     set(lagBoxV, 'Heights', [20 -1]); t = [t 50];% Make the list fill the space
     set(spikeBinBoxV, 'Heights', [20 -1]); t = [t 50]; % Make the list fill the space
     set(sigmaBoxV, 'Heights', [20 -1]); t = [t 50]; % Make the list fill the space
@@ -98,28 +115,6 @@ function GroupTab(fig, tab, m)
     set(runBoxV, 'Heights', [30 -1]); t = [t -1]; % Make the list fill the space
     
     set(paramsLayout, 'Heights', t); % Make the lists fill the space
-    
-function updateM
-    gui.m.grid_thresh = gui.Window.UserData.gridThresh;
-end
-
-function ids = goodGroups
-    ids = {};
-    for i = 1:length(gui.m.groups)
-        g = gui.m.groups{i};
-        t = 0;
-        for j = 1:length(g)
-            if g(j).before.gridscore > gui.Window.UserData.gridThresh
-                t = t+1;
-            end
-        end
-        if t >= 2
-            ids{end+1} = num2str(i);
-        end
-    end
-    gui.Window.UserData.gids = ids;
-end
-
 %% CALLBACKS
 % GRID
 function onGridSliding(hObject,~)
@@ -145,6 +140,33 @@ function onGridEdit( src, ~ )
     gui.Window.UserData.gridThresh = t;
     set(gui.gridSlider, 'Value', t);
     set(gui.gridEdit, 'String', t);
+    goodGroups();
+    drawnow();
+end
+% GRID MID
+function onGridMidSliding(hObject,~)
+   t = round(get(hObject,'Value')/0.1)*0.1; %nearest 5
+   set(gui.gridMidEdit, 'String', t);
+end
+function onGridMidSlide( src, ~ )
+    t = round2r(get(src, 'Value'),0.1);
+    gui.Window.UserData.gridThreshMid = t;
+    set(gui.gridMidEdit, 'String', t);
+    goodGroups();%%%???
+    for i = 1:length(gui.Window.UserData.gidsFns)
+        f = gui.Window.UserData.gidsFns{i};
+        f();
+        disp('hrere');
+    end
+    set(gui.groupListBox,'String', gui.Window.UserData.gids);
+    drawnow();
+    %run();
+end
+function onGridMidEdit( src, ~ )
+    t = round2r(str2double(get(src, 'String')),0.1);
+    gui.Window.UserData.gridThresh = t;
+    set(gui.gridMidSlider, 'Value', t);
+    set(gui.gridMidEdit, 'String', t);
     goodGroups();
     drawnow();
 end
@@ -196,15 +218,19 @@ function onSigmaSliding(hObject,event)
     t = round2r(get(hObject,'Value'),1);
     set(gui.sigmaEdit, 'String', t);
 end 
-% GROUP FNS
+% GROUP
 function onGroupListSelection( src, t )
     set(gui.status, 'ForegroundColor',[0,0,1]);
-            t = cellstr(get( src, 'String' ));
-        gui.m.gid = str2double(t(get( src, 'Value' )));
-        gui.m.g = gui.m.groups{gui.m.gid};
+    t = cellstr(get( src, 'String' ));
+    gui.m.gid = str2double(t(get( src, 'Value' )));
+    gui.m.g = gui.m.groups{gui.m.gid};
+    gui.m.g = gui.m.g(gui.Window.UserData.cids{gui.m.gid});
     l = length(gui.m.g);
     set(gui.status, 'String', sprintf('group size: %d',l));
-    set(gui.midListBox,'String',['before';cellstr((num2str(1:length(gui.m.g(1).middle),'%d'))');'after'],'Value', 1);
+    set(gui.midListBox,'String',{'before';'midall';'after'},'Value', 1);
+    if ~gui.m.g(1).after.exists
+        set(gui.midListBox,'String', {'before';'midall'});
+    end
     %drawnow(); %TRY??
     run();
     %updateInterface();
@@ -232,7 +258,7 @@ function onFrameSlide(src, ~)
     set(gui.viewPanel,'Title',   gui.m.title);
     drawnow();
 end
-%
+% run
 function onRunButton( ~, ~ )
     run();
 end % onDemoHelp
@@ -250,9 +276,37 @@ function run()
     set(gui.status, 'ForegroundColor',[0,0,1]);
     drawnow();
     gui.m.parent = gui.viewContainer;
-    plotGroup(gui.m, gui.m.gid, false);
+    plotGroup(gui.m.g, gui.m.parent);
     set(gui.status, 'String', '');
     %enable(handles, true);
+end
+
+ %% UPDATE M
+function updateM
+    gui.m.grid_thresh = gui.Window.UserData.gridThresh;
+    gui.m.grid_mid_thresh = gui.Window.UserData.gridThreshMid;
+end
+%% IDS CIDS
+function goodGroups
+    [gui.Window.UserData.gids, gui.Window.UserData.cids] = ...
+        groupsByGridThresh(gui.m.groups, gui.Window.UserData.gridThresh, gui.Window.UserData.gridThreshMid)
+%     ids = {}; cids = {};
+%     for i = 1:length(gui.m.groups)
+%         g = gui.m.groups{i};
+%         t = [];
+%         for j = 1:length(g)
+%             if g(j).before.gridscore > gui.Window.UserData.gridThresh...
+%             && g(j).midall.gridscore < gui.Window.UserData.gridThreshMid
+%                 t(end+1) = j;
+%             end
+%         end
+%         cids{i} = t; 
+%         if length(t) >= 2 %only groups with at least 2
+%             ids{end+1} = num2str(i);
+%         end
+%     end
+%     gui.Window.UserData.gids = gids;
+%     gui.Window.UserData.cids = cids;
 end
 
 %run();

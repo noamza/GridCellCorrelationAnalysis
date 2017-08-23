@@ -24,7 +24,8 @@ for i = 1:length(s.pt)
         end
         windowed{wini}.end = s.pt(i);
         t = windowed{wini};
-        windowed{wini}.rm = Create_Rate_Map(t.x, t.y, t.t, t.sx, t.sy, t.st);
+        t.x = t.x-min(t.x); t.y = t.y-min(t.y); t.sx = t.sx-min(t.sx); t.sy = t.sy-min(t.sy);
+        windowed{wini}.rm = Create_Rate_Map(t.x, t.y, t.t, t.sx, t.sy, t.st,true,50);
         minrms = min(minrms, min(size(windowed{wini}.rm)));
         %reset
         winend = s.pt(i) + winsecs;

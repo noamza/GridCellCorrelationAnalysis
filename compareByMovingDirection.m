@@ -2,17 +2,38 @@ function [pearson_xcov, count_xcor] = compareByMovingDirection(c1, c2, params)
     nbins = params.number_degree_bins;
     if nbins == 1
         pearson_xcov = cell(1,3); count_xcor = cell(1,3);
-        spkt1=floor(c1.st*1000)+1; spkt2=floor(c2.st*1000)+1; min_time=min(min(spkt1),min(spkt2));
+        spkt1=floor(c1.st*1000)+1; spkt2=floor(c2.st*1000)+1; min_time=min(min(spkt1),min(spkt2)); %TIME IN MS
         spkt1 = spkt1-min_time+1; spkt2 = spkt2-min_time+1; max_time=max(max(spkt1),max(spkt2));
-        train1=zeros(1,max_time);train2 =zeros(1,max_time); train1(spkt1)=1; train2(spkt2)=1;
-        pearson_xcov{1,1}=xcov(train1,train2,round(1000*params.lag_max_secs),'coef')';
-        [b,a] = butter(6,0.002*1.7^params.sigma); %LOW PASS 0.15%6th order, fc/fs/2 determined empiracally 
-        pearson_xcov{1,1} = filtfilt(b,a,pearson_xcov{1,1});
-        count_xcor{1,1}=xcorr(train1,train2, round(1000*params.lag_max_secs))'; %how many times spike at same point
+        train1=zeros(1,max_time);train2 =zeros(1,max_time); train1(spkt1)=1; train2(spkt2)=1; %LOTS OF 0'ss
+        if params.sigma ~= 0
+            params.sigma = 0.002*1.7^params.sigma;
+        end
+        pearson_xcov{1,1} = timeCorrelationSmoothed(train1,train2,15,1000*params.lag_max_secs,params.sigma);
         time_scale=( (1:length(pearson_xcov{1,1})) - ((length(pearson_xcov{1,1})-1)/2) - 1)/1000;
-        pearson_xcov{1,2} = time_scale; count_xcor{1,3}= time_scale;
-        pearson_xcov{1,3} = [0 360]; count_xcor{1,3}   = [0 360];
+        pearson_xcov{1,2} = time_scale;
+        pearson_xcov{1,3} = max(abs(pearson_xcov{1,1}));
         return
+        %{
+        %smooth trains;
+        win=hamming(15);train1Ham=conv(train1,win,'same');train2Ham=conv(train2,win,'same'); %win = win/sum(win);
+        train1 = train1Ham; train2 = train2Ham; 
+        %assert((train1(i)==1 & train1(i) ~= train2(i))||train1(i)==0)
+        %pearson_xcov{1,1}= xcov(train1,train2,round(1000*params.lag_max_secs),'coef')';
+        pearson_xcov{1,1}=xcorr(train1,train2,round(1000*params.lag_max_secs),'coef')';
+        [pmx pmxi] = max(abs(pearson_xcov{1,1}));
+        pearson_xcov{1,3} = [pmx pmxi];%(pmxi - ((length(pearson_xcov{1,1})-1)/2) - 1)/1000]; % dont ask
+        if params.sigma ~= 0
+            [b,a] = butter(6,0.002*1.7^params.sigma); %LOW PASS 0.15%6th order, fc/fs/2 determined empiracally 
+            pearson_xcov{1,1} = filtfilt(b,a,pearson_xcov{1,1});
+            [pmx pmxi] = max(abs(pearson_xcov{1,1}));
+            pearson_xcov{1,3} = [pmx pmxi];%(pmxi - ((length(pearson_xcov{1,1})-1)/2) - 1)/1000]; % dont ask
+        end
+        count_xcor{1,1}=xcorr(train1,train2, round(1000*params.lag_max_secs))'; %how many times spike at same point
+        time_scale=( (1:length(pearson_xcov{1,1})) - ((length(pearson_xcov{1,1})-1)/2) - 1)/1000; %goes from -lag 0 +lag in ms
+        pearson_xcov{1,2} = time_scale; count_xcor{1,3}= time_scale;
+        %pearson_xcov{1,3} = [0 360]; count_xcor{1,3}   = [0 360];
+        return
+        %}
     end
     px = double(c1.px); py = double(c1.py); pt = double(c1.pt);
     dt = median(diff(pt)); dt = round(dt*1e4)/1e4; % round to 10th of millisec
@@ -145,122 +166,31 @@ function [pearson_xcov, count_xcor] = compareByMovingDirection(c1, c2, params)
           
     fprintf('%.2f ',round(max(max(abs([pearson_xcov{:,1}]))), 2));
     
-    
-%GILAD STYLE
-    %     smooth = 10e-5;%10e-3 %10e-5; %Empiracally so bins don't change rapidly for 8 bins!
-%     tx = csaps( 1:length(c1.pt),double(c1.px), smooth);%10e-3; %10e-5;
-%     ty = csaps( 1:length(c1.pt),double(c1.py), smooth);
-%     dt = median(diff(c1.pt));
-%     vx = fnval( fnder(tx),1:length(c1.pt))/dt; 
-%     vy = fnval( fnder(ty),1:length(c1.pt))/dt;
-    
-        %spk1_by_bin = spk1_by_bin(~isnan(spk1_by_bin));  %remove nans
-    %spk2_by_bin = spk2_by_bin(~isnan(spk2_by_bin)); %CHANGE INDICES????
-    %assert(sum(isnan([ ... %{pos_by_bin;}% 
-        %spk1_by_bin; spk2_by_bin]))==0,'nan bins compareByMovingDirection()');%+sum(isnan(spk_bins))
-%     dir_bins_spk1 = cell(nbins,1);
-%     dir_bins_spk2 = cell(nbins,1); 
-%     for i = 1:length(spk1_by_bin)
-%         if ~isnan(spk1_by_bin(i))
-%             dir_bins_spk1{spk1_by_bin(i)}(end+1) = c1.st(i);
-%         end
-%     end
-%     for i = 1:length(spk2_by_bin)
-%         if ~isnan(spk2_by_bin(i))
-%             dir_bins_spk2{spk2_by_bin(i)}(end+1) = c2.st(i);
-%         end
-%     end 
-    
 
-
-        %{
-        t = cumsum(trains{i})
-        S2=filter(ones(1,n)',1,M);
-        S2=S2(n:n:end,:);
-        padarray(mod something)
-    
-    
-    figure(3); hold off; plot(0,0);%tx=c1.px(~isnan(pos_by_bin));ty=c1.py(~isnan(pos_by_bin));t=pos_by_bin(~isnan(pos_by_bin));
-    for i = 1000:2000%length(pos_by_bin)
-        if ~isnan(pos_by_bin(i)) && ~isnan(pos_by_bin(i-1))
-           
-        subplot(2,2,pos_by_bin(i)); hold on; title((pos_by_bin(i)-1)*90);
-        plot(c1.px((i-1):i)-c1.px(i-1),c1.py((i-1):i)-c1.py(i-1),'b'); hold on
-        %plot([0 vx(i)],[0 vy(i)],'r');
-        end
-        %plot(c1.px(i),c1.py(i),'x');
-    end
-    %}
-%     gca.XAxisLocation = 'origin';
-%     gca.YAxisLocation = 'origin';
-%     
-%     figure;
-%     c = 10000;[vx(c) vy(c)]
-%     subplot(2,2,1);quiver(0,0, vx(c),vy(c)); 
-%     xlim([-20 20]);ylim([-20, 20])
-%     subplot(2,2,2),plot([0 vx(c)],[0 vy(c)]);
-%     hold on, plot(0,0,'x');xlim([-20 20]);ylim([-20, 20])
-%     gca.XAxisLocation = 'origin';gca.YAxisLocation = 'origin';
-%     subplot(2,2,3); hold on, plot(0,0,'x');
-%     plot((c1.px( (c-1):c ) - c1.px(c-1)), (c1.py((c-1):c ) - c1.py(c-1)),'-');
-%     xlim([-1 1]);ylim([-1, 1]);
-%     subplot(2,2,4); hold off; plot(0,0,'x'); hold on,
-%     quiver(20,0,vox(c),voy(c));
-%     plot((c1.px( (c-1):c ) - c1.px(c-1))*40, 40*(c1.py((c-1):c ) - c1.py(c-1)),'-');    
-%     xlim([-50 50]);ylim([-50, 50]);
-%     axis('tight')
-%     gca.XAxisLocation = 'origin';gca.YAxisLocation = 'origin';
-    
-    %{
-    %smooth = 10e-5;
-    %tx = fnval(csaps( 1:length(c1.pt),double(c1.px), smooth),1:length(c1.pt));
-    %ty = fnval(csaps( 1:length(c1.pt),double(c1.py), smooth),1:length(c1.pt));
-    %[b,a] = butter(6,0.1); %LOW PASS 0.03 0.15%6th order, fc/fs/2 determined empiracally
-    %spx = filtfilt(b,a,double(c1.px));spy = filtfilt(b,a,double(c1.py));
-    %%%
-    pt = c1.pt; ox = c1.px; oy = c1.py; dtt=[0.02; diff(pt)];
-    %svox = zeros(length(ox),1); vox = svox;
-    %svoy = zeros(length(ox),1); voy = svoy;
-    for i = 2:length(ox);
-        %svox(i)= (spx(i)-spx(i-1))/(pt(i)-pt(i-1));svoy(i)= (spy(i)-spy(i-1))/(pt(i)-pt(i-1));
-        vox(i)= (c1.px(i)-c1.px(i-1))/(pt(i)-pt(i-1));
-        voy(i)= (c1.py(i)-c1.py(i-1))/(pt(i)-pt(i-1));
-    end
-    vox(1) = vox(2);voy(1) = voy(2);
-    [b,a] = butter(6,0.06); %0.1 close
-    svx = filtfilt(b,a,vox);svy = filtfilt(b,a,voy);
-    spx = zeros(length(ox),1); spy = zeros(length(ox),1); spx(1) = ox(1); spy(1) = oy(1);
-    for i = 2:length(ox);
-        spx(i)= spx(i-1)+svx(i)*dtt(i);
-        spy(i)= spy(i-1)+svy(i)*dtt(i);
-    end
-    %figure();plot(px);hold on; plot(vx);
-    close all;
-    for i = 1000:1000:10000
-    s = i;d = 100;figure('Position', [0, 0, 2000, 1000]);  
-    subplot(1,2,1); hold on; %plot(tx(s:s+d), ty(s:s+d),'r.'); plot(tx(s), ty(s),'rx'); 
-    plot( ox(s:s+d),  oy(s:s+d),'go-');plot( ox(s), oy(s),'kx');
-    plot(spx(s:s+d), spy(s:s+d),'ro-');plot(spx(s),spy(s),'kx');
-    %plot(spx(s:s+d), spy(s:s+d),'mo-');plot(spx(s), spy(s),'mx');
-    axis(gca,'tight'); title('x,y');
-    subplot(1,2,2); hold on; %plot(vx(s:s+d), vy(s:s+d),'r.'); plot(vx(s), vy(s),'rx');
-    %plot(vox(s:s+d), voy(s:s+d),'go-');plot(vox(s), voy(s),'gx');
-    plot(svx(s:s+d), svy(s:s+d),'ro-');plot(svx(s), svy(s),'kx');axis(gca,'tight'); title('v');
-    end
-    subplot(3,2,3); plot(ox(s:s+d),'b.');title('x'); axis(gca,'tight'); set(gca,'xticklabel',[]); 
-    subplot(3,2,4); plot(svx(s:s+d),'r.');title('vx'); axis(gca,'tight'); set(gca,'xticklabel',[]);
-    subplot(3,2,5); plot(oy(s:s+d),'b.');title('y'); axis(gca,'tight'); set(gca,'xticklabel',[]);
-    subplot(3,2,6); plot(svy(s:s+d),'r.');title('vy'); axis(gca,'tight'); set(gca,'xticklabel',[]);
-    end
-    %}
-    %check offsets in position
-    %figure;a = 0*10000+1; b = a+1000; plot(ox(a:b),oy(a:b)); hold on; plot(spx(a:b),spy(a:b));
-    %plot([0 0], ylim,'black'),plot(xlim, [0 0],'black') 
-    %plot([0 0], ylim,'black'),plot(xlim, [0 0],'black')
-
-    %= sum(reshape(z(:,bin_size, ceil(length(z)/bin_size)));
-    %z = sum(reshape([z;zeros(bin_size-mod(length(z),bin_size),1)],...
-    %bin_size, ceil(length(z)/bin_size)));
-    %binned_trains{i}(2,:) = z;
 end
 
+
+%{
+            j = 1; k = 0; rem = 1;
+        for i = 1:length(spkt1)%params.overlap+1 : length(train1) - paramas.overlap
+             t = spkt1(i); %next spk1
+             %this spike k in s2 already got deleted and was in overlap of previous s1 spike
+             if k > 0 && spkt1(i) < k + params.overlap*1000
+                 spkt1(i) = 0;
+                 %disp('here');
+                 rem = rem+1;%count spks deleted
+             end
+             %spk2 is within +- overlap         spk2 is smaller than overlap end
+             while j <= length(spkt2) && spkt2(j) < t + params.overlap*1000 % in ms
+                 %           greater than overlap beginning
+                 if spkt2(j) > t - params.overlap*1000 
+                    %fprintf('%d %d\n',i,j);%spkt1(i),spkt2(j));
+                    k = spkt2(j); %last spike in s2 deleted;
+                    spkt1(i) = 0; spkt2(j) = 0; %deletes spike in spkt1 and 2 in overlap          
+                    rem = rem+1; 
+                 end
+                 j = j+1; %next spk2
+             end
+        end
+        spkt1 = spkt1(spkt1~=0); spkt2 = spkt2(spkt2~=0);
+%}

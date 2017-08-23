@@ -39,7 +39,7 @@ function DriftTab(fig, tab, m)
         'Callback', @onWinEdit);
     addlistener(gui.winSlider,'ContinuousValueChange',@(hObject, event) onWinSliding(hObject, event));
     set( winBoxBoxH, 'Widths', [-4 -1] );   
-    %LAG
+    %% obsolete LAG
     lagBoxV = uix.VBox( 'Parent', paramsLayout,'Padding', 3, 'Spacing', 3 , 'Visible', 'off');       
     uicontrol('Parent', lagBoxV,'Style','text',...
         'HorizontalAlignment', 'left','String', 'Correlation Lag(s):');
@@ -76,7 +76,7 @@ function DriftTab(fig, tab, m)
         'Callback', @onSigmaEdit);
     addlistener(gui.sigmaSlider,'ContinuousValueChange',@(hObject, event) onSigmaSliding(hObject, event));
     set( sigmaBoxH, 'Widths', [-4 -1] );
-    %GROUP
+    %% GROUP
     groupBoxV = uix.VBox( 'Parent', paramsLayout,'Padding', 3, 'Spacing', 3 );
     uicontrol('Parent', groupBoxV,'Style','text',...
         'HorizontalAlignment', 'left','String', 'Group:');
@@ -87,8 +87,11 @@ function DriftTab(fig, tab, m)
     uicontrol('Parent', midBoxV,'Style','text','HorizontalAlignment', ...
         'left', 'String','Muscimol Bin:');
     gui.midListBox = uicontrol( 'Style', 'list','BackgroundColor', 'w', ...
-        'Parent', midBoxV,'String', ['before';cellstr((num2str(1:length(gui.m.g(1).middle),'%d'))');'midall';'after'], ...
+        'Parent', midBoxV,'String', {'before';'midall';'after'}, ...
         'Value', 1,'Callback', @onMidListSelection, 'Enable', 'on');
+    if ~gui.m.g(1).after.exists
+        set(gui.midListBox,'String', {'before';'midall'});
+    end
     %RUN
     runBoxV = uix.VBox( 'Parent', paramsLayout,'Padding', 3, 'Spacing', 3 );
     gui.RunButton = uicontrol( 'Style', 'PushButton','Parent', runBoxV,'String', 'Analysis!', ...
@@ -186,7 +189,10 @@ function onGroupListSelection( src, t )
         gui.m.g = gui.m.groups{gui.m.gid};
     l = length(gui.m.g);
     set(gui.status, 'String', sprintf('group size: %d',l));
-    set(gui.midListBox,'String',['before';cellstr((num2str(1:length(gui.m.g(1).middle),'%d'))');'midall';'after'],'Value', 1);
+    set(gui.midListBox,'String',{'before';'midall';'after'},'Value', 1);
+    if ~gui.m.g(1).after.exists
+        set(gui.midListBox,'String', {'before';'midall'});
+    end    
     %drawnow(); %TRY??
     run();
 end

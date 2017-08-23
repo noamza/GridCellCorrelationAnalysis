@@ -115,7 +115,6 @@ smax = smax(inmax);
 [xymin,inmin] = sort(xymin);
 smin = smin(inmin);
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [smax,smin] = extremos(matriz)

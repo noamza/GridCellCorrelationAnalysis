@@ -5,7 +5,7 @@ function [groups, cells] = find_simultaneously_recorded_cells(cells)
             cells{i}.midall = midAll(cells{i});
         end
         a = cells{i};
-        if ~isempty(a.middle) %skip cells with non middle
+        if ~isempty(a.midall) %skip cells with non middle %middle
             key = sprintf('g_%s_%s', a.id, a.date);
             if isfield(groups, key)
                 t = groups.(key);
@@ -36,18 +36,6 @@ function [groups, cells] = find_simultaneously_recorded_cells(cells)
         end
     end
     groups = easy;
-    
-    for j = 1:length(groups)
-        g = groups{j};
-        t = [];
-        for i = 1:length(g)
-            c = g(i);
-            for mid = 1:length(c.middle)
-                t = [t; length(c.middle)];
-            end
-        end
-        assert(length(unique(t))==1);
-    end
     
     for j = 1:length(groups)
         g = groups{j}; 
@@ -97,6 +85,8 @@ function midall = midAll(c)
         midall.sy = [midall.sy c.middle{mid}.sy];
         midall.st = [midall.st c.middle{mid}.st];
     end
+    midall.px = double(midall.px);midall.py = double(midall.py);midall.pt = double(midall.pt);
+    midall.sx = double(midall.sx);midall.sy = double(midall.sy);midall.st = double(midall.st);
     midall.rm =  Create_Rate_Map(midall.px, midall.py, midall.pt,...
         midall.sx, midall.sy, midall.st);
     midall.ac = Cross_Correlation(midall.rm, midall.rm);

@@ -2,7 +2,6 @@
 % N Z A %
 % grid cells: 228
 % pairs: 749
-%%% DATASTATS() !!
 %%%%%%%%%
 
 %{
@@ -11,25 +10,12 @@
 - fix extrema2
 
     ****Questions***
-- Nan errors in gridscore, etc
 - Method for correlations that don't fit
 
 * Check if firing rate shuts down by location of environment in grid cell
-
-% differences: mid length
-               after existence
-               after lengths
-               area
-               number of middle fields
-               g_12048_030708 * 54956 31508 54956 * after
-% same
-               no overlapping tet/ch combo (up to 9?)
-               before length same
-               
+    
 read/study:
         correlation + auto + cross, covatiance.
-        Bonavie paper   < < < < <   
-
 
 function [information]=Calculates_Spatial_Information(rate_map,time_mat)
 % calculate Skaggs information from rate_map
@@ -45,15 +31,17 @@ function musciomol()
         'C:\Noam\Data\muscimol\DB_musc_MEC\';
     params.dir_save =....
         'C:\Noam\Data\muscimol\noam_output\';
-    
-    binsize = 10;                            % B I N S I Z E
-    
-    fn = sprintf('C:\\Noam\\Data\\muscimol\\noam\\cells_%dmin_b_midscorrect.mat',binsize);
+    %%%
+    binsize = 45;  %change to 45    %FIND MIN GRID??? PERIOD??  % B I N S I Z E 
+    %fn = sprintf('C:\\Noam\\Data\\muscimol\\noam\\cells_%dmin_c_midall_gridscore.mat',45); 
+    fn = sprintf('C:\\Noam\\Data\\muscimol\\noam\\cells_%dmin_d_patchtraj_rayleigh',binsize);
+    fn = sprintf('C:\\Noam\\Data\\muscimol\\noam\\cells_%dmin_d_MINI.mat',binsize);
     %    tic %1800 sec   %LOAD FROM FILES
-    %{
+    %%{
     tic;
     files = dir(strcat(params.dir_load,'DB*.mat'));
-    for i = 1:length(files)
+    for i = 1:length(files) %CHECK 36
+        %i = 81;
         data{i} = load(strcat(params.dir_load,files(i).name));
         data{i}.db.ind = i;
         cells{i} = process(data{i}.db, binsize); 
@@ -63,8 +51,27 @@ function musciomol()
     toc
     %}
     
+    
     fprintf('loading %s ',fn); %ascii 48
     tic; cells = load(fn); cells = cells.cells; toc;
+    %c1=cells{71}.before;, c2=cells{75}.before; n = 10;
+    %batchTimeCorrelations (c1, c2, n);
+    %stop
+    
+    %
+    
+    
+    
+    t = [];
+    for i = 1:length(cells)
+        c = cells{i}.before;
+        t(end+1) = c.max_r;
+    end
+    [m,i] = max(t);
+    c = cells{i}.before;
+    max(diff(c.pt))
+    STOP
+    
     
     %saveSpikesByDirection(params, 8);
     
@@ -126,16 +133,16 @@ function musciomol()
     %print group properties
     for i = 5%1:length(k);
         g = groups.(k{i});
-        t = g(1); t = length(t.middle); %t = length(g);
+        maxRates = g(1); maxRates = length(maxRates.middle); %t = length(g);
         %t.a; length(t.after.px) .exists length(t.middle)
-        fprintf('%s * %d \n',k{i} ,t);
+        fprintf('%s * %d \n',k{i} ,maxRates);
         %fprintf('%s %d', k{i}, length(g));
         for j = 1:length(g) %in group
             tt = g(j); tt = length(tt.middle);
             %.a length(tt.after.px) .exists length(tt.middle)
-            if t ~= tt               %not(strcmp(t,tt))
+            if maxRates ~= tt               %not(strcmp(t,tt))
                 fprintf('%d ', tt);
-                t = tt;
+                maxRates = tt;
             end; %fprintf('%d %d\n', g(j).tet, g(j).cel);
         end; disp('*'); 
     end
@@ -149,8 +156,8 @@ function musciomol()
     for i = 48:49 %47:length(pairs)
         r1i = pairs(i,1); r2i = pairs(i,2);
         fprintf('%.1f of %d ',i*100/length(pairs),length(pairs));
-        r1 = cells{r1i};%process(data{r1i}.db);
-        r2 = cells{r2i};%process(data{r2i}.db);
+        r1 = cells{r1i};%prosess(data{r1i}.db);
+        r2 = cells{r2i};%prosess(data{r2i}.db);
         %plotPair(r1, r2, i);
     end
     toc
@@ -162,6 +169,8 @@ function musciomol()
         - module
     %}
 end
+
+
 
 function driftWindowMain()
     fn = sprintf('C:\\Noam\\Data\\muscimol\\noam\\cells_%dmin_a.mat', 10);
@@ -663,80 +672,104 @@ rbcb = round(size(B)/2);
 S = A((raca(1)-rbcb(1)+1:raca(1)+rbcb(1)),((raca(2)-rbcb(2)+1:raca(2)+rbcb(2))));
 end
 
+function s = makeSession(p,s,n,mnxt)
+    s = rat_trajectory(p.x1, p.x2, p.y1, p.y2, p.t, s.ts, mnxt); %s.x, s.x2, s.y, s.y2,
+    [s.rm, s.max_r] = Create_Rate_Map(s.px, s.py, s.pt, s.sx, s.sy, s.st, true, n);
+    %s.acOrig = Cross_Correlation(s.rm, s.rm); 
+    s.ac = xcorr2(s.rm); 
+    s.gridscore = gridscore2(s.ac, 2);
+    s.module = Find_Module(imgaussfilt(s.ac, 3,'FilterDomain','spatial'));
+    s.exists = false;
+    if s.max_r ~= 0 %&& s.gridscore ~= -2 %&& s.max_r ~= 50 
+        s.exists = true;
+    end
+end
+
 function r = process(data, binsize)
+nbins = 50;
 r.ind = data.ind;
-p = data.B(1).pos_data;
-s = data.B(1).spike_data;
+ep.x1 = 0; ep.x2 = 0; ep.y1 = 0; ep.y2 = 0; ep.t = 1;
+es.x = 0; es.x2 = 0;  es.y = 0;  es.y2 = 0; es.ts =1;
 %before
-tr = rat_trajectory(p.x1, p.x2, p.y1, p.y2, p.t, s.x, s.x2, s.y, s.y2, s.ts);
-r.before.px = tr.px; r.before.py = tr.py; r.before.pt = tr.pt;
-r.before.sx = tr.sx; r.before.sy = tr.sy; r.before.st = tr.st;  
-r.before.rm = Create_Rate_Map(tr.px, tr.py, tr.pt, tr.sx, tr.sy, tr.st);
-r.before.ac = Cross_Correlation(r.before.rm, r.before.rm);
-r.before.max_r = max(r.before.rm(:));
-r.before.gridscore = gridscore(r.before.ac, r.ind);
-r.before.module = Find_Module(r.before.ac);
-r.before.exists = false;
-if r.before.max_r ~= 0 && r.before.max_r ~= 50 && r.before.gridscore ~= -2
-    r.before.exists = true;
-end
-
+r.before = makeSession(data.B(1).pos_data, data.B(1).spike_data,nbins,[-inf inf]);
 %middle
-p = data.B(2).pos_data;
-s = data.B(2).spike_data;
-tr = rat_trajectory(p.x1, p.x2, p.y1, p.y2, p.t, s.x, s.x2, s.y, s.y2, s.ts);
-binLength = binsize; %minutes,
-maxTime =  45;% minutes
-bins = bin_trajactory(tr, binLength*60, maxTime*60); %BIN LENGTH
-for i = 1:length(bins)
-    t = bins{i};
-    bins{i}.rm = Create_Rate_Map(t.px, t.py, t.pt, t.sx, t.sy, t.st);
-    bins{i}.ac = Cross_Correlation(bins{i}.rm, bins{i}.rm);
-    bins{i}.max_r = max(bins{i}.rm(:));
-    %fprintf('%d %d\n', r.ind, i);
-    bins{i}.gridscore = gridscore(bins{i}.ac, r.ind);
-    bins{i}.module = Find_Module(bins{i}.ac);
-    bins{i}.exists = false;
-    if bins{i}.max_r ~= 0 && bins{i}.max_r ~= 50 && bins{i}.gridscore ~= -2
-        bins{i}.exists = true;
-    end
-end
-r.middle = bins;
-
+r.midall = makeSession(data.B(2).pos_data, data.B(2).spike_data,nbins,[0,binsize*60]);
 %after
-if length(data.B) == 3               %after exists
-    p = data.B(3).pos_data;
-    s = data.B(3).spike_data;
-    tr = rat_trajectory(p.x1, p.x2, p.y1, p.y2, p.t, s.x, s.x2, s.y, s.y2, s.ts);
-    r.after.px = tr.px; r.after.py = tr.py; r.after.pt = tr.pt;
-    r.after.sx = tr.sx; r.after.sy = tr.sy; r.after.st = tr.st;  
-    r.after.rm = Create_Rate_Map(tr.px, tr.py, tr.pt, tr.sx, tr.sy, tr.st);
-    r.after.ac = Cross_Correlation(r.after.rm, r.after.rm);
-    r.after.max_r = max(r.after.rm(:));
-    r.after.gridscore = gridscore(r.after.ac, r.ind);
-    r.after.exists = false;
-    r.after.module = Find_Module(r.after.ac);
-    if r.after.max_r ~= 0 && r.after.max_r ~= 50 && r.after.gridscore ~= -2
-        r.after.exists = true;
-    end
-else                                %after doesn't exist
-    tr = rat_trajectory([0],[0],[0],[0],[1],[0],[0],[0],[0],[1]);
-    r.after.px = tr.px; r.after.py = tr.py; r.after.pt = tr.pt;
-    r.after.sx = tr.sx; r.after.sy = tr.sy; r.after.st = tr.st;  
-    r.after.rm = false; %Create_Rate_Map(tr.px, tr.py, tr.pt, tr.sx, tr.sy, tr.st);
-    r.after.ac = false; %Cross_Correlation(r.after.rm, r.after.rm);
-    r.after.max_r = -1; %max(r.after.rm(:));
-    r.after.gridscore = -2; %gridscore(r.after.ac, r.ind);
-    r.after.exists = false;
-    r.after.module = false; 
+if length(data.B) == 3 
+    r.after = makeSession(data.B(3).pos_data, data.B(3).spike_data,nbins,[-inf inf]);
+else
+    r.after = makeSession(ep, es, nbins,[-inf inf]);
 end
 r.tet  = data.tetrode;
 r.cell  = data.cell;
 r.type = data.cell_type_obj_new;
-r.a = data.area;
+r.area = data.area;
 r.id   = data.rat;
 r.date = data.date;
 
+% bins = bin_trajactory(tr, binLength*60, maxTime*60); %BIN LENGTH
+% for i = 1:length(bins)
+%     tr = bins{i};
+%     [bins{i}.rm, bins{i}.max_r] = Create_Rate_Map(tr.px, tr.py, tr.pt, tr.sx, tr.sy, tr.st,true,nbins);
+%     bins{i}.ac = Cross_Correlation(bins{i}.rm, bins{i}.rm);
+%     bins{i}.ac2 = xcorr2(bins{i}.rm); 
+%     %fprintf('%d %d\n', r.ind, i);
+%     %bins{i}.gridscore = gridscore(bins{i}.ac, r.ind);
+%     bins{i}.gridscore = gridscore2(bins{i}.ac2, r.ind);
+%     bins{i}.module = Find_Module(imgaussfilt(bins{i}.ac2, 2,'FilterDomain','spatial'));
+%     bins{i}.exists = false;
+%     if bins{i}.max_r ~= 0 %&&  bins{i}.gridscore ~= -2 %bins{i}.max_r ~= 50 &&
+%         bins{i}.exists = true;
+%     end
+% end
+% %r.middle = bins; %CHANGE BACK
+% r.midall = bins{1};
+
+end
+
+function c = rat_trajectory(px1, px2, py1, py2, pt, st, mnxt) %sx1, sx2, sy1, sy2,
+    pi = mnxt(1) <= pt & pt <= mnxt(2); si = mnxt(1) <= st & st<=mnxt(2);
+    pt = double(toCol(pt(pi))); st = double(toCol(st(si)));
+    minx = min(min(px1),min(px2));miny = min(min(py1),min(py2));
+    px1 = double(toCol(px1(pi)) - minx +.00001); 
+    py1 = double(toCol(py1(pi)) - minx +.00001);
+    px2 = double(toCol(px2(pi)) - miny +.00001); 
+    py2 = double(toCol(py2(pi)) - miny +.00001);
+    
+    %PATCH TRAJECTORY
+    dt = median(diff(pt));
+    p1 = patchTrajectoryLinear(pt,px1,py1,dt,1.1*dt); 
+    p2 = patchTrajectoryLinear(pt,px2,py2,dt,1.1*dt); 
+    c.pt = p1.t; %PT%
+    
+    %case for no spikes
+    c.st = st;
+    if isempty(st)
+        st = c.pt(1);
+    end
+    
+    %get closest time in px
+    si = 1; 
+    if length(c.pt) > 1
+        si = discretize(st, [-Inf; mean([c.pt(1:end-1) c.pt(2:end)],2); +Inf]);
+    end
+    
+    %base sx sy on closest time of spike to data in px py
+    [c.rayleigh_score, c.rayleigh_angle, c.hd] =...
+        rayleigh_score(c.pt,p1.x,p1.y,p2.x, p2.y, p1.x(si),p1.y(si),p2.x(si),p2.y(si));
+    
+    c.px =  mean([p1.x, p2.x], 2);
+    c.px = c.px - min(c.px) + 0.00001; %no zeros
+    c.py =  mean([p1.y, p2.y], 2);
+    c.py = c.py - min(c.py) + 0.00001;
+    c.st = st;
+    %base sx sy on closest time of spike to data in px py
+    c.sx = c.px(si);
+    c.sy = c.py(si);
+    
+%     c.sx = mean([sx1, sx2], 2); c.sx = c.sx - min(c.sx) + 0.00001;
+%     c.sy = mean([sy2, sy2], 2); c.sy = c.sy - min(c.sy) + 0.00001;
+    %{figure();plot(c.px, c.py);hold on; plot(c.sx, c.sy,'.');%}
 end
 
 function test()
@@ -805,20 +838,10 @@ for i = 1:length(bins)
     end
 end
 bins = t;
+for i = 1:length(bins)
+    bins{i}.px = bins{i}.px'; bins{i}.py = bins{i}.py'; bins{i}.pt = bins{i}.pt';
+    bins{i}.sx = bins{i}.sx'; bins{i}.sy = bins{i}.sy'; bins{i}.st = bins{i}.st';
 end
-
-function c = rat_trajectory(px1, px2, py1, py2, pt, sx1, sx2, sy1, sy2, st)
-    c.px =  mean([px1, px2], 2)';
-    c.px = c.px - min(c.px) + 0.00001; %no zeros
-    c.py =  mean([py1, py2], 2)';
-    c.py = c.py - min(c.py) + 0.00001;
-    c.pt = pt;
-    c.sx =  mean([sx1, sx2], 2)';
-    c.sx = c.sx - min(c.sx) + 0.00001;
-    c.sy =  mean([sy2, sy2], 2)';
-    c.sy =c.sy - min(c.sy) + 0.00001;
-    c.st = st;
-    %{figure();plot(c.px, c.py);hold on; plot(c.sx, c.sy,'.');%}
 end
 
 function pairs_by_file_index = find_pairs(cells)
