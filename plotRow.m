@@ -1,55 +1,105 @@
 function [h,si] = plotRow(data,pd,h,r,si)
     d = plotRowShuffRayData(data,pd);
-    [h,si] = plotRowShuffRay(d,h,r,length(d),si);
+    [h,si] = plotRowShuffRay(d,pd,h,r,2,si);
+    
     
 end
 
-function [h,si] = plotRowShuffRay(pdata,h,r,c,si)
-    i = 0; ax = []; h = figure(h);
-    
+function [h,si] = plotRowShuffRay(pdata,pd,h,r,c,si)
+    i = 0; ax = []; h = figure(h); afs = 16; mfs = 16; tfs = 20; lfs = 3;
+    %both clusters RAYLEIGH
     i=i+1; d = pdata{i}; si=si+1;
-    ax(end+1) = subplot(r,c,si); hold on; 
-    plot(ax(end),d.x, d.y, d.co); 
-    xlim(ax(end),d.xl); ylim(ax(end),d.yl); title(ax(end),d.title);
+    ax(end+1) = subplot(r,c,si); hold on; alpha(ax(end),0.5); %set(ax(end),'color',[.5 .5 .8]);
+    plot(ax(end),d.x, d.y,'k.','markersize',mfs); %plot(ax(end),d.x2, d.y2, 'ro','linewidth',1.2);
+    xlim(ax(end),d.xl); ylim(ax(end),d.yl); title(ax(end),d.title,'FontSize',tfs); 
+    xlabel(gca,d.xt,'FontSize',afs);ylabel(gca,d.yt,'FontSize',afs)
+    %set(ax(end).XTick,'FontSize',afs -2); set(ax(end).yTick,'FontSize',afs -2);%ax(end).YTick.FontSize = afs -2;   
+    if isequal(pd.sesh,'PRE')
+         %plot(ax(end),d.xdurg, d.ydurg, 'b.','markersize',14); 
+         %plot(ax(end),d.xdurl, d.ydurl, 'r.','markersize',14);
+    else
+         plot(ax(end),[0.5 0.5 1],[1 0.5 0.5],'r--','linewidth',lfs); %plot(ax(end),[0.51 0.51 1],[1 0.51 0.51],'r--');
+          text(gca,0.1,1,'Cluster 1','Color','b','FontSize',afs); 
+          text(gca,0.6,1,'Cluster 2','Color','r','FontSize',afs);
+%         plot(ax(end),d.xdurg, d.ydurg, 'r.','markersize',14); 
+%         plot(ax(end),d.xdurl, d.ydurl, 'b.','markersize',14);
+    end
+    set(ax(end),'XTickLabel',[0:0.2:1],'fontsize',14)
+    set(ax(end),'YTickLabel',[0:0.2:1],'fontsize',14)
+    %%%%%%%%%%%%%%%%%%
     
+    %less than cluster TEMPORAL
     i=i+1; d = pdata{i}; si=si+1;
-    ax(end+1) = subplot(r,c,si); hold on; 
-    plot(ax(end),d.x, d.y, d.co); title(ax(end),d.title);
-    plot(ax(end),[min(d.x) max(d.x)], polyval( polyfit( d.x, d.y,1), [min(d.x) max(d.x)] ) );
-    xlim(ax(end),d.xl); ylim(ax(end),d.yl);
+    ax(end+1) = subplot(r,c,si); hold on; alpha(ax(end),0.5);
+    p5=plot(ax(end),pd.shufbx,pd.shufmy,'mo','markersize',16,'linewidth',lfs);s5 = 'p < %1';
+    p1=plot(ax(end),d.x, d.y, 'b.', 'markersize',mfs); 
+    title(ax(end),d.title,'FontSize',tfs); xlabel(gca,d.xt,'FontSize',afs);ylabel(gca,d.yt,'FontSize',afs)
+    p3=plot(ax(end),[min(d.x) max(d.x)], polyval( polyfit( d.x, d.y,1), [min(d.x) max(d.x)] ),'linewidth',lfs,'color','b');
+    %text(gca,0.8*max(d.x),polyval(polyfit(d.x, d.y, 1),0.8*max(d.x)),sprintf('%.2f %.2f', round(polyfit(d.x, d.y, 1),2)),'Color','b','FontSize',afs);
+    s3 = sprintf('%.1f %.1f', round(polyfit(d.x, d.y, 1),1));
+    %greater than cluster
+    i=i+1; d2 = pdata{i};  %si=si+1;
+    p2=plot(ax(end),d2.x, d2.y, 'r.','markersize',mfs); title(ax(end),d2.title);
+    p4=plot(ax(end),[min(d2.x) max(d2.x)], polyval( polyfit( d2.x, d2.y, 1), [min(d2.x) max(d2.x)] ) ,'linewidth',lfs,'color','r');
+    %text(gca,max(d2.x),polyval(polyfit(d2.x, d2.y, 1),max(d2.x)),sprintf('%.2f %.2f', round(polyfit(d2.x, d2.y, 1),2)),'Color','r','FontSize',afs); 
+    s4 = sprintf('%.1f %.1f', round(polyfit(d2.x, d2.y, 1),1));
+    %xlim(ax(end),[-0.02 0.05]); ylim(ax(end),[-0.02 0.05]);
+    legend(gca,[p1  p3],{'Cluster1',s3},'FontSize',afs);
+    %if isequal(pd.sesh,'PRE')
+        legend(gca,[p1 p2 p3 p4 p5],{'Cluster1','Cluster 2',s3,s4,s5},'FontSize',afs);
+    %else
+        %legend(gca,[p1 p2 p3 p4],{'Cluster1','Cluster2',s3,s4},'FontSize',afs);
+    %end
+    xlim(ax(end),d.yl); ylim(ax(end),d.yl);
+    %yl = get(ax(end),'yTickLabel');
+    %xl = get(ax(end),'XTickLabel');
+%     set(ax(end),'XTickLabel',get(ax(end),'XTickLabel'),'fontsize',14)
+%     set(ax(end),'YTickLabel',get(ax(end),'XTickLabel'),'fontsize',14)
+%     set(ax(end),'XTickLabel',xl,'fontsize',14);
+%     set(ax(end),'YTickLabel',yl,'fontsize',14);
+    %xlim(ax(end),d.yl); ylim(ax(end),d.yl);
+    set(ax(end),'XTickLabel',[-0.02:0.01:0.03],'fontsize',14)
+    set(ax(end),'YTickLabel',[-0.02:0.01:0.03],'fontsize',14)
+    for i = 1:length(ax)
+           %a = get(ax(i),'XTickLabel');
+           
+           axis(ax(i),'square');
+    end
     
-    i=i+1; d = pdata{i}; si=si+1;
-    ax(end+1) = subplot(r,c,si); hold on; 
-    plot(ax(end),d.x, d.y, d.co); title(ax(end),d.title);
-    plot(ax(end),[min(d.x) max(d.x)], polyval( polyfit( d.x, d.y, 1), [min(d.x) max(d.x)] ) );
-    xlim(ax(end),d.xl); ylim(ax(end),d.yl);
     
+
+    
+    %{
+    %hist less than cluster before hist
+    i=i+1; d = pdata{i}; si=si+1; 
+    ax(end+1) = subplot(r,c,si); hold on; alpha(ax(end),0.2);
+    hold on; h1=histogram(ax(end),d.x,'BinEdges',-0.05:0.005:0.05,'FaceColor','b'); %0.15
+    xlim(ax(end),d.xl); title(ax(end),d.title); xlabel(gca,d.xt);
+    %hist greater than cluster before hist
+    i=i+1; d = pdata{i}; %si=si+1;
+    %ax(end+1) = subplot(r,c,si); hold on; 
+    hold on; h2=histogram(ax(end),d.x,'BinEdges',-0.05:0.005:0.05,'FaceColor','r');  %0.15
+    %xlim(ax(end),d.xl); title(ax(end),d.title);
+    legend(gca,{'Cluster 1','Cluster 2'});
+    %hist less than cluster mid hist
     i=i+1; d = pdata{i}; si=si+1;
-    ax(end+1) = subplot(r,c,si); hold on; 
-    hold on; hist(ax(end),d.x); 
+    ax(end+1) = subplot(r,c,si); hold on; alpha(ax(end),0.2);
+    hold on; histogram(ax(end),d.x,'BinEdges',-0.05:0.005:0.05,'FaceColor','b'); %0.15
+    xlim(ax(end),d.xl); title(ax(end),d.title);xlabel(gca,d.xt);
+    %hist greater than cluster mid hist
+    i=i+1; d = pdata{i}; %si=si+1;
+    %ax(end+1) = subplot(r,c,si); hold on; 
+    hold on; histogram(ax(end),d.x,'BinEdges',-0.05:0.005:0.05,'FaceColor','r'); %0.15
     xlim(ax(end),d.xl); title(ax(end),d.title);
-    
-    i=i+1; d = pdata{i}; si=si+1;
-    ax(end+1) = subplot(r,c,si); hold on; 
-    hold on; hist(ax(end),d.x); 
-    xlim(ax(end),d.xl); title(ax(end),d.title);
-    
-    i=i+1; d = pdata{i}; si=si+1;
-    ax(end+1) = subplot(r,c,si); hold on; 
-    hold on; hist(ax(end),d.x); 
-    xlim(ax(end),d.xl); title(ax(end),d.title);
-    
-    i=i+1; d = pdata{i}; si=si+1;
-    ax(end+1) = subplot(r,c,si); hold on; 
-    hold on; hist(ax(end),d.x); 
-    xlim(ax(end),d.xl); title(ax(end),d.title);
+    legend(gca,{'Cluster 1','Cluster 2'});
+    %}
 end
 
 function pdata = plotRowShuffRayData(data,pd)
     i1i = 1; i2i = 2; cbi = 3; cmi = 4; iui = 5; r1bi = 6; r2bi = 7; r1mi = 8; r2mi = 9;
     t = data;
     
-    if isequal(pd.sesh,'MID')
+    if isequal(pd.sesh,'DUR')
         r2 = r2mi;
         r1 = r1mi;
     else
@@ -59,40 +109,58 @@ function pdata = plotRowShuffRayData(data,pd)
     
     tg = t(t(:,r2)>=0.5 & t(:,r1)>=0.5,:); tl = t(t(:,r2)<0.5 | t(:,r1)<0.5,:);
     lims = [min(min(t(:,cbi), min(t(:,cmi)))) max(max(t(:,cbi)), max(t(:,cmi)))] ;
+    lims = [-0.02 0.03];
     
     ri = 0; pdr = {}; %MID BEF
     
     %1) r1 vs r2 clustering
-    r=[];r.title=sprintf('[%s] %s (%.2f>%.2f)\nrayleigh i1 vs i2',pd.sesh, pd.string,pd.gridThreshBef,pd.gridThreshMid);
-    r.x = t(:,r1); r.y = t(:,r2); r.co = pd.co; r.xl=[0 1]; r.yl=[0 1]; 
+    r=[];r.stitle=sprintf('%s (%.2f>%.2f) [%s]',pd.sesh, pd.string,pd.gridThreshBef,pd.gridThreshMid);
+    r.title=sprintf('%s [%s]','Head Direction of Cell Pairs',pd.sesh);
+    r.xt = 'Rayleigh Score Cell 1'; r.yt = 'Rayleigh Score Cell 2';
+    r.x = t(:,r1); r.y = t(:,r2); r.co = pd.co; r.xl=[0 1]; r.yl=[0 1]; r.x2 = tg(:,r1); r.y2 = tg(:,r2);
+    %%pd.durtg = t(t(:,r2)>=0.5 & t(:,r1)>=0.5,:); pd.durtl = t(t(:,r2)<0.5 | t(:,r1)<0.5,:);
+    r.xdurg =  pd.durtg(:,r1); r.ydurg =  pd.durtg(:,r2); r.xdurl =  pd.durtl(:,r1); r.ydurl =  pd.durtl(:,r2);
+    
     ri=ri+1; pdr{ri}=r;
     %2) corrs of lower cluster
-    r=[];r.title=sprintf('%s','rayleigh < 0.5 corr b vs m');
-    r.x = tl(:,cbi); r.y = tl(:,cmi); r.co = pd.co; r.xl=lims; r.yl=lims; 
+    r=[];r.title=sprintf('%s','Temporral Correlation Pre vs During');
+    r.xt = 'Correlation Cell 1 Cell 2 Pre'; r.yt = 'Correlation Cell 1 Cell 2 During';
+    r.x = tl(:,cbi); r.y = tl(:,cmi);
+    r.x =  pd.durtl(:,cbi); r.y =  pd.durtl(:,cmi);
+    r.co = pd.co; r.xl=lims; r.yl=lims; 
     ri=ri+1; pdr{ri}=r;
     %3) corrs of higher cluster
-    r=[];r.title=sprintf('%s','rayleigh > 0.5 corr b vs m');
-    r.x = tg(:,cbi); r.y = tg(:,cmi); r.co = pd.co; r.xl=lims; r.yl=lims; 
+    r=[];r.title=sprintf('%s','Temporral Correlation Pre vs During');
+    r.x = tg(:,cbi); r.y = tg(:,cmi);
+    r.x =  pd.durtg(:,cbi); r.y =  pd.durtg(:,cmi); 
+    r.co = pd.co; r.xl=lims; r.yl=lims; 
     ri=ri+1; pdr{ri}=r;
+    
+
+    
+    
+    
     
     %4) 5) do hists before mid by cluster (x4) 
     
-    r=[];r.title=sprintf('%s\n%s','bef: hist corrs','~(r1&r2 > 0.5)');
-    r.x = tl(:,cbi);r.xl=[-0.05 0.15]; 
+    r=[];r.title=sprintf('%s','Temporral Correlation Pre Muscimol');
+    r.x = tl(:,cbi);r.xl=[-0.05 0.05];  r.xt = 'Corr Cell 1 Cell 2'; %0.15
+    ri=ri+1; pdr{ri}=r; 
+   
+    
+    r=[];r.title=sprintf('%s','Temporral Correlation Pre Muscimol');
+    r.x = tg(:,cbi);r.xl=[-0.05 0.05]; %0.15
     ri=ri+1; pdr{ri}=r;
     
-    r=[];r.title=sprintf('%s\n%s','bef: hist corrs','r1&r2 > 0.5');
-    r.x = tg(:,cbi);r.xl=[-0.05 0.15]; 
+    r=[];r.title=sprintf('%s','Temporral Correlation During Muscimol');
+    r.x = tl(:,cmi);r.xl=[-0.05 0.05]; r.xt = 'Corr Cell 1 Cell 2'; %0.15
     ri=ri+1; pdr{ri}=r;
     
-    r=[];r.title=sprintf('%s\n%s','mid: hist corrs','~(r1&r2 > 0.5)');
-    r.x = tl(:,cmi);r.xl=[-0.05 0.15]; 
-    ri=ri+1; pdr{ri}=r;
-    pdata = pdr;
     
-    r=[];r.title=sprintf('%s\n%s','mid: hist corrs','r1&r2 > 0.5');
-    r.x = tg(:,cmi);r.xl=[-0.05 0.15]; 
+    r=[];r.title=sprintf('%s','Temporral Correlation During Muscimol'); 
+    r.x = tg(:,cmi);r.xl=[-0.05 0.05]; %0.15
     ri=ri+1; pdr{ri}=r;
+    
     pdata = pdr;
 end
 %{

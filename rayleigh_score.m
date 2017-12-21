@@ -10,9 +10,9 @@ shd = atan2(sy2-sy1,sx2-sx1);
 
 bin_size=deg2rad(3);
 radbin = -pi:bin_size:pi;
-count = hist(shd,radbin);
-time = hist(phd,radbin)*dt;
-rate_ang=count./time;
+count = hist(shd,radbin); %spikes per bin
+time = hist(phd,radbin)*dt; %time per bin
+rate_ang=count./time; %rate per pin
 
 win=hamming(10);
 win=win/sum(win);
@@ -23,10 +23,10 @@ rate_ang=rate_ang_smoothed(length(count)+1:2*length(count));
 
 x_bin = cos(radbin);
 y_bin = sin(radbin);
-norm_val = nansum(rate_ang);
-x_vec = nansum(x_bin.*rate_ang);
+norm_val = nansum(rate_ang); %denominator to normalize to 1
+x_vec = nansum(x_bin.*rate_ang); 
 y_vec = nansum(y_bin.*rate_ang);
-vec_len = sqrt(x_vec.^2+y_vec.^2);
+vec_len = sqrt(x_vec.^2+y_vec.^2); %length of x and y component of each bin
 
 rayleigh_score = vec_len/norm_val;
 rayleigh_angle=(atan2(y_vec,x_vec));

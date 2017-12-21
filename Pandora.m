@@ -11,7 +11,7 @@ function Pandora
         for i = 1:length(groups)
         end
         m.groups = groups;
-        m.gid = 1;
+        m.gid = 6;
         m.g = m.groups{m.gid};
         m.sesh = 'before';
         %m.grid_thresh = 0.5;

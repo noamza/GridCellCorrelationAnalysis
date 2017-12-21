@@ -76,7 +76,7 @@ set(controlBoxV, 'Heights', t );
         set(gui.viewPanel,'ForegroundColor',[0,0,1], 'Title', '');
         t = cellstr(get( src, 'String' ));
         gui.m.ind = str2double(t(get( src, 'Value' )));
-        gui.m.sesh = 'before';
+        %gui.m.sesh = 'before'; %PUT BACK IN
         s = setSesh(gui.m.ind);
         set(gui.viewPanel,'Title',s);
         set(gui.midListBox,'String',{'before';'midall';'after'},'Value', 1);
@@ -95,7 +95,7 @@ set(controlBoxV, 'Heights', t );
 % MID
     function onMidListSelection( src, ~ )
         t = get( src, 'String');
-        gui.m.sesh =  t{get(src,'Value')};
+        gui.m.sesh = t{get(src,'Value')};
         s = setSesh(gui.m.ind);
         gui.m.t0 = 1;
         gui.m.tn = length(gui.m.c.pt);
@@ -188,12 +188,13 @@ end
         %PLOT 1        
         ax = subplot(rows,cols,1,'Parent',gui.m.parent); axi(end+1) = ax;
         %XY
-        plot(ax,c.px(pw),c.py(pw),'linewidth',1);hold(ax,'on');
-        plot(ax,c.px(sw),c.py(sw),'r.','markersize',7);%,'linewidth',ss);
-        title(ax,sprintf('n=%d',length(sw)),'color','m','fontsize',tfs);
+        %set(ax,'color','w');
+        %plot(ax,c.px(pw),c.py(pw),'b','linewidth',1);hold(ax,'on');
+        plot(ax,c.px(sw),c.py(sw),'w.','markersize',3);%,'linewidth',ss);
+        title(ax,sprintf('spikes=%d',length(sw)),'color','m','fontsize',tfs);
         
         %PLOT 2
-        ax = subplot(rows,cols,2,'Parent',gui.m.parent); axi(end+1) = ax;
+        ax = subplot(rows,cols,8,'Parent',gui.m.parent); axi(end+1) = ax;
          %RM
         nbins = 50;
         mx = max(c.px(pw));
@@ -248,8 +249,8 @@ end
         %plot(ax,[nbins l(2:3)' nbins],[nbins k(2:3)' nbins],'m'); triangle
         if length(l) >= 2
             [~,ceny]=max(max(ac));[~,cenx]=max(max(ac'));
-            viscircles(ax,[cenx ceny], dist(2)/2,'color','m');
-            viscircles(ax,[cenx ceny], dist(2)*3/2,'color','m');
+            %viscircles(ax,[cenx ceny], dist(2)/2,'color','m'); %ADD BACK
+            %viscircles(ax,[cenx ceny], dist(2)*3/2,'color','m');
         end
         %rms(rms>0)=1;
         title(ax,sprintf('gs %.2f gs2 %.2f gs3 %.2f',gridscore2(ac,2),...
@@ -269,7 +270,7 @@ end
         % 36 12.0
         
         % PLOT 4
-         ax = subplot(rows,cols,4,'Parent',gui.m.parent);axi(end+1) = ax;
+        ax = subplot(rows,cols,4,'Parent',gui.m.parent);axi(end+1) = ax;
         %MODULE
         acg = imgaussfilt(ac, 3,'FilterDomain','spatial');
         %acg = imresize(acg, [70 120]);
@@ -287,7 +288,8 @@ end
          % RAYLEIGH
          d = gui.m.c;
          rd = histcounts(rad2deg(c.hd(c.si))+180,0:3:360)./histcounts(rad2deg(c.hd)+180,0:3:360);
-         plot(ax, 3:3:360,rd,'g');
+         rd = smooth(rd,15);
+         plot(ax, 3:3:360,rd,'g','linewidth',1.8);
          rs = d.rayleigh_score;
          title(ax,sprintf('HD Rate rayleigh=%.2f',rs),'color','m','fontsize',tfs);
         
@@ -310,6 +312,24 @@ end
          t = histcounts(c.st,0:bin_s:c.st(end));
          plot(ax,t,'y');
          title(ax,sprintf('Train bin=%.2fs', bin_s),'color','m','fontsize',tfs);
+         
+         
+         
+         % FOR PAPER - REMOVE
+         ax = subplot(rows,cols,2,'Parent',gui.m.parent); axi(end+1) = ax; cla(ax);
+         % AC Clean
+         acg = imgaussfilt(ac, 3,'FilterDomain','spatial');imagesc(ax,acg);
+         title(ax,sprintf('gridscore=%.1f',round(gridscore2(ac,3),1)),'color','m','fontsize',tfs); %rms
+         
+         ax = subplot(rows,cols,3,'Parent',gui.m.parent); axi(end+1) = ax; cla(ax);
+         % RAYLEIGH
+         d = gui.m.c;
+         rd = histcounts(rad2deg(c.hd(c.si))+180,0:3:360)./histcounts(rad2deg(c.hd)+180,0:3:360);
+         rd = smooth(rd,45);
+         plot(ax, 3:3:360,rd,'g','linewidth',3);
+         rs = d.rayleigh_score;
+         title(ax,sprintf('Rayleigh=%.1f',round(rs,1)),'color','m','fontsize',tfs); 
+         xlabel(ax,'angle','color','m','fontsize',tfs-2)
         
         %ALLLL
         for i = 1:length(axi)
@@ -319,6 +339,7 @@ end
             set(axi(i),'Ycolor','m');
             set(axi(i),'Xcolor','m');
             set(axi(i),'Color','k');
+            axis(axi(i),'square');
         end
         
     end %end run()

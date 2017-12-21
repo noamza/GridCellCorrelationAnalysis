@@ -29,7 +29,10 @@ function MotionTab(fig, tab, m)
     set( AniTabBox, 'Widths', [200 -1] );
     
     %% VIEW PANEL
-    gui.viewContainer = uicontainer('Parent', gui.viewPanel,'backgroundcolor','k');
+    viewBoxV = uix.VBoxFlex( 'Parent', gui.viewPanel, 'Spacing', 3,'backgroundcolor','k');
+    gui.viewContainer  = uicontainer('Parent', viewBoxV,'backgroundcolor','k'); %gui.viewPanel
+    gui.viewContainer2 = uicontainer('Parent', viewBoxV,'backgroundcolor','k');
+    set( viewBoxV, 'Heights', [-7 -1] );
     %% CONTROL PANEL
     controlBoxV = uix.VBox( 'Parent', controlPanel, 'Spacing', 3);
     t = [];
@@ -456,6 +459,7 @@ function MotionTab(fig, tab, m)
         maxy = max(c.py);
         disp('4 RUN PRIVATE');
         ax = axes('Parent',gui.m.parent);
+        ax2 = axes('Parent',gui.viewContainer2);
         while gui.m.go <= length(gui.m.c.pt)
             while(gui.m.pause)
                 pause(1/5);
@@ -499,23 +503,25 @@ function MotionTab(fig, tab, m)
                 %SPIKE PLOT MODE
                 ind = round((gui.m.t0:i) + delay); 
                 ind = ind(ind>0); ind = ind(ind <= length(gui.m.c.pt));
-                tx = c.px(ind); ty = c.py(ind); txi1 = c.px(indwin); tyi1 = c.py(indwin);
+                tx = c.px(ind); ty = c.py(ind); %txi1 = c.px(indwin); tyi1 = c.py(indwin);
                 %PLOTTING
+                cla(ax);
                 plot(ax,c.px(gui.m.t0:i),c.py(gui.m.t0:i),'Color',[0.3 0.3 0.3],'linewidth', 1);
-                hold(ax, 'on');
-                xlim(ax, [0 maxx+20]); ylim(ax, [0  maxy+20]);
+                hold(ax, 'on');hold(ax2, 'on');
+                xlim(ax, [0 maxx+20]); ylim(ax, [0  maxy+20]); xlim(ax2, [0 maxx+20]); ylim(ax2, [0  2*length(gui.m.g)+4]);
                 %ax.XLim
                 %plot square
                 %plot(ax,[xoff,xoff,maxx,maxx,xoff],[yoff,maxy+1,maxy+1,yoff,yoff],'w','linewidth', 2);
-                axis(ax,'off');
+                axis(ax,'off');axis(ax2,'off');
                 %l = randperm(length(gui.m.g));
                 %SHOW SPIKES
+                cla(ax2);
                 for j = 1:length(gui.m.g)
                     %if train(j,i) && m.cells(j)
                     if gui.m.cells(j)
                         %plot(ax, double(tx(gui.m.train(j,1:i))), double(ty(gui.m.train(j,1:i)))+0.3*j,...
                         plot(ax, double(tx(gui.m.train(j,i-length(tx)+1:i))), double(ty(gui.m.train(j,i-length(tx)+1:i)))+0.3*j,...
-                            '.','Color', gui.m.colors(j,:),'MarkerSize',10); %'markerfacecolor',gui.m.colors(j,:)
+                            '.','Color', gui.m.colors(j,:),'MarkerSize',14); %'markerfacecolor',gui.m.colors(j,:)
                         %SHOW DRIFT WINDOW
                         % plot(ax, double(txi1(gui.m.train(j,i1:i))), double(tyi1(gui.m.train(j,i1:i)))+0.3*j,...
                          %   'o','Color', gui.m.colors(j,:),'MarkerSize',10); %'markerfacecolor',gui.m.colors(j,:)
@@ -524,16 +530,22 @@ function MotionTab(fig, tab, m)
                         wine = max(1,i-gui.m.win+1);
                         %plot(ax,lx(gui.m.train(j,wine:i)),ly(j,gui.m.train(j,wine:i)),'.','Color', colors(j,:));
                         if(gui.m.showTrain)
-                            plot(ax,gui.m.lx(gui.m.t0:i-wine+1)+xoff,gui.m.ly(j,gui.m.t0:i-wine+1)+gui.m.train(j,wine:i)*1.9+yoff,...
-                                'Color', gui.m.colors(j,:));
-                            plot(ax,gui.m.lx(gui.m.t0:i-wine+1)+xoff,gui.m.ly(j,gui.m.t0:i-wine+1)+yoff,'Color', [0.2 0.2 0.2]);
+                            %plot(ax,gui.m.lx(gui.m.t0:i-wine+1)+xoff,gui.m.ly(j,gui.m.t0:i-wine+1)+gui.m.train(j,wine:i)*1.9+yoff,...
+                                %'Color', gui.m.colors(j,:));
+                            %plot(ax,gui.m.lx(gui.m.t0:i-wine+1)+xoff,gui.m.ly(j,gui.m.t0:i-wine+1)+yoff,'Color', [0.2 0.2 0.2]);
+                            plot(ax2,gui.m.lx(gui.m.t0:i-wine+1)+xoff,...
+                                gui.m.ly(j,gui.m.t0:i-wine+1)+gui.m.train(j,wine:i)*1.9+yoff-max(gui.m.c.py)-2,...
+                                'Color', gui.m.colors(j,:),'linewidth', 3);
+                            plot(ax2,gui.m.lx(gui.m.t0:i-wine+1)+xoff,gui.m.ly(j,gui.m.t0:i-wine+1)+yoff-max(gui.m.c.py)-2,...
+                                'Color', [0.2 0.2 0.2],'linewidth', 3);
                         end
                     end
+                    %axis(ax2,'off');
                 end
             end %END RM MODE
             text(ax, double(maxx+2), double(maxy+5+yoff),sprintf('%.2f',c.pt(double(i))-c.pt(1)),...
                 'fontsize',14,'color','w');
-            hold(ax, 'off'); %need??
+            hold(ax, 'off'); hold(ax2, 'off');%need??
             
             drawnow();
             if(gui.m.record)
@@ -552,7 +564,7 @@ function MotionTab(fig, tab, m)
         end
         if gui.m.stop
             gui.m.stop = false;
-            cla(ax);
+            cla(ax);cla(ax2);
             disp('stop and clear after loop');
         end
         gui.m.go = 1;

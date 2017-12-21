@@ -8,10 +8,10 @@ end
 
 function p = fpos( ai, ncol, naxes)
     nRow = ceil( naxes / ncol ) ;
-    rowH = 0.75 / nRow ;  colW = 0.75 / ncol ; %width of plot
+    rowH = 0.85 / nRow ;  colW = 0.85 / ncol ; %width of plot %WAS 0.75
            %offset
-    colX = 0.05 + linspace( 0, 0.9, ncol+1 ) ; colX = colX(1:end-1) ;
-    rowY = 0.05 + linspace( 0.9, 0, nRow+1 ) ; rowY = rowY(2:end);
+    colX = 0.02 + linspace( 0, 0.9, ncol+1 ) ; colX = colX(1:end-1) ; %WAS 0.05
+    rowY = 0.02 + linspace( 0.9, 0, nRow+1 ) ; rowY = rowY(2:end); %0.05
     rowId = ceil( ai / ncol );
     colId = ai - (rowId - 1) * ncol;
     x = colX(colId); y = rowY(rowId);
@@ -25,19 +25,21 @@ end
 
 function ai = plotTR(p);
     [ax ai] = axi(p.parent, p.ai, p.ncol, p.naxes);
-    plot(ax, p.c.px, p.c.py);
+    plot(ax, p.c.px, p.c.py,'k','linewidth',1.5);
     hold(ax, 'on');
-    scatter(ax, p.c.sx, p.c.sy, '.'),...
+    plot(ax, p.c.sx, p.c.sy, 'r.','markersize',6),...
         xlim(ax, [0 100]), ylim(ax, [0 100]);
     title(ax, p.title,'fontweight','bold');
-    %xlabel(ax, p.xl); ylabel(ax, p.yl);
+    if ai <= p.ncol; 
+        xlabel(ax, p.xl); ylabel(ax, p.yl); 
+    end
 end
 function ai = plotRM(p)
     [ax ai] = axi(p.parent, p.ai, p.ncol, p.naxes);
     hold(ax, 'on');
     imagesc(ax, imgaussfilt(p.c.rm,2,'FilterDomain','spatial')); 
     title(ax, p.title,'fontweight','bold');
-    xlabel(ax, p.xl); ylabel(ax, p.yl);
+    if ai <= p.ncol; xlabel(ax, p.xl); ylabel(ax, p.yl); end
 end
 function ai = plotAC(p)%m,n,l
     [ax ai] = axi(p.parent, p.ai, p.ncol, p.naxes);
@@ -47,8 +49,8 @@ function ai = plotAC(p)%m,n,l
     lw = 0.5;
     %center point
     if length(p.c.module.hex_peaks) == 7 %CHANGE TO EXISTS
-            plot(ax, p.c.module.x, p.c.module.y,'w','LineWidth',lw); 
-            plot(ax, p.c.module.hex_peaks(:,1),p.c.module.hex_peaks(:,2),'wo','LineWidth',lw);
+            plot(ax, p.c.module.x, p.c.module.y,'w','LineWidth',lw);  %ADD BACK IN 
+            plot(ax, p.c.module.hex_peaks(:,1),p.c.module.hex_peaks(:,2),'wo','LineWidth',lw); %ADD BACK IN
     end
     title(ax, p.title,'fontweight','bold');
     xlim(ax, x); ylim(ax, y);
@@ -60,12 +62,20 @@ function ai = plotHD(p)
     c = p.r.midall;rd = ft();plot(ax, 3:3:360,rd,'b'); 
     c = p.r.after; rd = ft();plot(ax, 3:3:360,rd,'g');  
     legend(ax,{'PR','DU','PO'},'location','northeast');legend(ax,'boxoff');legend(ax,'off');
-    title(ax,sprintf('pr-r du-b po-g %.1f %.1f %.1f', rs ),'fontsize',7);
+    %title(ax,sprintf('pr-r du-b po-g %.1f %.1f %.1f', rs ),'fontsize',7);
+    
+    %title(['\fontsize{16}black {\color{magenta}magenta ' , '\color[rgb]{0 .5 .5}teal \color{red}red} black again'],'interpreter','tex')
     function rd = ft
+        rd = 0;
+        if ~isnan(c.rayleigh_score)
         rs(end+1) = round(c.rayleigh_score,1);bins= 0:3:360; 
         c.si = discretize(c.st, [-Inf; mean([c.pt(2:end) c.pt(1:end-1)],2); +Inf]);
         rd = histcounts(rad2deg(c.hd(c.si))+180,bins)./(histcounts(rad2deg(c.hd)+180,bins)+0.001);
         rd = smooth(rd,15);
+        end
+    end
+    if ai <= (p.ncol+1); xlabel(ax, p.xl); ylabel(ax, p.yl); 
+    title(ax,['\fontsize{8}{\color{red}pre ','\color{blue}dur ','\color{green}pos }'],'interpreter','tex');
     end
 end
 function titl = plotGroupPrivate(parent, g)
@@ -90,7 +100,7 @@ function titl = plotGroupPrivate(parent, g)
         else;p.ai = p.ai+1;end
         %after
         if r.after.exists
-            p.c = r.after; p.title = sprintf('%s','After');p.xl='';p.yl='';p.ai = plotTR(p);
+            p.c = r.after; p.title = sprintf('%s','Post');p.xl='';p.yl='';p.ai = plotTR(p);
         else;p.ai = p.ai+1;end
         
         %PLOT RM
@@ -110,21 +120,22 @@ function titl = plotGroupPrivate(parent, g)
         
         %PLOT AC
         %before
-        p.c = r.before; p.title = sprintf('gs %.1f',round(p.c.gridscore,1));
+        p.c = r.before; p.title = sprintf('grid score %.1f',round(p.c.gridscore,1));
         p.ai = plotAC(p);
         %middle
         if goodCell(r.midall, rmt)
-        p.c = r.midall; p.title = sprintf('gs %.1f',round(p.c.gridscore,1));
+        p.c = r.midall; p.title = sprintf('grid score %.1f',round(p.c.gridscore,1));
         p.ai = plotAC(p);
         else;p.ai = p.ai+1;end
        %after
         if r.after.exists
-        p.c = r.after; p.title = sprintf('gs %.1f',round(p.c.gridscore,1));
+        p.c = r.after; p.title = sprintf('grid score %.1f',round(p.c.gridscore,1));
         p.ai = plotAC(p);
         else;p.ai = p.ai+1;end
         
         %PLOT RAYLEIGH
         p.r = r;
+        p.xl = 'direction'; p.yl = 'firing rate';
         p.ai = plotHD(p);
         
         %PLOT ALL CROSSED
@@ -153,10 +164,10 @@ function titl = plotGroupPrivate(parent, g)
     end
     %ADD TITLE
     %ax = axes('Parent',parent, 'Position', [.05, .95, 1, .02]); 
-    ax = axes('Parent',parent, 'Position', [0.05, .98, 0, 0]);axis(ax,'off');
+    ax = axes('Parent',parent, 'Position', [0.5, .98, 0, 0]);axis(ax,'off');
     txt = 'Simultaneously Recorded Entorhinal Cells [Pre, During, Post] Muscimol'; %   Trajectory   Rate Maps   Autocorrelations   Rayleigh
-    text(ax, 0,0, txt,'FontSize',11, 'fontweight','bold', 'horizontalalignment','left');
-    pt = {'FontSize',10, 'fontweight','bold', 'horizontalalignment','left'}; t = fpos(1,ncol,naxes);
+    text(ax, 0,0, txt,'FontSize',12, 'fontweight','bold', 'horizontalalignment','center');
+    pt = {'FontSize',11, 'fontweight','bold', 'horizontalalignment','left'}; t = fpos(1,ncol,naxes);
     pa = {'Parent',parent,'Visible','off',      'Position'}; y = t(2)+t(4)+0.025;
     t = fpos(1,ncol,naxes) ; ax = axes(pa{:},[t(1) y 0 0]);text(ax, 0,0, '(a) Trajectory with Spikes',pt{:});
     t = fpos(4,ncol,naxes) ; ax = axes(pa{:},[t(1) y 0 0]);text(ax, 0,0, '(b) Firing Rate Map',pt{:});

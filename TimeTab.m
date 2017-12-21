@@ -10,6 +10,7 @@ function TimeTab(fig, tab, m)
     gui.m.bindeg = 360;
     gui.m.sesh = 'before';
     gui.m.overlap = 0.002;
+    gui.m.hamwin = 15;
     gui.Window.UserData.gidsFns{end+1} = @updateGids;
     %top box
     TimeTabBox = uix.HBoxFlex( 'Parent', tab, 'Spacing', 3);
@@ -66,8 +67,9 @@ function TimeTab(fig, tab, m)
     uicontrol('Parent', sigmaBoxV,'Style','text',...
         'HorizontalAlignment', 'left','String', 'Smoothing (Butterworth):');
     sigmaBoxH = uix.HBox( 'Parent', sigmaBoxV,'Padding', 3, 'Spacing', 3 );
-    step = 1; step = step/(10); %max-min
-    gui.sigmaSlider = uicontrol( 'Style', 'slider','Min', 0,'Max', 10, 'SliderStep',[step 2*step],...
+    maxstep = 100;
+    step = 1; step = step/(maxstep); %max-min
+    gui.sigmaSlider = uicontrol( 'Style', 'slider','Min', 0,'Max', maxstep, 'SliderStep',[step 2*step],...
         'Parent', sigmaBoxH,'Value', gui.m.sigma,'Callback', @onSigmaSlide);
     gui.sigmaEdit = uicontrol( 'Parent', sigmaBoxH, 'Style', 'edit', 'String', gui.m.sigma, ...
         'Callback', @onSigmaEdit);
@@ -85,6 +87,18 @@ function TimeTab(fig, tab, m)
         'Callback', @onOverlapEdit);
     addlistener(gui.overlapSlider,'ContinuousValueChange',@(hObject, event) onOverlapSliding(hObject, event));
     set( overlapBoxH, 'Widths', [-4 -1] );   
+    %HAMWIN
+        hamwinBoxV = uix.VBox( 'Parent', paramsLayout,'Padding', 3, 'Spacing', 3, 'Visible', 'on' );
+    uicontrol('Parent', hamwinBoxV,'Style','text',...
+        'HorizontalAlignment', 'left','String', 'size of ham window:');
+    hamwinBoxH = uix.HBox( 'Parent', hamwinBoxV,'Padding', 3, 'Spacing', 3 );
+    mnx = [0 500]; step = 1; step = step/(mnx(2)-mnx(1)); %max-min
+    gui.hamwinSlider = uicontrol( 'Style', 'slider','Min', mnx(1),'Max', mnx(2), 'SliderStep',[step 2*step],...
+        'Parent', hamwinBoxH,'Value', 0,'Callback', @onHamwinSlide);
+    gui.hamwinEdit = uicontrol( 'Parent', hamwinBoxH, 'Style', 'edit', 'String', 0, ...
+        'Callback', @onHamwinEdit);
+    addlistener(gui.hamwinSlider,'ContinuousValueChange',@(hObject, event) onHamwinSliding(hObject, event));
+    set( hamwinBoxH, 'Widths', [-4 -1] );   
     %GROUP
     groupBoxV = uix.VBox( 'Parent', paramsLayout,'Padding', 3, 'Spacing', 3 );
     uicontrol('Parent', groupBoxV,'Style','text',...
@@ -109,12 +123,13 @@ function TimeTab(fig, tab, m)
         'HorizontalAlignment', 'left', 'String', 'ok', 'FontSize',9);
     %% PARAMETERS PANEL TIGHTEN UP
     %Tighten UP
-    t = [];
-    set(degBoxV, 'Heights', [20 -1]); t = [t 50]; % Make the list fill the space
-    set(lagBoxV, 'Heights', [20 -1]); t = [t 50];% Make the list fill the space
-    set(spikeBinBoxV, 'Heights', [20 -1]); t = [t 50]; % Make the list fill the space
-    set(sigmaBoxV, 'Heights', [20 -1]); t = [t 50]; % Make the list fill the space
-    set(overlapBoxV, 'Heights', [20 -1]); t = [t 50]; % Make the list fill the space
+    t = []; a = 50;
+    set(degBoxV, 'Heights', [20 -1]); t = [t a]; % Make the list fill the space
+    set(lagBoxV, 'Heights', [20 -1]); t = [t a];% Make the list fill the space
+    set(spikeBinBoxV, 'Heights', [20 -1]); t = [t a]; % Make the list fill the space
+    set(sigmaBoxV, 'Heights', [20 -1]); t = [t a]; % Make the list fill the space
+    set(overlapBoxV, 'Heights', [20 -1]); t = [t a]; % Make the list fill the space
+    set(hamwinBoxV, 'Heights', [20 -1]); t = [t a]; % Make the list fill the space
     set(groupBoxV, 'Heights', [20 -1]); t = [t 200]; % Make the list fill the space
     set(midBoxV, 'Heights', [20 -1]); t = [t 120]; % Make the list fill the space
     set(runBoxV, 'Heights', [30 -1]); t = [t -1]; % Make the list fill the space
@@ -205,6 +220,22 @@ function TimeTab(fig, tab, m)
     function onOverlapSliding(hObject,event)
         t = round2r(get(hObject,'Value'),0.001);
         set(gui.overlapEdit, 'String', t);
+    end
+ %HAMWIN
+    function onHamwinSlide( src, ~ )
+        t = round(get( src, 'Value'));
+        gui.m.hamwin = t;
+        set(gui.hamwinEdit, 'String', t);
+        %run();
+    end
+    function onHamwinEdit( src, ~ )
+        t = round(str2double(get(src, 'String')),3);
+        gui.m.hamwin =t;
+        set(gui.hamwinSlider, 'Value', t);
+    end
+    function onHamwinSliding(hObject,event)
+        t = round2r(get(hObject,'Value'),1);
+        set(gui.hamwinEdit, 'String', t);
     end
     % GROUP FNS
     function onGroupListSelection( src, t )

@@ -6,35 +6,15 @@ function [pearson_xcov, count_xcor] = compareByMovingDirection(c1, c2, params)
         spkt1 = spkt1-min_time+1; spkt2 = spkt2-min_time+1; max_time=max(max(spkt1),max(spkt2));
         train1=zeros(1,max_time);train2 =zeros(1,max_time); train1(spkt1)=1; train2(spkt2)=1; %LOTS OF 0'ss
         if params.sigma ~= 0
-            params.sigma = 0.002*1.7^params.sigma;
+            %params.sigma = 0.002*1.7^params.sigma; %ORIGINAL
         end
-        pearson_xcov{1,1} = timeCorrelationSmoothed(train1,train2,15,1000*params.lag_max_secs,params.sigma);
+        pearson_xcov{1,1} = timeCorrelationSmoothed(train1,train2,params.hamwin,1000*params.lag_max_secs,params.sigma);
         time_scale=( (1:length(pearson_xcov{1,1})) - ((length(pearson_xcov{1,1})-1)/2) - 1)/1000;
         pearson_xcov{1,2} = time_scale;
         pearson_xcov{1,3} = max(abs(pearson_xcov{1,1}));
         return
-        %{
-        %smooth trains;
-        win=hamming(15);train1Ham=conv(train1,win,'same');train2Ham=conv(train2,win,'same'); %win = win/sum(win);
-        train1 = train1Ham; train2 = train2Ham; 
-        %assert((train1(i)==1 & train1(i) ~= train2(i))||train1(i)==0)
-        %pearson_xcov{1,1}= xcov(train1,train2,round(1000*params.lag_max_secs),'coef')';
-        pearson_xcov{1,1}=xcorr(train1,train2,round(1000*params.lag_max_secs),'coef')';
-        [pmx pmxi] = max(abs(pearson_xcov{1,1}));
-        pearson_xcov{1,3} = [pmx pmxi];%(pmxi - ((length(pearson_xcov{1,1})-1)/2) - 1)/1000]; % dont ask
-        if params.sigma ~= 0
-            [b,a] = butter(6,0.002*1.7^params.sigma); %LOW PASS 0.15%6th order, fc/fs/2 determined empiracally 
-            pearson_xcov{1,1} = filtfilt(b,a,pearson_xcov{1,1});
-            [pmx pmxi] = max(abs(pearson_xcov{1,1}));
-            pearson_xcov{1,3} = [pmx pmxi];%(pmxi - ((length(pearson_xcov{1,1})-1)/2) - 1)/1000]; % dont ask
-        end
-        count_xcor{1,1}=xcorr(train1,train2, round(1000*params.lag_max_secs))'; %how many times spike at same point
-        time_scale=( (1:length(pearson_xcov{1,1})) - ((length(pearson_xcov{1,1})-1)/2) - 1)/1000; %goes from -lag 0 +lag in ms
-        pearson_xcov{1,2} = time_scale; count_xcor{1,3}= time_scale;
-        %pearson_xcov{1,3} = [0 360]; count_xcor{1,3}   = [0 360];
-        return
-        %}
     end
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     px = double(c1.px); py = double(c1.py); pt = double(c1.pt);
     dt = median(diff(pt)); dt = round(dt*1e4)/1e4; % round to 10th of millisec
     vox = zeros(length(pt),1);
