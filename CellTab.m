@@ -17,6 +17,9 @@ s = setSesh(gui.m.ind);
 gui.m.t0 = 1;
 gui.m.tn = length(gui.m.c.pt);
 
+
+gui.Window.UserData.nza
+
 %TOP UI
 CellTabBox = uix.HBoxFlex( 'Parent', tab, 'Spacing', 3);
 controlPanel = uix.Panel('Parent', CellTabBox,'Title', '' );
@@ -188,12 +191,52 @@ end
         %PLOT 1        
         ax = subplot(rows,cols,1,'Parent',gui.m.parent); axi(end+1) = ax;
         %XY
-        %set(ax,'color','w');
-        %plot(ax,c.px(pw),c.py(pw),'b','linewidth',1);hold(ax,'on');
+        %plot(ax,c.px(pw),c.py(pw),'b','linewidth',1);hold(ax,'on');%set(ax,'color','w');
         plot(ax,c.px(sw),c.py(sw),'w.','markersize',3);%,'linewidth',ss);
         title(ax,sprintf('spikes=%d',length(sw)),'color','m','fontsize',tfs);
         
-        %PLOT 2
+         % PLOT 2
+         ax = subplot(rows,cols,2,'Parent',gui.m.parent); axi(end+1) = ax; %cla(ax);
+         %FOURIER
+         spkms = floor(c.st*1000)+1; %to millisecs         
+         %spkms = spkms-min(spkms)+100; %add 100 leading zeros 
+         %train= zeros(1,max(spkms)+100);%add 100 trailing zeros
+         train= zeros(1,length(spkms));
+         train(spkms)=1;          %t = zeros(c.si(end)+10,1); %add 10 trailing zeros        %t(c.si)=1;
+         %plotfft(ax,train,1000); %time in ms;
+%          y=fft(train-mean(train));y(1:500)=0; %deletes first few;
+%          l = length(y); l2 = floor(l/2);
+%          y = abs(y(1:l2));
+%          r = 500;y = decimate(y,r); %y=abs(y);
+         f1 = 1e-9; f2 = 500-1e-9; fs = 1000;
+         ftrain = train;
+         %ftrain = bandpassfft(train, f1, f2, fs);
+         
+         y=fft(train-mean(ftrain));y(1:500)=0; %deletes first few;
+         l = length(y); l2 = floor(l/2);
+         y = abs(y(1:l2));
+         f = 1000*(1:length(y))/(length(y)*2);
+        % y = smooth(y,1e2);%'sgolay',
+         fi = (length(y)*    20    *2/1000);
+         plot(ax,f(1:fi),smooth(y(1:fi),500),'linewidth',3); ax.YLim = [0 100]; hold(ax,'on'); 
+         plot(ax,[7.9999 8],[ylim(ax)],'r.','linewidth',1.2,'markersize',15);  %max(y(1:round(l/2)) )
+         xlabel(ax,'Hz');
+         title(ax,sprintf('gs %.1f  len %d ',round(c.gridscore,1),length(y)),'color','m','fontsize',tfs); ax.YLim = [0 100]; %hold(ax,'off'); 
+         %figure(2);
+        % plotfft(gca,train,1000);
+ 
+        % PLOT 4
+        ax = subplot(rows,cols,4,'Parent',gui.m.parent);axi(end+1) = ax;
+        % reconstruct        %floor(c.st*1000)+1;
+        newst = 1:length(ftrain); %newst(~train)=0;
+        newst = newst(boolean( round( real(ftrain)) ))/1000;
+        newsi = discretize(newst, [-Inf, mean([c.pt(2:end)'; c.pt(1:end-1)']), +Inf]);
+        %sw = c.si(c.si>gui.m.t0 & c.si< gui.m.tn);
+        %[newrm, ~] = Create_Rate_Map(c.px, c.py, c.pt, c.px(newsi), c.py(newsi), newst, true, 50);
+        %plot(ax,c.px(newsi),c.py(newsi),'w.','markersize',3);%,'linewidth',ss);
+        %title(ax,sprintf('spikes=%d',length(sw)),'color','m','fontsize',tfs);
+        
+        %PLOT 8
         ax = subplot(rows,cols,8,'Parent',gui.m.parent); axi(end+1) = ax;
          %RM
         nbins = 50;
@@ -225,9 +268,11 @@ end
         %imagesc(ax, conv2(rm,f,'same'));
         imagesc(ax, imgaussfilt(c.rm,1)); %rm
         title(ax,sprintf('max %.1fHz',m),'color','m','fontsize', tfs);
+
         
-        %PLOT 3
-        ax = subplot(rows,cols,3,'Parent',gui.m.parent); axi(end+1) = ax;
+        
+        %PLOT 6
+        ax = subplot(rows,cols,6,'Parent',gui.m.parent); axi(end+1) = ax;
         % AC
         ac = xcorr2( rm);
         ac = ac/ max(ac(:)); %normalized ac;
@@ -254,82 +299,98 @@ end
         end
         %rms(rms>0)=1;
         title(ax,sprintf('gs %.2f gs2 %.2f gs3 %.2f',gridscore2(ac,2),...
-            gridscore2(xcorr2(imgaussfilt(rm,2)),2),...
-            gridscore2(ac,3)),'color','m','fontsize',tfs); %rms
-        % ax = subplot(rows,cols,3,'Parent',gui.m.parent)  %PLOT 1 TITLE
-         %title(ax,sprintf('gs %.2f \ngs2 %.2f \ngs3 %.2f',gridscore2(ac,2),...
-             %gridscore2(xcorr2(imgaussfilt(rms,1)),2),...
-             %c.gridscore),'color','m','fontsize',18);
-        % AC2 SMOOTHED
-        %ax = subplot(rows,cols,7,'Parent',gui.m.parent) ; axi(end+1) = ax;
-        %[cs, rs] = imfindcircles(ac>std(ac(:)),[10 40]);
-        %imagesc(ax,acg); %hold on;
-        
-	     % $$ STILL ADDING TIME TO BINS
-        % $$ STILL ADDING TIME TO BINS
-        % 36 12.0
-        
-        % PLOT 4
-        ax = subplot(rows,cols,4,'Parent',gui.m.parent);axi(end+1) = ax;
-        %MODULE
-        acg = imgaussfilt(ac, 3,'FilterDomain','spatial');
-        %acg = imresize(acg, [70 120]);
-        imagesc(ax,acg); hold(ax,'on'); %%%%
-        cent = size(acg)/2;
-        plot(ax,cent(2),cent(1),'wx','markersize',10);
+        gridscore2(xcorr2(imgaussfilt(rm,2)),2),...
+        gridscore2(ac,3)),'color','m','fontsize',tfs); %rms
+%         acg = imgaussfilt(ac, 3,'FilterDomain','spatial');
+%         %acg = imresize(acg, [70 120]);
+%         imagesc(ax,acg); hold(ax,'on'); %%%%
+%         cent = size(acg)/2;
+%         plot(ax,cent(2),cent(1),'wx','markersize',10);
         module = Find_Module(acg);
         plot(ax,module.hex_peaks(:,1),module.hex_peaks(:,2),'ro');
         %plot(ax,module.hex_peaks2(:,1),module.hex_peaks2(:,2),'y*'); 
         plot(ax,module.x,module.y,'r'); 
         title(ax,sprintf(' %s','Module'),'color','m','fontsize',tfs);
-        
+        % ax = subplot(rows,cols,3,'Parent',gui.m.parent)  %PLOT 1 TITLE
+        %title(ax,sprintf('gs %.2f \ngs2 %.2f \ngs3 %.2f',gridscore2(ac,2),...
+        % AC2 SMOOTHED
+        %[cs, rs] = imfindcircles(ac>std(ac(:)),[10 40]);
+
+
         % PLOT 5
          ax = subplot(rows,cols,5,'Parent',gui.m.parent); axi(end+1) = ax;
          % RAYLEIGH
          d = gui.m.c;
          rd = histcounts(rad2deg(c.hd(c.si))+180,0:3:360)./histcounts(rad2deg(c.hd)+180,0:3:360);
          rd = smooth(rd,15);
-         plot(ax, 3:3:360,rd,'g','linewidth',1.8);
+         plot(ax, 3:3:360,rd,'g','linewidth',0.7);
          rs = d.rayleigh_score;
          title(ax,sprintf('HD Rate rayleigh=%.2f',rs),'color','m','fontsize',tfs);
         
-         % PLOT 6
-         ax = subplot(rows,cols,6,'Parent',gui.m.parent); axi(end+1) = ax;
-         % TIME DIFF
-         plot(ax, c.pt); 
-         hold(ax,'on'); plot(ax,c.si,c.st,'r.');
-         df = diff(c.pt);
-         hold(ax,'off'); hist(ax,df,10);
-         %title(ax,sprintf('Time diff mx%.2f m%.3f s%.2f', max(df), mean(df), std(df) ),'color','m','fontsize',tfs-2);
-         title(ax,sprintf('%s','Time diff (s)'),'color','m','fontsize',tfs);
+         % PLOT 3
+         ax = subplot(rows,cols,3,'Parent',gui.m.parent); axi(end+1) = ax; cla(ax);
+         %FOURIER      
+         spkms = floor(c.st*1000)+1; %to millisecs         
+         spkms = spkms-min(spkms)+100; %add 100 leading zeros 
+         train= zeros(1,max(spkms)+100);%add 100 trailing zeros
+         train(spkms)=1;
+         %t = zeros(c.si(end)+10,1); %add 10 trailing zeros
+         %t(c.si)=1;
+         plotfft(ax,train,1000); %time in ms;
+         title(ax,'FOURIER');
          
          % PLOT 7
          ax = subplot(rows,cols,7,'Parent',gui.m.parent); axi(end+1) = ax;
          % TRAIN
          t = zeros(c.si(end),1);
          t(c.si)=1;
-         bin_s = 2;
+         bin_s = 0.1;
          t = histcounts(c.st,0:bin_s:c.st(end));
          plot(ax,t,'y');
          title(ax,sprintf('Train bin=%.2fs', bin_s),'color','m','fontsize',tfs);
          
+         % PLOT 9
+         ax = subplot(rows,cols,9,'Parent',gui.m.parent); axi(end+1) = ax; cla(ax);
+         %FOURIER      
+%          spkms = floor(c.st*1000)+1; %to millisecs         
+%          spkms = spkms-min(spkms)+100; %add 100 leading zeros 
+%          train= zeros(1,max(spkms)+100);%add 100 trailing zeros
+%          train(spkms)=1;
+         %t = zeros(c.si(end)+10,1); %add 10 trailing zeros
+         %t(c.si)=1;
          
-         
+         %plotfft(ax,fft(ftrain),1000); %time in ms;
+         %title(ax,'FOURIER BANDPASS');
+        
+%          % PLOT 9
+%          ax = subplot(rows,cols,9,'Parent',gui.m.parent); axi(end+1) = ax;
+%          % TIME DIFF
+%          plot(ax, c.pt); 
+%          hold(ax,'on'); plot(ax,c.si,c.st,'r.');
+%          df = diff(c.pt);
+%          hold(ax,'off'); hist(ax,df,10);
+%          %title(ax,sprintf('Time diff mx%.2f m%.3f s%.2f', max(df), mean(df), std(df) ),'color','m','fontsize',tfs-2);
+%          title(ax,sprintf('%s','Time diff (s)'),'color','m','fontsize',tfs);
+        
          % FOR PAPER - REMOVE
-         ax = subplot(rows,cols,2,'Parent',gui.m.parent); axi(end+1) = ax; cla(ax);
-         % AC Clean
-         acg = imgaussfilt(ac, 3,'FilterDomain','spatial');imagesc(ax,acg);
-         title(ax,sprintf('gridscore=%.1f',round(gridscore2(ac,3),1)),'color','m','fontsize',tfs); %rms
+%          ax = subplot(rows,cols,2,'Parent',gui.m.parent); axi(end+1) = ax; cla(ax);
+%          % AC Clean
+%          acg = imgaussfilt(ac, 3,'FilterDomain','spatial');imagesc(ax,acg);
+%          title(ax,sprintf('gridscore=%.1f',round(gridscore2(ac,3),1)),'color','m','fontsize',tfs); %rms
+%  
+%          ax = subplot(rows,cols,3,'Parent',gui.m.parent); axi(end+1) = ax; cla(ax);
+%          % RAYLEIGH
+%          d = gui.m.c;
+%          rd = histcounts(rad2deg(c.hd(c.si))+180,0:3:360)./histcounts(rad2deg(c.hd)+180,0:3:360);
+%          rd = smooth(rd,45);
+%          plot(ax, 3:3:360,rd,'g','linewidth',3);
+%          rs = d.rayleigh_score;
+%          title(ax,sprintf('Rayleigh=%.1f',round(rs,1)),'color','m','fontsize',tfs); 
+%          xlabel(ax,'angle','color','m','fontsize',tfs-2)
          
-         ax = subplot(rows,cols,3,'Parent',gui.m.parent); axi(end+1) = ax; cla(ax);
-         % RAYLEIGH
-         d = gui.m.c;
-         rd = histcounts(rad2deg(c.hd(c.si))+180,0:3:360)./histcounts(rad2deg(c.hd)+180,0:3:360);
-         rd = smooth(rd,45);
-         plot(ax, 3:3:360,rd,'g','linewidth',3);
-         rs = d.rayleigh_score;
-         title(ax,sprintf('Rayleigh=%.1f',round(rs,1)),'color','m','fontsize',tfs); 
-         xlabel(ax,'angle','color','m','fontsize',tfs-2)
+ 
+         
+         
         
         %ALLLL
         for i = 1:length(axi)

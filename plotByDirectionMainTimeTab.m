@@ -1,7 +1,3 @@
-
-
-
-
 function [h, vers] =  plotByDirectionMainTimeTab(params)
     %PARAMETERS
     warning off;
@@ -13,9 +9,10 @@ function [h, vers] =  plotByDirectionMainTimeTab(params)
     
     sigma = params.sigma
     if sigma ~= 0
-        sigma =  (c^(params.sigma/10)-1)/(c^10-0.99999) %999
-        %sigma =  (log(params.sigma))/(log(100))-1e-8 %999
-        %sigma = params.sigma/100-1e-6
+        sigma = round(sigma)
+        %%sigma =  (c^(params.sigma/10)-1)/(c^10-0.99999) %999 good
+        %sigma =  (log(params.sigma))/(log(100))-1e-8 %999 bad
+        %sigma = params.sigma/100-1e-6 %bad
     end
     params.sigma = sigma;
     v = params.sesh;
@@ -81,7 +78,8 @@ function [h, vers] =  plotByDirectionMainTimeTab(params)
                     plot(az,  [0 0],  [-1 1],'r','linewidth', 1);
                     Y = p{1,1}';
                     %plot at halfway
-                    text(az, 0,0, sprintf('%.3f %.3f', round(Y(round(length(Y)/2)),3)), 'Color','r'); 
+                    text(az, 0,0, sprintf('%.3f %.3f', round(Y(round(length(Y)/2)),3)), 'Color','r',...
+                        'fontsize',16); 
                     axis(az, 'tight'); %ylim(az, [-1 1]); %lim done at end
                     axis(az, 'square');
                     az.Color = 'black'; 

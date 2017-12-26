@@ -1,4 +1,10 @@
 function Pandora
+    %{ 
+    TO DO:
+     - reconstruct grid cell after smoothing
+     - see if this explains clustering in muscimol grid cells or
+     - or explained by speed
+    %}
     
     gui = createInterface(createData()); %#ok<*NASGU>
     function m = createData()
@@ -21,9 +27,9 @@ function Pandora
         gui = struct();
         gui.m = m;
         gui.Window = figure( ...
-            'Position', [350,50, 1250, 1000],'Name', 'Griddy', ...
-            'NumberTitle', 'off','MenuBar', 'none', ...
-            'Toolbar', 'none',  'HandleVisibility', 'off' );
+            'Position', [50,50, 1250, 700],'Name', 'Griddy');%,...
+           % 'NumberTitle', 'off','MenuBar', 'none', ...
+          %  'Toolbar', 'none',  'HandleVisibility', 'off' );
         %GRID THREHS
         gui.Window.UserData.gridThresh = 0.5;
         gui.Window.UserData.gridThreshMid = 0.3;

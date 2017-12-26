@@ -23,11 +23,11 @@ function   shufflingMain()
     %fn = sprintf('C:\\Noam\\Data\\muscimol\\noam\\cells_%dmin_c_midall_gridscore.mat',binsize); first set
     fn = sprintf('C:\\Noam\\Data\\muscimol\\noam\\cells_%dmin_d_patchtraj_rayleigh',45);
     load(fn);
+    %PRINT OUT AREAS OF RECORDING
     for i = 1:length(cells)
         t = cells{i};
         fprintf('%d: [%s%s] -  %s\n',t.ind,t.id,t.date,t.area);
-    end
-    
+    end  
     iCbmIuRbm250u = {};
     [groups ~] = findSimultaneouslyRecordedCells(cells);
     gridThreshBef = 0.3; gridThreshMid = 0.25;        
@@ -244,7 +244,7 @@ function   shufflingMain()
     n = 250;
     tic
     for ri = 1:length(gids)
-        gis = gids(ri)
+        gis = gids(ri);
         cis = cids{gis}
         g = groups{gis};
         g = g(cis);

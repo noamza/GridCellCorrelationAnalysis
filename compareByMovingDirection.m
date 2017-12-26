@@ -1,5 +1,5 @@
 function [pearson_xcov, count_xcor] = compareByMovingDirection(c1, c2, params)
-    nbins = params.number_degree_bins;
+    nbins = params.number_degree_bins; params.lagms = 1000*params.lag_max_secs;
     if nbins == 1
         pearson_xcov = cell(1,3); count_xcor = cell(1,3);
         spkt1=floor(c1.st*1000)+1; spkt2=floor(c2.st*1000)+1; min_time=min(min(spkt1),min(spkt2)); %TIME IN MS
@@ -8,7 +8,7 @@ function [pearson_xcov, count_xcor] = compareByMovingDirection(c1, c2, params)
         if params.sigma ~= 0
             %params.sigma = 0.002*1.7^params.sigma; %ORIGINAL
         end
-        pearson_xcov{1,1} = timeCorrelationSmoothed(train1,train2,params.hamwin,1000*params.lag_max_secs,params.sigma);
+        pearson_xcov{1,1} = timeCorrelationSmoothed(train1,train2,params);
         time_scale=( (1:length(pearson_xcov{1,1})) - ((length(pearson_xcov{1,1})-1)/2) - 1)/1000;
         pearson_xcov{1,2} = time_scale;
         pearson_xcov{1,3} = max(abs(pearson_xcov{1,1}));
