@@ -4,8 +4,3 @@ function x = toCol(x)
     end
 end
 
-function x = toRow(x)
-    if iscolumn(x)
-        x = x';
-    end
-end

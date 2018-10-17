@@ -4,9 +4,11 @@ function Pandora
      - reconstruct grid cell after smoothing
      - see if this explains clustering in muscimol grid cells or
      - or explained by speed
+     - miniscope, probe 
     %}
-    
     gui = createInterface(createData()); %#ok<*NASGU>
+end
+
     function m = createData()
         fn = sprintf('C:\\Noam\\Data\\muscimol\\noam\\mini%dmin.mat', 45);
         fn = sprintf('C:\\Noam\\Data\\muscimol\\noam\\cells_%dmin_d_patchtraj_rayleigh',45);
@@ -17,20 +19,21 @@ function Pandora
         for i = 1:length(groups)
         end
         m.groups = groups;
-        m.gid = 6;
+        m.gid = 1; %initialize to group
         m.g = m.groups{m.gid};
         m.sesh = 'before';
         %m.grid_thresh = 0.5;
     end % createData
     
-    function gui = createInterface(m)        
+    function gui = createInterface(m)
+        
         gui = struct();
         gui.m = m;
         gui.Window = figure( ...
-            'Position', [50,50, 1250, 700],'Name', 'Griddy');%,...
-           % 'NumberTitle', 'off','MenuBar', 'none', ...
+            'Position', [10,20, 1250, 650],'Name', 'Griddy',...
+           'NumberTitle', 'off','MenuBar', 'none' );%, ...
           %  'Toolbar', 'none',  'HandleVisibility', 'off' );
-        %GRID THREHS
+        %GRID THRESH
         gui.Window.UserData.gridThresh = 0.5;
         gui.Window.UserData.gridThreshMid = 0.3;
         gui.Window.UserData.gidsFns = {};
@@ -41,19 +44,15 @@ function Pandora
         gui.DriftTab = uix.Panel('Parent', Tabs, 'Tag', 'drift tab'); t{end+1} = 'Drift';
         gui.AniTab   = uix.Panel('Parent', Tabs, 'Tag', 'ani tab');   t{end+1} = 'Replay';
         gui.CellTab  = uix.Panel('Parent', Tabs, 'Tag', 'cell tab');  t{end+1} = 'Cell';
-        gui.MiscTab  = uix.Panel('Parent', Tabs, 'Tag', 'agg tab');   t{end+1} = 'Aggregate';     
+        gui.MiscTab  = uix.Panel('Parent', Tabs, 'Tag', 'agg tab');   t{end+1} = 'Aggregate';
 
                  Tabs.Selection = 2; % <<<< START UP TAB                
-        
-        GroupTab(gui.Window, gui.GroupTab, m);
-        TimeTab(gui.Window, gui.TimeTab, m);
-        DriftTab(gui.Window, gui.DriftTab, m);
-        MotionTab(gui.Window, gui.AniTab, m);
-        CellTab(gui.Window, gui.CellTab, m);
-        MiscTab(gui.Window, gui.MiscTab, m);
+
+        TabGroup(  gui.Window, gui.GroupTab ,m);
+        TabTime(   gui.Window, gui.TimeTab  ,m);
+        TabDrift(  gui.Window, gui.DriftTab ,m);
+        TabMotion( gui.Window, gui.AniTab   ,m);
+        TabCell(   gui.Window, gui.CellTab  ,m);
+        TabMisc(   gui.Window, gui.MiscTab  ,m);
         Tabs.TabTitles = t;
-        
-        
-        
     end
-end

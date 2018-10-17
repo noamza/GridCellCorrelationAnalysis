@@ -1,4 +1,4 @@
-function MotionTab(fig, tab, m)
+function TabMotion(fig, tab, m)
     gui.Window = fig;
     gui.m = m;
     gui.m.speed = 200;
@@ -34,17 +34,18 @@ function MotionTab(fig, tab, m)
     gui.viewContainer2 = uicontainer('Parent', viewBoxV,'backgroundcolor','k');
     set( viewBoxV, 'Heights', [-7 -1] );
     %% CONTROL PANEL
-    controlBoxV = uix.VBox( 'Parent', controlPanel, 'Spacing', 3);
+    controlBoxV = uix.VBox( 'Parent', controlPanel, 'Spacing', 1);
     t = [];
+    pad = 1; spc = 1; sld = 35;
     %% GROUP
-    groupBoxV = uix.VBox( 'Parent', controlBoxV,'Padding', 3, 'Spacing', 0 ); t = [t -1];
+    groupBoxV = uix.VBox( 'Parent', controlBoxV,'Padding', pad, 'Spacing', spc ); t = [t -1];
     uicontrol('Style','text','Parent', groupBoxV,'HorizontalAlignment', 'left','String', 'Group:');
     gui.groupListBox = uicontrol( 'Style', 'list','BackgroundColor', 'w','Parent', groupBoxV, ...
         'String', num2str((1:length(gui.m.groups))'),'Value', 1,'Callback', @onGroupListSelection);
     set( groupBoxV, 'Heights', [20 -1] );
     %% MID
     
-    midBoxV = uix.VBox( 'Parent', controlBoxV,'Padding', 3, 'Spacing', 3 ); t = [t 80];
+    midBoxV = uix.VBox( 'Parent', controlBoxV,'Padding', pad, 'Spacing', spc ); t = [t 70];
     uicontrol('Parent', midBoxV,'Style','text','HorizontalAlignment', ...
         'left', 'String','Muscimol Bin:');
     gui.midListBox = uicontrol( 'Style', 'list','BackgroundColor', 'w','String', {'before';'midall';'after'}, ...
@@ -54,7 +55,7 @@ function MotionTab(fig, tab, m)
     end
     set( midBoxV, 'Heights', [20 -1] );
     %% CHECK BOXES
-    gui.checkBoxV = uix.VBox('Parent', controlBoxV); t = [t 250];
+    gui.checkBoxV = uix.VBox('Parent', controlBoxV); t = [t 200];
     uicontrol('Style','text','Parent', gui.checkBoxV, 'String', 'Show Cells:',...
         'HorizontalAlignment', 'left');
     gui.cbh = zeros(length(gui.m.g),1);
@@ -63,10 +64,10 @@ function MotionTab(fig, tab, m)
         s = sprintf('i%d tet%d grid%.1f', gui.m.g(i).ind, gui.m.g(i).tet, c.gridscore);
         gui.cbh(i) = uicontrol('Style','checkbox','String', s,'Value',1,...
                 'Parent', gui.checkBoxV, 'Callback',{@checkBoxCallback,i},...
-                'ForegroundColor',gui.m.colors(i,:), 'FontSize', 9, 'fontweight', 'bold');
+                'ForegroundColor',gui.m.colors(i,:), 'FontSize', 7, 'fontweight', 'bold');
     end
     %% DRIFT
-    driftBoxV = uix.VBox( 'Parent', controlBoxV,'Padding', 0, 'Spacing',0 , 'Visible', 'on'); t = [t 40];
+    driftBoxV = uix.VBox( 'Parent', controlBoxV,'Padding', 0, 'Spacing',0 , 'Visible', 'on'); t = [t sld];
     driftBoxH1 = uix.HBox( 'Parent', driftBoxV,'Padding', 0, 'Spacing', 0 );
     gui.showDriftCh = uicontrol('Style','checkbox','Value',gui.m.showTrain,'String', 'Drift Window(s):',...
           'Parent', driftBoxH1, 'Callback',@OnShowDriftCh); %'FontSize', 10, 'fontweight', 'bold'
@@ -80,7 +81,7 @@ function MotionTab(fig, tab, m)
     addlistener(gui.driftSlider,'ContinuousValueChange',@(hObject, event) onDriftSliding(hObject, event));
     set( driftBoxH, 'Widths', [-4 -1] );
     %% GO
-    goBoxV = uix.VBox( 'Parent', controlBoxV,'Padding', 0, 'Spacing', 0 , 'Visible', 'on'); t = [t 40];      
+    goBoxV = uix.VBox( 'Parent', controlBoxV,'Padding', 0, 'Spacing', 0 , 'Visible', 'on'); t = [t sld];      
     gui.goLabel = uicontrol('Parent', goBoxV,'Style','text',...
         'HorizontalAlignment', 'left','String', sprintf('Go to (min %d): ',floor(gui.m.c.pt(end)/60)));
     goBoxH = uix.HBox( 'Parent', goBoxV,'Padding', 0, 'Spacing', 0 );
@@ -92,7 +93,7 @@ function MotionTab(fig, tab, m)
     addlistener(gui.goSlider,'ContinuousValueChange',@(hObject, event) onGoSliding(hObject, event));
     set( goBoxH, 'Widths', [-4 -1] );
     %% T0
-    t0BoxV = uix.VBox( 'Parent', controlBoxV,'Padding', 0, 'Spacing', 0 , 'Visible', 'on'); t = [t 40];      
+    t0BoxV = uix.VBox( 'Parent', controlBoxV,'Padding', 0, 'Spacing', 0 , 'Visible', 'on'); t = [t sld];      
     gui.t0Label = uicontrol('Parent', t0BoxV,'Style','text',...
         'HorizontalAlignment', 'left','String', sprintf('Show from t= (min <%d): ',floor(gui.m.c.pt(end)/60)));
     t0BoxH = uix.HBox( 'Parent', t0BoxV,'Padding', 0, 'Spacing',0 );
@@ -104,7 +105,7 @@ function MotionTab(fig, tab, m)
     addlistener(gui.t0Slider,'ContinuousValueChange',@(hObject, event) onT0Sliding(hObject, event));
     set( t0BoxH, 'Widths', [-4 -1] );   
     %% TIME
-    timeBoxH = uix.VBox( 'Parent', controlBoxV,'Padding', 0, 'Spacing', 0 , 'Visible', 'on'); t = [t 40];      
+    timeBoxH = uix.VBox( 'Parent', controlBoxV,'Padding', 0, 'Spacing', 0 , 'Visible', 'on'); t = [t sld];      
     uicontrol('Parent', timeBoxH,'Style','text',...
         'HorizontalAlignment', 'left','String', 'Time Step:');
     timeBoxH = uix.HBox( 'Parent', timeBoxH,'Padding', 0, 'Spacing', 0 );
@@ -116,7 +117,7 @@ function MotionTab(fig, tab, m)
     addlistener(gui.timeSlider,'ContinuousValueChange',@(hObject, event) onTimeSliding(hObject, event));
     set( timeBoxH, 'Widths', [-4 -1] );
     %% SPEED
-    speedBoxH = uix.VBox( 'Parent', controlBoxV,'Padding', 0, 'Spacing', 0 , 'Visible', 'on'); t = [t 40];      
+    speedBoxH = uix.VBox( 'Parent', controlBoxV,'Padding', 0, 'Spacing', 0 , 'Visible', 'on'); t = [t sld];      
     uicontrol('Parent', speedBoxH,'Style','text','String', 'Speed (lightyears):',...
         'HorizontalAlignment', 'left');
     speedBoxH = uix.HBox( 'Parent', speedBoxH,'Padding', 0, 'Spacing', 0 );
@@ -128,7 +129,7 @@ function MotionTab(fig, tab, m)
     addlistener(gui.speedSlider,'ContinuousValueChange',@(hObject, event) onSpeedSliding(hObject, event));
     set( speedBoxH, 'Widths', [-4 -1] );
      %% DELAY
-    delayBoxV = uix.VBox( 'Parent', controlBoxV,'Padding', 0, 'Spacing', 0 , 'Visible', 'on'); t = [t 40];      
+    delayBoxV = uix.VBox( 'Parent', controlBoxV,'Padding', 0, 'Spacing', 0 , 'Visible', 'on'); t = [t sld];      
     gui.delayLabel = uicontrol('Parent', delayBoxV,'Style','text',...
         'HorizontalAlignment', 'left','String', sprintf('Delay (s):%s',''));
     delayBoxH = uix.HBox( 'Parent', delayBoxV,'Padding', 0, 'Spacing', 0 );
@@ -140,7 +141,7 @@ function MotionTab(fig, tab, m)
     addlistener(gui.delaySlider,'ContinuousValueChange',@(hObject, event) onDelaySliding(hObject, event));
     set( delayBoxH, 'Widths', [-4 -1] );   
     %% TRAIN DISPLAY WIN
-    winBoxV = uix.VBox( 'Parent', controlBoxV,'Padding', 0, 'Spacing', 0 , 'Visible', 'on'); t = [t 40];
+    winBoxV = uix.VBox( 'Parent', controlBoxV,'Padding', 0, 'Spacing', 0 , 'Visible', 'on'); t = [t sld];
     winBoxH1 = uix.HBox( 'Parent', winBoxV,'Padding', 0, 'Spacing', 0 );
     gui.showTrainCh = uicontrol('Style','checkbox','Value',gui.m.showTrain,'String', 'Train Length(s):',...
           'Parent', winBoxH1, 'Callback',@OnShowTrainCh); %'FontSize', 10, 'fontweight', 'bold'
@@ -225,7 +226,7 @@ function MotionTab(fig, tab, m)
         if isnan(gui.m.sesh)
             gui.m.sesh = t{get(src,'Value')};
         end
-        disp('1 MID SELCTION');
+        %disp('1 MID SELCTION');
         updateM();
         %checkboxes
         for i = 1:length(gui.m.g)
@@ -239,7 +240,7 @@ function MotionTab(fig, tab, m)
     end
     % STOP
     function onStop(~, ~)
-        disp('STOP');
+        %disp('STOP');
         gui.m.stop = true;
         gui.m.go = 1;
         gui.m.t0 = 1;
@@ -402,7 +403,7 @@ function MotionTab(fig, tab, m)
     end 
     %% UPDATE M
     function updateM()
-        disp('2 UPDATE M');
+        %disp('2 UPDATE M');
         gui.m.g = gui.m.groups{gui.m.gid};
         gui.m.pause = false;
         gui.m.stop = false; 
@@ -427,7 +428,7 @@ function MotionTab(fig, tab, m)
     end
     %% RUN %%
     function run(~,~)
-        disp('3 RUN');
+        %disp('3 RUN');
         onStop(-1,-1);
         pause(0.2);
         gui.m.stop = false;
@@ -457,7 +458,7 @@ function MotionTab(fig, tab, m)
         c.px = c.px + xoff;c.py = c.py + yoff;
         maxx = max(c.px);
         maxy = max(c.py);
-        disp('4 RUN PRIVATE');
+        %disp('4 RUN PRIVATE');
         ax = axes('Parent',gui.m.parent);
         ax2 = axes('Parent',gui.viewContainer2);
         while gui.m.go <= length(gui.m.c.pt)
@@ -493,7 +494,7 @@ function MotionTab(fig, tab, m)
                 sxi1 = double(pxi1(gui.m.train(gui.m.lastChecked,i1:i))); 
                 syi1 = double(pyi1(gui.m.train(gui.m.lastChecked,i1:i)));
                 sti1 = double(pti1(gui.m.train(gui.m.lastChecked,i1:i)));
-                rm = Create_Rate_Map(pxi1, pyi1, pti1, sxi1, syi1, sti1, true, 100); 
+                rm = createRateMap(pxi1, pyi1, pti1, sxi1, syi1, sti1, true, 100); 
                 imagesc(ax, imgaussfilt(rm,2,'FilterDomain','spatial'));
                 %title(ax, sprintf('c%d(gsc%.1f)', c1.ind,round(c1.gridscore,1)));
                 axis(ax,'equal'); axis(ax,'tight'); set(ax,'ydir','normal','xticklabel',[],'yticklabel',[]);
@@ -509,6 +510,7 @@ function MotionTab(fig, tab, m)
                 plot(ax,c.px(gui.m.t0:i),c.py(gui.m.t0:i),'Color',[0.3 0.3 0.3],'linewidth', 1);
                 hold(ax, 'on');hold(ax2, 'on');
                 xlim(ax, [0 maxx+20]); ylim(ax, [0  maxy+20]); xlim(ax2, [0 maxx+20]); ylim(ax2, [0  2*length(gui.m.g)+4]);
+                axis(ax,'square');
                 %ax.XLim
                 %plot square
                 %plot(ax,[xoff,xoff,maxx,maxx,xoff],[yoff,maxy+1,maxy+1,yoff,yoff],'w','linewidth', 2);
@@ -558,14 +560,14 @@ function MotionTab(fig, tab, m)
             pause(1/gui.m.speed);
             gui.m.go = gui.m.go + gui.m.timestep;
             if gui.m.stop
-                disp('stop and add length');
+                %disp('stop and add length');
                 gui.m.go = length(gui.m.c.pt) + 1;
             end
         end
         if gui.m.stop
             gui.m.stop = false;
             cla(ax);cla(ax2);
-            disp('stop and clear after loop');
+            %disp('stop and clear after loop');
         end
         gui.m.go = 1;
         %toc

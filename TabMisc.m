@@ -1,4 +1,4 @@
-function MiscTab(fig, tab, m)
+function TabMisc(fig, tab, m)
     gui.Window = fig;
     gui.m = m;
     

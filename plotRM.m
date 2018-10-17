@@ -1,8 +1,8 @@
 %c session
 %str strings for labels
 %ax axis
-function ax = plotRM(c,str,ax)%m,n,l    
-    title(ax, str.tt);xlabel(ax, str.xt);ylabel(ax, str.yt);hold(ax, 'on');
+function ax = plotRM(ax,c,str)%m,n,l    
+    title(ax, str.t);xlabel(ax, str.x);ylabel(ax, str.y);hold(ax, 'on');
     
     imagesc(ax, imgaussfilt(c.rm,2,'FilterDomain','spatial')); 
     

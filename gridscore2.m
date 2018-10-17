@@ -1,6 +1,6 @@
 function gridness2 = gridscore2(ac, sigma) %R_inner,R_outer,[cenx ceny]
     if length(ac) == 1 || isnan(max(ac(:)))
-        gridness2 = -2;
+        gridness2 = 0;
         %return; EXIT
     end
     %try
@@ -46,7 +46,7 @@ function gridness2 = gridscore2(ac, sigma) %R_inner,R_outer,[cenx ceny]
             % extract the anulus(ring)
             rot_Ring=rot_Acor(tmp_dist_from_center<=R_outer & tmp_dist_from_center>=R_inner);
             if length(rot_Ring)~=length(org_Ring)
-                gridness2=-2;
+                gridness2=0;
                 return
             end
             % compute pearson correlation between rotate Acor and original Acor
@@ -63,7 +63,7 @@ function gridness2 = gridscore2(ac, sigma) %R_inner,R_outer,[cenx ceny]
         %gridness1=mean(([corrValues(3),corrValues(5)]))-...
             %mean([corrValues(2),corrValues(4),corrValues(6)]);
         else
-            gridness2 = -2;
+            gridness2 = 0;
             fprintf('%bad cell sigma%d gridscore -2',sigma);
         end
     %catch ME

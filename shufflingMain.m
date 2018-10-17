@@ -1,19 +1,5 @@
 %{
-//Run control: do same analysis for Before vs During, for After vs During
 
-//Correlations: generate results as a function of different levels of
-smoothing, see if there is sharp negative connectivity
-
-//Spatial correlations: center point of cross correlation, include shuffling
-
-//Correlations of Head Direction cells by angle ( should we really do
-this? I don't see the value of this to be honest, obviously similar
-angles will be more correlated, and it doesn't seem very related to
-the study, I'd like to talk more ab out this one.
-
-Discuss signal vs noise correlation - I found this attached review by
-Marlene R Cohen & Adam Kohn, let me know if there are other sources to
-look at.
 %}
 
 function   shufflingMain()
@@ -63,17 +49,21 @@ function   shufflingMain()
     suptitle('Decreasing Grid Score Cells n=69');
    
     
-    for ri = 1:length(groups)
-        ri
-        g = groups{ri}; %AM I ITERATIONG THROUGH ALL?
+     for ri = 1:length(gids)
+        gis = gids(ri);
+        cis = cids{gis};
+        g = groups{gis};
+        g = g(cis);
+        tic
         for j = 1:length(g)-1
             for k = j+1:length(g)
-                cb = shuffleTimeCorrelations (g(j).before,g(k).before, 1, 200, 0.006);
-                cm = shuffleTimeCorrelations (g(j).midall,g(k).midall, 1, 200, 0.006);
-                iu = Intersection_Over_Union(g(j).before.module.x, g(j).before.module.y, g(k).before.module.x,g(k).before.module.y);
-                iCbmIuRbm250u{g(j).ind,g(k).ind} = [g(j).ind g(k).ind cb cm iu... 
-                    g(j).before.rayleigh_score g(k).before.rayleigh_score g(j).midall.rayleigh_score g(k).midall.rayleigh_score ...
-                    p];
+                cb = corrBefore{g(j).ind,g(k).ind};cb=cb(1);
+                cm = corrMid{g(j).ind,g(k).ind};cm=cm(1);
+                %cb = shuffleTimeCorrelations (g.before,g(k).before,p);
+                %cm = shuffleTimeCorrelations (g(j).midall,g(k).midall,p);
+%                 iu = Intersection_Over_Union(g(j).before.module.x, g(j).before.module.y, g(k).before.module.x,g(k).before.module.y);
+                iCbmIuRbm250u{g(j).ind,g(k).ind} = [g(j).ind g(k).ind cb cm -1 ... 
+                    g(j).before.rayleigh_score g(k).before.rayleigh_score g(j).midall.rayleigh_score g(k).midall.rayleigh_score];
             end
         end
     end
@@ -81,7 +71,10 @@ function   shufflingMain()
      
      iud = []; iun = []; iuo = []; ium = []; iua = []; iug = []; iudd = [];                                       
      for ri = 1:length(groups)
-        g = groups{ri}; %NEED GROUP FOR NON DECREASING
+       gis = gids(ri);
+        cis = cids{gis};
+        g = groups{gis};
+        g = g(cis);
         for j = 1:length(g)-1
             for k = j+1:length(g)
                 i1 = g(j).ind;  i2 = g(k).ind; gm1 =  g(j).midall.gridscore; gm2 =  g(k).midall.gridscore;
@@ -117,7 +110,7 @@ function   shufflingMain()
 
     %RAYLEIGH CLUSTER PLOT ROW
     pd.gridThreshBef = gridThreshBef; pd.gridThreshMid = gridThreshMid;
-    pd.durtg = iud(iud(:,r2mi)>=0.5 & iud(:,r1mi)>=0.5,:); pd.durtl = iud(iud(:,r2mi)<0.5 | iud(:,r1mi)<0.5,:);
+    pd.durtg = iud(iud(:,r2mi)>=0.4 & iud(:,r1mi)>=0.4,:); pd.durtl = iud(iud(:,r2mi)<0.4 | iud(:,r1mi)<0.4,:);
     
     h=figure(1);clf(h);set(h,'color','w'); si = 0; row = 2;  %h=figure('position',[-1700,100,1600,800]); 
     pd.sesh = 'DUR'; pd.co = 'ro'; pd.string = 'decreasing gs pairs'; [h,si] = plotRow(iud,pd,h,row,si);
@@ -238,37 +231,33 @@ function   shufflingMain()
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % SHUFFLING
-    [gids, cids] = groupsByGridThresh(groups, gridThreshBef, gridThreshMid); % >grid, <mid
     gcorrBefore = {}; gcorrMid = {};
-     corrBefore = {};  corrMid = {};
-    n = 250;
+    corrBefore = [];  corrMid = [];
+    p.n = 250; p.movmean = 32;p.sigma = 0; p.bandf = -1; p.lag = 0;
     tic
     for ri = 1:length(gids)
         gis = gids(ri);
-        cis = cids{gis}
+        cis = cids{gis};
         g = groups{gis};
         g = g(cis);
+        tic
         for j = 1:length(g)-1
             for k = j+1:length(g)
                 [ri j k] 
-                gcorrBefore{k,j,ri} = shuffleTimeCorrelations (g(j).before, g(k).before, n, 200, 0.006);
-                gcorrMid{k,j,ri}    = shuffleTimeCorrelations (g(j).midall, g(k).midall, n, 200, 0.006);
+                gcorrBefore{k,j,ri} = shuffleTimeCorrelations (g(j).before, g(k).before,p);
+                gcorrMid{k,j,ri}    = shuffleTimeCorrelations (g(j).midall, g(k).midall,p);
                 corrBefore{g(j).ind,g(k).ind} = gcorrBefore{k,j,ri};
                    corrMid{g(j).ind,g(k).ind} = gcorrMid{k,j,ri};
             end
         end
+        toc
     end
     disp('************************');
     toc
       
     
-%     t = corrBefore{11,12};
-%     [s,I] = sort(abs(t),'descend');
-%     p = round(find(I==1)/length(I),2) %index of non shuffled 
+
     ri = 11, ci = 12, c1 = g(1).before, c2 = g(2).before, 
-    lag = 200, sigma = 0.006;
-    
-    ri = 11, ci = 12
     [r, c] = size(corrBefore);
     pvalsBefMid = cell(r,c); pbs = []; pms = []; ijcbmpbm = []; 
     for ri = 1:r
@@ -290,6 +279,7 @@ function   shufflingMain()
     subplot(2,1,2);hist(pms*100,100); title('p shuffle mid 250 update');
     
     i1i = 1; i2i = 2; cbi = 3; cmi = 4; pbi = 5; pmi = 6; 
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%FIGURES%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     f = figure;%tp = uix.HBox( 'Parent', f, 'Spacing', 0); lp = uix.VBox('Parent', tp );rp = uix.VBox('Parent', tp);
@@ -312,21 +302,25 @@ function   shufflingMain()
     %SPARSE
     
     %SCATTER CORR CORR P-Value
-    h= figure(2);clf(h);set(h,'color','w');  afs = 16; mfs = 16; tfs = 20; lfs = 3;
+    h= figure(2);clf(h);set(h,'color','w');  afs = 10; mfs = 10; tfs = 12; lfs = 3;
     plot(ijcbmpbm(:,cbi),ijcbmpbm(:,cmi),'.','markersize',mfs,'linewidth',lfs); hold on;
-    pd.shufbx = ijcbmpbm(ijcbmpbm(:,pmi)<=0.01,cbi); pd.shufmy = ijcbmpbm(ijcbmpbm(:,pmi)<=0.01,cmi);
-%     plot(ijcbmpbm(ijcbmpbm(:,pmi)<=0.01,cbi),ijcbmpbm(ijcbmpbm(:,pmi)<=0.01,cmi),...
-%         'mo','markersize',16,'linewidth',lfs);
+    pd.shufbx=ijcbmpbm(ijcbmpbm(:,pmi)<=0.01,cbi);pd.shufmy=ijcbmpbm(ijcbmpbm(:,pmi)<=0.01,cmi);
+    plot(     ijcbmpbm(ijcbmpbm(:,pmi)<=0.01,cbi),          ijcbmpbm(ijcbmpbm(:,pmi)<=0.01,cmi),...
+         'mo','markersize',mfs,'linewidth',lfs);
      %plot([min(ijcbmpbm(:,cbi)) max(ijcbmpbm(:,cbi))], polyval( polyfit( ijcbmpbm(:,cbi),ijcbmpbm(:,cmi),1),[min(ijcbmpbm(:,cbi)) max(ijcbmpbm(:,cbi))]));
-     f1=fit(ijcbmpbm(:,cbi),ijcbmpbm(:,cmi),'poly1');pscat = plot(f1,'b'); pscat.LineWidth = lfs
-     legend({'corr pre vs dur',sprintf('%.2fx + %.2f',round(f1.p1,2),...
-        round(f1.p2,2)),'significance (dur) < %1'},'fontsize',afs);
-    ylim([-.02 .03]); xlim([-.02 .03]); xlabel('correlation pre inhibition','fontsize',afs); 
-    ylabel('correlation during inhibition','fontsize',afs)
+     f1=fit(ijcbmpbm(:,cbi),ijcbmpbm(:,cmi),'poly1');
+     pscat = plot(f1,'b'); pscat.LineWidth = lfs;
+     legend({'corr pre vs dur',...
+         sprintf('%.2fx + %.2f',round(f1.p1,2),round(f1.p2,2)),...
+         'significance (dur) < %1'...
+        },'fontsize',afs,'location','best');
+    %ylim([-.02 .03]); xlim([-.02 .03]); 
+    xlabel('correlation before','fontsize',afs); 
+    ylabel('correlation during','fontsize',afs)
     title('Time Correlation Pre vs During by Shuffling P-value','fontsize',tfs);
-    set(gca,'XTickLabel',[-0.02:0.01:0.03],'fontsize',14)
-    set(gca,'YTickLabel',[-0.02:0.01:0.03],'fontsize',14)
-    axis square; 
+    %set(gca,'XTickLabel',[-0.02:0.01:0.03],'fontsize',14)
+    %set(gca,'YTickLabel',[-0.02:0.01:0.03],'fontsize',14)
+    axis square; axis equal;
    
     figure
     f1=fit(ijcbmpbm(:,cbi),ijcbmpbm(:,cmi),'poly1');%fit(cdate,pop,'poly1')

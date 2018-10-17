@@ -1,5 +1,5 @@
-function [rate_mat, max_r] = Create_Rate_Map(px, py, pt, sx, sy, st, new, nbins)
-    if new
+function [rate_mat, max_r] = createRateMap(px, py, pt, sx, sy, st, newmethod, nbins)
+    if newmethod
         if ~isempty(st)
             px = toCol(px); py = toCol(py); %pt = toCol(pt); 
             sx = toCol(sx); sy = toCol(sy); %st = toCol(st); 
@@ -27,6 +27,11 @@ function [rate_mat, max_r] = Create_Rate_Map(px, py, pt, sx, sy, st, new, nbins)
             rate_mat = zeros(nbins);
         end
     else
+        [rate_mat, max_r] = Create_Rate_Map(px, py, pt, sx, sy, st, new, nbins)
+    end
+end
+
+function [rate_mat, max_r] = Create_Rate_Map(px, py, pt, sx, sy, st, new, nbins)
     posx = px; posy = py; post = pt;
     spkx = sx; spky = sy; spkt = st;
     parms.sigma = 3; % gaussiam smoothing factor
@@ -73,21 +78,7 @@ function [rate_mat, max_r] = Create_Rate_Map(px, py, pt, sx, sy, st, new, nbins)
     rate_mat = nanconv2(rate_mat,h);
     max_r = max(rate_mat(:));
     rate_mat(isnan(rate_mat))=0; %bad??????nza
-    end
-    disp('');
 end
-
-function x = toCol(x)
-    if ~iscolumn(x)
-        x = x';
-    end
-end
-function x = toRow(x)
-    if iscolumn(x)
-        x = x';
-    end
-end
-
 
 function out_mat = nanconv2(mat,h)
 out_mat = mat;

@@ -1,5 +1,6 @@
 %takes as input two arrays of spike times in chronological order, overlap in same time units
-%returns INDICES of spikes to remove
+%deletes BOTH spikes in case of overlap?
+%returns INDICES of spikes to REMOVE
 function [s1keep, s2keep] = removeOverlappingSpikes(s1,s2, overlap)
 
 % %     c2 = cells{71}.before; c1 = cells{75}.before;
@@ -8,7 +9,7 @@ function [s1keep, s2keep] = removeOverlappingSpikes(s1,s2, overlap)
 %     %for debugging
 %     train1=zeros(1,maxt);train2 =zeros(1,maxt); train1(s1)=1; train2(s2)=1;%to compare after;
 %     figure;plot(1:length(train1),[train1+1; train2]); %to compare after;
-%     t1 = length(s1); t2 = length(s2); %to compare after;
+%    t1 = length(s1); t2 = length(s2); %to compare after; %debug
     s1orig = s1; s2orig = s2;
     s2i = 1; %index of current spike in s2
     s2Time = s2(1); %time of current spike in s2
@@ -27,9 +28,9 @@ function [s1keep, s2keep] = removeOverlappingSpikes(s1,s2, overlap)
             %so this spike should be deleted as well
         end
         %spk2 is within +- overlap
-        % %spk2 index in array   &&   spk2time is smaller than overlap end
+        %spk2time is smaller than overlap end
         while s2Time <= s1Time + overlap %CHANGED FROM <
-            %spk2 to,e greater than overlap beginning
+            %spk2 greater than overlap beginning
             if s2Time >= s1Time - overlap %CHANGED FROM >
                 %fprintf('%d %d\n',i,j);%spkt1(i),spkt2(j));
                 s2deletedTime = s2Time; %last spike in s2 deleted;
@@ -47,8 +48,10 @@ function [s1keep, s2keep] = removeOverlappingSpikes(s1,s2, overlap)
    
     s1keep = s1~=0; s2keep = s2~=0;
     s1 = s1(s1~=0); s2 = s2(s2~=0);
-%     %     %for debugging
-%     fprintf('spikes removed %dx%d = %d            t1 %.1f t2 %.1f\n',1,2,rem,length(s1)/t1,length(s2)/t2);
+% %     %     %for debugging
+%      fprintf('spikes removed %dx%d = %3d, c1 %2d%% c2 %2d%% \n',1,2,rem,...
+%          100*round(1-length(s1)/length(s1orig),2),100*round(1-length(s2)/length(s2orig),2));
+
 %     train1=zeros(1,maxt);train2 =zeros(1,maxt); train1(s1)=1; train2(s2)=1;
 %     figure;plot(1:length(train1),[train1+1; train2]);
 end

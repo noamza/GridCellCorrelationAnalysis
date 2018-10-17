@@ -6,51 +6,57 @@ function [h,si] = plotRow(data,pd,h,r,si)
 end
 
 function [h,si] = plotRowShuffRay(pdata,pd,h,r,c,si)
-    i = 0; ax = []; h = figure(h); afs = 16; mfs = 16; tfs = 20; lfs = 3;
+    i = 0; ax = []; h = figure(h); %afs = 16; mfs = 16; tfs = 20; lfs = 3;
+    afs = 7; mfs = 13; tfs = 9; lfs = 1;
     %both clusters RAYLEIGH
     i=i+1; d = pdata{i}; si=si+1;
     ax(end+1) = subplot(r,c,si); hold on; alpha(ax(end),0.5); %set(ax(end),'color',[.5 .5 .8]);
     plot(ax(end),d.x, d.y,'k.','markersize',mfs); %plot(ax(end),d.x2, d.y2, 'ro','linewidth',1.2);
-    xlim(ax(end),d.xl); ylim(ax(end),d.yl); title(ax(end),d.title,'FontSize',tfs); 
+    %xlim(ax(end),d.xl); ylim(ax(end),d.yl); 
+    title(ax(end),d.title,'FontSize',tfs); 
     xlabel(gca,d.xt,'FontSize',afs);ylabel(gca,d.yt,'FontSize',afs)
     %set(ax(end).XTick,'FontSize',afs -2); set(ax(end).yTick,'FontSize',afs -2);%ax(end).YTick.FontSize = afs -2;   
     if isequal(pd.sesh,'PRE')
          %plot(ax(end),d.xdurg, d.ydurg, 'b.','markersize',14); 
          %plot(ax(end),d.xdurl, d.ydurl, 'r.','markersize',14);
     else
-         plot(ax(end),[0.5 0.5 1],[1 0.5 0.5],'r--','linewidth',lfs); %plot(ax(end),[0.51 0.51 1],[1 0.51 0.51],'r--');
+         plot(ax(end),[0.4 0.4 1],[1 0.4 0.4],'r--','linewidth',lfs); %plot(ax(end),[0.51 0.51 1],[1 0.51 0.51],'r--');
           text(gca,0.1,1,'Cluster 1','Color','b','FontSize',afs); 
           text(gca,0.6,1,'Cluster 2','Color','r','FontSize',afs);
 %         plot(ax(end),d.xdurg, d.ydurg, 'r.','markersize',14); 
 %         plot(ax(end),d.xdurl, d.ydurl, 'b.','markersize',14);
     end
-    set(ax(end),'XTickLabel',[0:0.2:1],'fontsize',14)
-    set(ax(end),'YTickLabel',[0:0.2:1],'fontsize',14)
+    %set(ax(end),'XTickLabel',[0:0.2:1],'fontsize',afs)
+    %set(ax(end),'YTickLabel',[0:0.2:1],'fontsize',afs)
     %%%%%%%%%%%%%%%%%%
     
     %less than cluster TEMPORAL
     i=i+1; d = pdata{i}; si=si+1;
     ax(end+1) = subplot(r,c,si); hold on; alpha(ax(end),0.5);
-    p5=plot(ax(end),pd.shufbx,pd.shufmy,'mo','markersize',16,'linewidth',lfs);s5 = 'p < %1';
+    if isequal(pd.sesh,'PRE')
+        p5=plot(ax(end),pd.shufbx,pd.shufmy,'mo','markersize',mfs,'linewidth',lfs);s5 = 'p < %1';
+    end
     p1=plot(ax(end),d.x, d.y, 'b.', 'markersize',mfs); 
     title(ax(end),d.title,'FontSize',tfs); xlabel(gca,d.xt,'FontSize',afs);ylabel(gca,d.yt,'FontSize',afs)
-    p3=plot(ax(end),[min(d.x) max(d.x)], polyval( polyfit( d.x, d.y,1), [min(d.x) max(d.x)] ),'linewidth',lfs,'color','b');
+    
+%     p3=plot(ax(end),[min(d.x) max(d.x)], polyval( polyfit( d.x, d.y,1), [min(d.x) max(d.x)] ),'linewidth',lfs,'color','b');
+    
     %text(gca,0.8*max(d.x),polyval(polyfit(d.x, d.y, 1),0.8*max(d.x)),sprintf('%.2f %.2f', round(polyfit(d.x, d.y, 1),2)),'Color','b','FontSize',afs);
     s3 = sprintf('%.1f %.1f', round(polyfit(d.x, d.y, 1),1));
     %greater than cluster
     i=i+1; d2 = pdata{i};  %si=si+1;
     p2=plot(ax(end),d2.x, d2.y, 'r.','markersize',mfs); title(ax(end),d2.title);
-    p4=plot(ax(end),[min(d2.x) max(d2.x)], polyval( polyfit( d2.x, d2.y, 1), [min(d2.x) max(d2.x)] ) ,'linewidth',lfs,'color','r');
+%     p4=plot(ax(end),[min(d2.x) max(d2.x)], polyval( polyfit( d2.x, d2.y, 1), [min(d2.x) max(d2.x)] ) ,'linewidth',lfs,'color','r');
     %text(gca,max(d2.x),polyval(polyfit(d2.x, d2.y, 1),max(d2.x)),sprintf('%.2f %.2f', round(polyfit(d2.x, d2.y, 1),2)),'Color','r','FontSize',afs); 
     s4 = sprintf('%.1f %.1f', round(polyfit(d2.x, d2.y, 1),1));
     %xlim(ax(end),[-0.02 0.05]); ylim(ax(end),[-0.02 0.05]);
-    legend(gca,[p1  p3],{'Cluster1',s3},'FontSize',afs);
+%     legend(gca,[p1  p3],{'Cluster1',s3},'FontSize',afs);
     %if isequal(pd.sesh,'PRE')
-        legend(gca,[p1 p2 p3 p4 p5],{'Cluster1','Cluster 2',s3,s4,s5},'FontSize',afs);
+%         legend(gca,[p1 p2 p3 p4 p5],{'Cluster1','Cluster 2',s3,s4,s5},'FontSize',afs);
     %else
         %legend(gca,[p1 p2 p3 p4],{'Cluster1','Cluster2',s3,s4},'FontSize',afs);
     %end
-    xlim(ax(end),d.yl); ylim(ax(end),d.yl);
+    %xlim(ax(end),d.yl); ylim(ax(end),d.yl);
     %yl = get(ax(end),'yTickLabel');
     %xl = get(ax(end),'XTickLabel');
 %     set(ax(end),'XTickLabel',get(ax(end),'XTickLabel'),'fontsize',14)
@@ -58,12 +64,12 @@ function [h,si] = plotRowShuffRay(pdata,pd,h,r,c,si)
 %     set(ax(end),'XTickLabel',xl,'fontsize',14);
 %     set(ax(end),'YTickLabel',yl,'fontsize',14);
     %xlim(ax(end),d.yl); ylim(ax(end),d.yl);
-    set(ax(end),'XTickLabel',[-0.02:0.01:0.03],'fontsize',14)
-    set(ax(end),'YTickLabel',[-0.02:0.01:0.03],'fontsize',14)
+    %set(ax(end),'XTickLabel',[-0.02:0.01:0.03],'fontsize',afs)
+    %set(ax(end),'YTickLabel',[-0.02:0.01:0.03],'fontsize',afs)
     for i = 1:length(ax)
            %a = get(ax(i),'XTickLabel');
            
-           axis(ax(i),'square');
+           axis(ax(i),'square'); axis(ax(i),'equal');
     end
     
     
@@ -107,7 +113,7 @@ function pdata = plotRowShuffRayData(data,pd)
         r1 = r1bi;
     end
     
-    tg = t(t(:,r2)>=0.5 & t(:,r1)>=0.5,:); tl = t(t(:,r2)<0.5 | t(:,r1)<0.5,:);
+    tg = t(t(:,r2)>=0.4 & t(:,r1)>=0.4,:); tl = t(t(:,r2)<0.4 | t(:,r1)<0.4,:);
     lims = [min(min(t(:,cbi), min(t(:,cmi)))) max(max(t(:,cbi)), max(t(:,cmi)))] ;
     lims = [-0.02 0.03];
     

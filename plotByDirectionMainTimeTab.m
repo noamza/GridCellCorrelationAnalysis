@@ -3,7 +3,8 @@ function [h, vers] =  plotByDirectionMainTimeTab(params)
     warning off;
     params.gid
     binl = params.binspike;%0.06 0.1;%.3
-    lag = params.lag;
+    lag = params.lag*1000;
+    params.lag = params.lag*1000;
     nbins = round(360/params.bindeg); %rounds good!  fprintf('nbins %d\n', nbins);
     c = 2;
     
@@ -16,7 +17,7 @@ function [h, vers] =  plotByDirectionMainTimeTab(params)
     end
     params.sigma = sigma;
     v = params.sesh;
-    params.number_degree_bins = nbins; params.lag_max_secs = lag; params.time_bin_secs = binl;
+    params.number_degree_bins = nbins; params.lag_max_secs = round(lag); params.time_bin_secs = binl;
     sesh = params.sesh;
     good = params.good;
     if isa(params,'App')
@@ -55,8 +56,8 @@ function [h, vers] =  plotByDirectionMainTimeTab(params)
                 [s1i, s2i] = removeOverlappingSpikes(c1.st,c2.st,params.overlap);
                 c1.sx = c1.sx(s1i); c2.sx = c2.sx(s2i); c1.sy = c1.sy(s1i); c2.sy = c2.sy(s2i); c1.st = c1.st(s1i); c2.st = c2.st(s2i);
                 fprintf('pre spikes removed %dx%d = %d     t1 %.1f t2 %.1f\n',c1.ind,c2.ind,t1-length(c1.st),length(c1.st)/t1,length(c2.st)/t2);
-                c1.rm = Create_Rate_Map(c1.px, c1.py, c1.pt, c1.sx, c1.sy, c1.st, true, 50); 
-                c2.rm = Create_Rate_Map(c2.px, c2.py, c2.pt, c2.sx, c2.sy, c2.st, true, 50);
+                c1.rm = createRateMap(c1.px, c1.py, c1.pt, c1.sx, c1.sy, c1.st, true, 50); 
+                c2.rm = createRateMap(c2.px, c2.py, c2.pt, c2.sx, c2.sy, c2.st, true, 50);
                 c1.ac = xcorr2(c1.rm); c2.ac = xcorr2(c2.rm); c1.gridscore = gridscore2(c1.ac,3); c2.gridscore = gridscore2(c2.ac,3);
                 c1.module = Find_Module(imgaussfilt(c1.ac,3));c2.module = Find_Module(imgaussfilt(c2.ac,3));
                 
@@ -178,7 +179,7 @@ function [h, vers] =  plotByDirectionMainTimeTab(params)
         %VERS
         gid = params.gid;
         vers = sprintf('%s_G%d_%s_deg%d_lag%.1f_blen%.2f_sig%d__win%d_',...
-            v,gid,sesh,round(360/nbins),lag,binl,params.sigma,params.hamwin);
+            v,gid,sesh,round(360/nbins),lag,binl,params.sigma,params.movmean);
         titl = sprintf('%s_moving_direction_xcorr_ncells%d',vers,length(good));
 %         set(suptitle(titl),'Interpreter', 'none'); %PUT SUP TITLE AFTER ALL SUBPLOT COMMANDS << test
 %         handles.fig = h;

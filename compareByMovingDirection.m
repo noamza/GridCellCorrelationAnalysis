@@ -1,20 +1,27 @@
 function [pearson_xcov, count_xcor] = compareByMovingDirection(c1, c2, params)
+if isfield(params,'lagms')
+    nbins = 1;
+else
     nbins = params.number_degree_bins; params.lagms = 1000*params.lag_max_secs;
-    if nbins == 1
-        pearson_xcov = cell(1,3); count_xcor = cell(1,3);
-        spkt1=floor(c1.st*1000)+1; spkt2=floor(c2.st*1000)+1; min_time=min(min(spkt1),min(spkt2)); %TIME IN MS
-        spkt1 = spkt1-min_time+1; spkt2 = spkt2-min_time+1; max_time=max(max(spkt1),max(spkt2));
-        train1=zeros(1,max_time);train2 =zeros(1,max_time); train1(spkt1)=1; train2(spkt2)=1; %LOTS OF 0'ss
-        if params.sigma ~= 0
-            %params.sigma = 0.002*1.7^params.sigma; %ORIGINAL
-        end
-        pearson_xcov{1,1} = timeCorrelationSmoothed(train1,train2,params);
-        time_scale=( (1:length(pearson_xcov{1,1})) - ((length(pearson_xcov{1,1})-1)/2) - 1)/1000;
-        pearson_xcov{1,2} = time_scale;
-        pearson_xcov{1,3} = max(abs(pearson_xcov{1,1}));
-        return
+end
+if nbins == 1
+    pearson_xcov = cell(1,3); count_xcor = cell(1,3);
+    [train1,train2] = createMsSpikeTrain(c1.st, 10, c2.st);
+    %         spkt1=floor(c1.st*1000)+1; spkt2=floor(c2.st*1000)+1; min_time=min(min(spkt1),min(spkt2)); %TIME IN MS
+    %         spkt1 = spkt1-min_time+1; spkt2 = spkt2-min_time+1; max_time=max(max(spkt1),max(spkt2));
+    %         train1=zeros(1,max_time);train2 =zeros(1,max_time); train1(spkt1)=1; train2(spkt2)=1; %LOTS OF 0'ss
+    
+    if params.sigma ~= 0
+        %params.sigma = 0.002*1.7^params.sigma; %ORIGINAL
     end
+    pearson_xcov{1,1} = timeCorrelationSmoothed(train1,train2,params);
+    time_scale=( (1:length(pearson_xcov{1,1})) - ((length(pearson_xcov{1,1})-1)/2) - 1)/1000;
+    pearson_xcov{1,2} = time_scale;
+    pearson_xcov{1,3} = max(abs(pearson_xcov{1,1}));
+    %return
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+else
     px = double(c1.px); py = double(c1.py); pt = double(c1.pt);
     dt = median(diff(pt)); dt = round(dt*1e4)/1e4; % round to 10th of millisec
     vox = zeros(length(pt),1);
@@ -25,8 +32,8 @@ function [pearson_xcov, count_xcor] = compareByMovingDirection(c1, c2, params)
         vox(i)=(px(i)-px(i-1))/(pt(i)-pt(i-1));
         voy(i)=(py(i)-py(i-1))/(pt(i)-pt(i-1));
     end %SMOOTH VELOCITY %test by reconstructing
-    [b2,b1] = butter(6,0.06);%0.06);%0.1 
-    vx = filtfilt(b2,b1,vox); 
+    [b2,b1] = butter(6,0.06);%0.06);%0.1
+    vx = filtfilt(b2,b1,vox);
     vy = filtfilt(b2,b1,voy);
     %REMOVE VELOCITY OVER 3cm/s
     for i = 1:length(vx)
@@ -41,7 +48,7 @@ function [pearson_xcov, count_xcor] = compareByMovingDirection(c1, c2, params)
     c2.st = c2.st(c2.st>=min(pt)&c2.st<=max(pt));
     spk1_md = interp1(pt, unwrap(pos_md'),c1.st);
     spk2_md = interp1(pt, unwrap(pos_md'),c2.st);
-    %TO 360 
+    %TO 360
     pos_md = wrapTo360(rad2deg(pos_md)); %check??
     spk1_md = wrapTo360(rad2deg(spk1_md)); spk2_md = wrapTo360(rad2deg(spk2_md));
     %BIN BY DIRECTIONS
@@ -51,8 +58,8 @@ function [pearson_xcov, count_xcor] = compareByMovingDirection(c1, c2, params)
     %[sum(t==2) sum(t==0) sum(t==1) sum(t==3) sum(isnan(t))]/length(t)*100;
     %Checked by comparing to pos bins, seems reasonable
     spk1_by_bin = discretize(spk1_md, bin_edges);spk1_by_bin(spk1_by_bin==nbins+1) = 1; %last bin added to first
-    spk2_by_bin = discretize(spk2_md, bin_edges);spk2_by_bin(spk2_by_bin==nbins+1) = 1; 
-
+    spk2_by_bin = discretize(spk2_md, bin_edges);spk2_by_bin(spk2_by_bin==nbins+1) = 1;
+    
     %TIME INTERVALS
     time_in_bin = cell(nbins,1);
     i = 1;
@@ -85,9 +92,9 @@ function [pearson_xcov, count_xcor] = compareByMovingDirection(c1, c2, params)
             [dif, idx] = min(abs(time_in_bin{spk1_by_bin(i)} - c1.st(i)));
             if dif <= dt
                 trains_dir_only{spk1_by_bin(i)}(1, idx) = ... %more than one spike per time unit
-                    trains_dir_only{spk1_by_bin(i)}(1, idx) + 1; 
+                    trains_dir_only{spk1_by_bin(i)}(1, idx) + 1;
             else
-              %  fprintf('%d UNSORTED 1 SPIKE %f\n',i,dif);
+                %  fprintf('%d UNSORTED 1 SPIKE %f\n',i,dif);
             end
         end
     end
@@ -97,7 +104,7 @@ function [pearson_xcov, count_xcor] = compareByMovingDirection(c1, c2, params)
             if dif <= dt
                 trains_dir_only{spk2_by_bin(i)}(2, idx) = trains_dir_only{spk2_by_bin(i)}(2, idx) + 1;
             else
-               % fprintf('%d UNSORTED 2 SPIKE %f\n',i,dif);
+                % fprintf('%d UNSORTED 2 SPIKE %f\n',i,dif);
             end
         end
     end
@@ -114,20 +121,20 @@ function [pearson_xcov, count_xcor] = compareByMovingDirection(c1, c2, params)
             end
             %reshapes to rectangle width of bin size, sums cols;
             binned_trains{i}(1,:) = sum(reshape(z(:,1),bin_size, ceil(length(z)/bin_size)));
-            binned_trains{i}(2,:) = sum(reshape(z(:,2),bin_size, ceil(length(z)/bin_size))); 
+            binned_trains{i}(2,:) = sum(reshape(z(:,2),bin_size, ceil(length(z)/bin_size)));
         end
     end
     
     %CORRELATION
     pearson_xcov = cell(nbins,3); count_xcor = cell(nbins,3);
     lag_units = round(params.lag_max_secs/params.time_bin_secs);
-    for i = 1:nbins 
+    for i = 1:nbins
         s1 = binned_trains{i}(1,:);
-        s2 = binned_trains{i}(2,:);        
-%         % smooth?  
-%         win=hamming(5);t1smooth=conv(s1,win,'same');t2smooth=conv(s2,win,'same');
+        s2 = binned_trains{i}(2,:);
+        %         % smooth?
+        %         win=hamming(5);t1smooth=conv(s1,win,'same');t2smooth=conv(s2,win,'same');
         pearson_xcov{i,1} = xcov(s1,s2,lag_units,'coef')';
-        %LOW PASS 0.15%6th order, fc/fs/2 determined empiracally 
+        %LOW PASS 0.15%6th order, fc/fs/2 determined empiracally
         %[b2,b1] = butter(6,0.03); pxcsmooth = filtfilt(b2,b1, pearson_xcov{i,1});
         %plot(pxcsmooth); hold on; plot(pearson_xcov{i,1},'y'); legend('smooth','none');
         %pearson_xcov{i,1} = pxcsmooth;
@@ -143,10 +150,10 @@ function [pearson_xcov, count_xcor] = compareByMovingDirection(c1, c2, params)
     end
     pearson_xcov{1,3} = [-bin_edges(2) bin_edges(2)]; %correct for 0
     count_xcor{1,3}   = [-bin_edges(2) bin_edges(2)];
-          
+    
     fprintf('%.2f ',round(max(max(abs([pearson_xcov{:,1}]))), 2));
     
-
+    
 end
 
 
@@ -163,11 +170,11 @@ end
              %spk2 is within +- overlap         spk2 is smaller than overlap end
              while j <= length(spkt2) && spkt2(j) < t + params.overlap*1000 % in ms
                  %           greater than overlap beginning
-                 if spkt2(j) > t - params.overlap*1000 
+                 if spkt2(j) > t - params.overlap*1000
                     %fprintf('%d %d\n',i,j);%spkt1(i),spkt2(j));
                     k = spkt2(j); %last spike in s2 deleted;
-                    spkt1(i) = 0; spkt2(j) = 0; %deletes spike in spkt1 and 2 in overlap          
-                    rem = rem+1; 
+                    spkt1(i) = 0; spkt2(j) = 0; %deletes spike in spkt1 and 2 in overlap
+                    rem = rem+1;
                  end
                  j = j+1; %next spk2
              end

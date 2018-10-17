@@ -1,4 +1,4 @@
-function TimeTab(fig, tab, m)
+function TabTime(fig, tab, m)
     
     gui.Window = fig;
     gui.m = m;
@@ -10,7 +10,7 @@ function TimeTab(fig, tab, m)
     gui.m.binspike = 0.06;
     gui.m.overlap = 0.002;
     gui.m.sigma = 0;
-    gui.m.hamwin = 0;
+    gui.m.movmean = 0;
     gui.m.bandf = -1;
     gui.m.bandw = 0;
     gui.Window.UserData.gidsFns{end+1} = @updateGids;
@@ -93,17 +93,17 @@ function TimeTab(fig, tab, m)
     addlistener(gui.sigmaSlider,'ContinuousValueChange',@(hObject, event) onSigmaSliding(hObject, event));
     set( sigmaBoxH, 'Widths', [-4 -1] );
     %HAMWIN
-        hamwinBoxV = uix.VBox( 'Parent', paramsLayout,'Padding',pad,'Spacing',spc, 'Visible', 'on' );
-    uicontrol('Parent', hamwinBoxV,'Style','text',...
+        movmeanBoxV = uix.VBox( 'Parent', paramsLayout,'Padding',pad,'Spacing',spc, 'Visible', 'on' );
+    uicontrol('Parent', movmeanBoxV,'Style','text',...
         'HorizontalAlignment', 'left','String', 'Moving avg (ms)');
-    hamwinBoxH = uix.HBox( 'Parent', hamwinBoxV,'Padding',spc,'Spacing',pad);
+    movmeanBoxH = uix.HBox( 'Parent', movmeanBoxV,'Padding',spc,'Spacing',pad);
     mnx = [0 1000]; step = 1; step = step/(mnx(2)-mnx(1)); %max-min
-    gui.hamwinSlider = uicontrol( 'Style', 'slider','Min', mnx(1),'Max', mnx(2), 'SliderStep',[step 2*step],...
-        'Parent', hamwinBoxH,'Value', gui.m.hamwin,'Callback', @onHamwinSlide);
-    gui.hamwinEdit = uicontrol( 'Parent', hamwinBoxH, 'Style', 'edit', 'String', gui.m.hamwin, ...
-        'Callback', @onHamwinEdit);
-    addlistener(gui.hamwinSlider,'ContinuousValueChange',@(hObject, event) onHamwinSliding(hObject, event));
-    set( hamwinBoxH, 'Widths', [-4 -1] );
+    gui.movmeanSlider = uicontrol( 'Style', 'slider','Min', mnx(1),'Max', mnx(2), 'SliderStep',[step 2*step],...
+        'Parent', movmeanBoxH,'Value', gui.m.movmean,'Callback', @onMovmeanSlide);
+    gui.movmeanEdit = uicontrol( 'Parent', movmeanBoxH, 'Style', 'edit', 'String', gui.m.movmean, ...
+        'Callback', @onMovmeanEdit);
+    addlistener(gui.movmeanSlider,'ContinuousValueChange',@(hObject, event) onMovmeanSliding(hObject, event));
+    set( movmeanBoxH, 'Widths', [-4 -1] );
         %BANDPASS 
         bandBoxV = uix.VBox( 'Parent', paramsLayout,'Padding',pad,'Spacing',spc, 'Visible', 'on' );
     uicontrol('Parent', bandBoxV,'Style','text', 'HorizontalAlignment', 'left','String', 'Bandpass Hz: freq, bandwidth');
@@ -154,7 +154,7 @@ function TimeTab(fig, tab, m)
     set(spikeBinBoxV, 'Heights', [htlab -1]); t = [t a]; % Make the list fill the space
     set(sigmaBoxV, 'Heights', [htlab -1]); t = [t a]; % Make the list fill the space
     set(overlapBoxV, 'Heights', [htlab -1]); t = [t a]; % Make the list fill the space
-    set(hamwinBoxV, 'Heights', [htlab -1]); t = [t a]; % Make the list fill the space
+    set(movmeanBoxV, 'Heights', [htlab -1]); t = [t a]; % Make the list fill the space
     set(bandBoxV, 'Heights', [htlab -1 -1]); t = [t a+20]; % Make the list fill the space
     set(groupBoxV, 'Heights', [htlab -1]); t = [t 100]; % Make the list fill the space
     set(midBoxV, 'Heights', [htlab -1]); t = [t 70]; % Make the list fill the space
@@ -248,20 +248,20 @@ function TimeTab(fig, tab, m)
         set(gui.overlapEdit, 'String', t);
     end
  %HAMWIN
-    function onHamwinSlide( src, ~ )
+    function onMovmeanSlide( src, ~ )
         t = round(get( src, 'Value'));
-        gui.m.hamwin = t;
-        set(gui.hamwinEdit, 'String', t);
+        gui.m.movmean = t;
+        set(gui.movmeanEdit, 'String', t);
         run();
     end
-    function onHamwinEdit( src, ~ )
+    function onMovmeanEdit( src, ~ )
         t = round(str2double(get(src, 'String')),3);
-        gui.m.hamwin =t;
-        set(gui.hamwinSlider, 'Value', t);
+        gui.m.movmean =t;
+        set(gui.movmeanSlider, 'Value', t);
     end
-    function onHamwinSliding(hObject,event)
+    function onMovmeanSliding(hObject,event)
         t = round2r(get(hObject,'Value'),1);
-        set(gui.hamwinEdit, 'String', t);
+        set(gui.movmeanEdit, 'String', t);
     end
  %Band F
     function onBandfSlide( src, ~ )
