@@ -6,7 +6,7 @@
 % es.x = 0; es.x2 = 0;  es.y = 0;  es.y2 = 0; es.ts =1;
 function s = createSession(p,s,n,mnxt)
     s = createTrajectory(p.x1, p.x2, p.y1, p.y2, p.t, s.ts, mnxt); %s.x, s.x2, s.y, s.y2,
-    [s.rm, s.max_r] = Create_Rate_Map(s.px, s.py, s.pt, s.sx, s.sy, s.st, true, n);
+    [s.rm, s.max_r] = createRateMap(s.px, s.py, s.pt, s.sx, s.sy, s.st, true, n);
     %s.acOrig = Cross_Correlation(s.rm, s.rm); 
     s.ac = xcorr2(s.rm); 
     s.gridscore = gridscore2(s.ac, 2);

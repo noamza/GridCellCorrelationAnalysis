@@ -13,6 +13,7 @@ module.exists = 0;
 %REBEKKAHS
 %module.hex_peaks2 = find_six_points(acorr);
 %noam
+
 [k,l] = find(imregionalmax(acorr));
 dist = pdist2([l k], flip(size(acorr))/2); [~,ind]=sort(dist);
 if length(l) >= 7

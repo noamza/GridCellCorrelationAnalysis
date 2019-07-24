@@ -12,7 +12,7 @@ function [gids, cids] = removeOverlappingCells(groups, gids, cids, threshRemoveS
                 s1=floor(c1.st*1000)+1; s2=floor(c2.st*1000)+1; min_time=min(min(s1),min(s2)); %TIME IN MS
                 offset = 0; s1 = s1-min_time+offset; s2 = s2-min_time+offset; max_time=max(max(s1),max(s2))+offset;
                 [s1i, s2i] = removeOverlappingSpikes(s1,s2, 1); rs1=s1(s1i); rs2=s2(s2i);
-                fprintf('####b.g%2d i%3dxi%3d: %3d :: %3d\n',ri, g(j).ind ,g(k).ind,length(s1)-length(rs1),length(s2)-length(rs2));
+                %fprintf('####b.g%2d i%3dxi%3d: %3d :: %3d\n',ri, g(j).ind ,g(k).ind,length(s1)-length(rs1),length(s2)-length(rs2));
                 rem = length(s1)-length(rs1); %assert(abs( (length(s1)-length(rs1)) - (length(s2)-length(rs2)) )<3)
                 brem = max(rem/length(s1),rem/length(s2));
                 if brem>threshRemoveCell || false
@@ -62,8 +62,8 @@ function [gids, cids] = removeOverlappingCells(groups, gids, cids, threshRemoveS
         %remove cells
         if ~isempty(rcs)
             rcs = unique(rcs);
-            fprintf('removing %d cells from g.%d\n',length(rcs),gids(ri));
-            rcs;
+            fprintf('$ removing %d cells from g.%d\n',length(rcs),gids(ri));
+            %rcs
             cids{gids(ri)} = setdiff(cids{gids(ri)},rcs);
             
             if len(cids{gids(ri)}) < 2 %only groups with at least 2

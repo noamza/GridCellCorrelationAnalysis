@@ -5,7 +5,7 @@
 %preamble
 dbstop if error    
 f = figure(992); tic
-set(f,'Color','w', 'Position', [200 0 700 1000]); p = {};
+set(f,'Color','w', 'Position', [200 0 700 1000]); p = {}; s1 = {};
 gtop = uix.GridFlex('Parent', f,'Spacing',5, 'BackgroundColor','w','DividerMarkings','on');
 %% A
 gA = uix.GridFlex('Parent',gtop,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');
@@ -74,7 +74,7 @@ ci = [34, 35, 37, 41];%ci = [100, 103, 104, 105, 111];
 axB = {};  p.movmean = 100;  
 axB{end+1} = axes('Parent',uicontainer('Parent',gB,'BackgroundColor','w'),'visible','off');
 text(0,0.5,'C','fontweight','bold','fontsize',fs);
-s1.x=''; s1.y = ''; s1.t = ''; p.off = 0;
+s1.x=''; s1.y = ''; s1.t = ''; %p.off = 0;
 for i = 1:len(ci)-1;
     for ii = i+1:len(ci);
         c1 = cells{ci(i)};c2 = cells{ci(ii)};

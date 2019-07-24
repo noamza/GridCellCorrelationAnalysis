@@ -1,4 +1,15 @@
 function [rate_mat, max_r] = createRateMap(px, py, pt, sx, sy, st, newmethod, nbins)
+    if nargin==2
+        nbins= py;
+        pt=    px.pt;
+        py=    px.py;
+        sx=    px.sx;
+        sy=    px.sy;
+        st=    px.st;
+        px=    px.px;
+        newmethod = true;
+    end
+    
     if newmethod
         if ~isempty(st)
             px = toCol(px); py = toCol(py); %pt = toCol(pt); 

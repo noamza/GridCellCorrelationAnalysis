@@ -1,4 +1,4 @@
-%run experiment to check corrcoef over randomized cells.
+ %run experiment to check corrcoef over randomized cells.
 %pick cell, pick second cell from another group. 
 % calculate their corr before and dur
 [groups ~] = findSimultaneouslyRecordedCells(cells);
@@ -103,6 +103,9 @@ for i = 1:len(cels)
     toc;
 end
 [mean(abs(csb)), mean(abs(csm))] %OUT OF GROUP
+ccof(csb,csm)
+
+
 
 %IN GROUP
 p.nb = 100; p.movmean=25; icsb=[];icsm=[];ictb=[];ictm=[];cii=[];

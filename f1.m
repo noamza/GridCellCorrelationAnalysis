@@ -5,7 +5,7 @@
 %%preamble 
 dbstop if error  
 %loads();
-f = figure(991);
+f = figure(991);  fs = 12;
 set(f,'Color','w', 'Position', [600 0 1200 800]);
 gtop = uix.GridFlex('Parent',f,'Spacing',5, 'BackgroundColor','w');
 gl = uix.GridFlex('Parent',gtop,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');
@@ -36,11 +36,12 @@ for i = 1:len(ii)
     axg(end)=plotTR(axg(end),c.midall,s1);
     axg(end+1) = axes('Parent',uicontainer('Parent',gA));  if(i==3); s1.t = 'post'; end 
     axg(end)=plotTR(axg(end),c.after,s1);
-    axg(end+1) = axes('Parent',uicontainer('Parent',gA));  s2.t = sprintf('%s%.1f','grid=',c.before.gridscore);
+    g = [c.before.gridscore c.midall.gridscore c.after.gridscore]; g(g==-2)=0;
+    axg(end+1) = axes('Parent',uicontainer('Parent',gA));  s2.t = sprintf('%s%.1f','grid=',g(1));
     axg(end)=plotAC(axg(end),c.before,s2);
-    axg(end+1) = axes('Parent',uicontainer('Parent',gA));  s2.t = sprintf('%s%.1f','grid=',c.midall.gridscore);
+    axg(end+1) = axes('Parent',uicontainer('Parent',gA));  s2.t = sprintf('%s%.1f','grid=',g(2));
     axg(end)=plotAC(axg(end),c.midall,s2);
-    axg(end+1) = axes('Parent',uicontainer('Parent',gA));  s2.t = sprintf('%s%.1f','grid=',c.after.gridscore);
+    axg(end+1) = axes('Parent',uicontainer('Parent',gA));  s2.t = sprintf('%s%.1f','grid=',g(3));
     axg(end)=plotAC(axg(end),c.after,s2);
 end
 set(gA,'Widths', [-1 -1 -1 -1 -1], 'Heights', [-1 -1 -1 -1 -1 -1])
@@ -55,12 +56,15 @@ for i = 1:len(cels)
     mrbda(i,2) = len(c.midall.st)/(c.midall.st(end)-c.midall.st(1));
     mrbda(i,3) = len(c.after.st)/(c.after.st(end)-c.after.st(1));
 end
-plot(mrbda(:,1),mrbda(:,2),'ko'); hold on;
+d1 = mrbda(:,1); d2=mrbda(:,2);
+plot(d1,d2,'ko'); hold on;
 % plot(mrbda(:,3),mrbda(:,2),'bo');
-hold off
 axB.XLim = slim(axB); axB.YLim = axB.XLim; axis(axB,'square');
+f1 = fit(d1,d2,'poly1');plot(axB.XLim,f1(axB.XLim),'-');
+text(0.1,0.9,sprintf('a=%.3f r=%.3f',round(f1.p1,3), round(ccof(d1,d2),3)),'Units','normalized');
+hold off
 xlabel('pre (Hz)'); ylabel('dur (Hz)');
-title('mean firing rate pre during');
+title('mean firing rate pre vs during');
 %legend(axB, {'pre','post'});
 
 
@@ -94,21 +98,27 @@ title('gridscore all vs cohort');
 %1C - mean firing pre post
 axes('Parent',uicontainer('Parent',gr,'BackgroundColor','w'),'visible','off');
 text(0,0.5,'C','fontweight','bold','fontsize',fs);
-uC = uicontainer('Parent',gr); axC = axes(uC); 
-plot(mrbda(:,1),mrbda(:,3),'ko'); hold on;
-hold off
+uC = uicontainer('Parent',gr); axC = axes(uC);
+d1=mrbda(:,1); d2=mrbda(:,3); t=mrbda(:,3)~=inf; d1=d1(t);d2=d2(t);%d1(d1==inf)=0;d2(d2==inf)=0;
+plot(d1,d2,'ko'); hold on;
 axC.XLim = slim(axC); axC.YLim = axC.XLim; axis(axC,'square');
+f1 = fit(d1,d2,'poly1');plot(axC.XLim,f1(axC.XLim),'-');
+text(0.1,0.9,sprintf('a=%.3f r=%.3f',round(f1.p1,3), round(ccof(d1,d2),3)),'Units','normalized');
+hold off
 xlabel('pre (Hz)'); ylabel('post (Hz)');
-title('mean firing rate pre post');
+title('mean firing rate pre vs post');
 
 %1E Significance cels only
 axes('Parent',uicontainer('Parent',gr,'BackgroundColor','w'),'visible','off');
 text(0,0.5,'E','fontweight','bold','fontsize',fs);
 uE = uicontainer('Parent',gr,'BackgroundColor','w');axE = axes(uE); 
 %figure(9914)aspace
-plot(sigbma(:,1),sigbma(:,3),'ko');
-hold off
+d1=sigbma(:,1);d2=sigbma(:,3); t=mrbda(:,3)~=inf; d1=d1(t);d2=d2(t);%d1(d1==inf)=0;d2(d2==inf)=0;
+plot(d1,d2,'ko'); hold on;
 axE.XLim = slim(axE); axE.YLim = axE.XLim; axis(axE,'square');
+f1 = fit(d1,d2,'poly1');plot(axE.XLim,f1(axE.XLim),'-');
+text(0.1,0.9,sprintf('a=%.3f r=%.3f',round(f1.p1,3), round(ccof(d1,d2),3)),'Units','normalized');
+hold off
 xlabel('gridscore pre'); ylabel('gridscore post');
 title('gridscore pre vs post');
 set( gr, 'Heights', [25 -1 25 -1] );

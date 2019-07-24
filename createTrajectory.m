@@ -15,7 +15,7 @@ function c = createTrajectory(px1, px2, py1, py2, pt, st, mnxt) %sx1, sx2, sy1, 
     c.pt = p1.t; %PT%
     
     %case for no spikes
-    c.st = st;
+    %c.st = st; REMOVED, NEED BACK IN??
     if isempty(st)
         st = c.pt(1);
     end
@@ -27,15 +27,17 @@ function c = createTrajectory(px1, px2, py1, py2, pt, st, mnxt) %sx1, sx2, sy1, 
     end
     
     %base sx sy on closest time of spike to data in px py
-    [c.rayleigh_score, c.rayleigh_angle, c.hd] =...
-        rayleigh_score(c.pt,p1.x,p1.y,p2.x, p2.y, p1.x(si),p1.y(si),p2.x(si),p2.y(si));
+    winms = 10;% smoothing window for rayleigh score 
+    [c.rayleigh_score, c.rayleigh_angle, c.hd c.shd] =...
+        rayleigh_score(c.pt,p1.x,p1.y,p2.x, p2.y,...
+        p1.x(si),p1.y(si),p2.x(si),p2.y(si),winms);
     
     c.px =  mean([p1.x, p2.x], 2);
     c.px = c.px - min(c.px) + 0.00001; %no zeros
     c.py =  mean([p1.y, p2.y], 2);
     c.py = c.py - min(c.py) + 0.00001;
-    c.st = st;
     %base sx sy on closest time of spike to data in px py
+    c.st = st;
     c.sx = c.px(si);
     c.sy = c.py(si);
     

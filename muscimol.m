@@ -7,53 +7,37 @@
 %{
 ** TO DO
 
-- fix extrema2
-
-    ****Questions***
-- Method for correlations that don't fit
-
-* Check if firing rate shuts down by location of environment in grid cell
-    
-read/study:
-        correlation + auto + cross, covatiance.
-
-function [information]=Calculates_Spatial_Information(rate_map,time_mat)
-% calculate Skaggs information from rate_map
-prob_mat=time_mat./nansum(time_mat(:));
-mean_rate=nansum(prob_mat(:).*rate_map(:));
-information=nansum(prob_mat(:).*rate_map(:).*(log2(rate_map(:)/mean_rate)));
-end
 %}
 
 function musciomol()
     warning off;
-    params.dir_load =...
-        'C:\Noam\Data\muscimol\DB_musc_MEC\';
-    params.dir_save =....
-        'C:\Noam\Data\muscimol\noam_output\';
+    dl = 'C:\Noam\Data\muscimol\DB_musc_MEC\';
+    ds = 'C:\Noam\Data\muscimol\noam_output\';
     %%%
-    binsize = 45;  %change to 45    %FIND MIN GRID??? PERIOD??  % B I N S I Z E 
-    %fn = sprintf('C:\\Noam\\Data\\muscimol\\noam\\cells_%dmin_c_midall_gridscore.mat',45); 
-    fn = sprintf('C:\\Noam\\Data\\muscimol\\noam\\cells_%dmin_d_patchtraj_rayleigh',binsize);
-    fn = sprintf('C:\\Noam\\Data\\muscimol\\noam\\cells_%dmin_d_MINI.mat',binsize);
+    binsize = inf;  %change to 45   WAS 45
+    fn = sprintf('C:\\Noam\\Data\\muscimol\\noam\\cells_%dmin_d_patchtraj_rayleigh.mat',binsize);
+    %fn = sprintf('C:\\Noam\\Data\\muscimol\\noam\\cells_%dmin_d_MINI.mat',binsize);
     %    tic %1800 sec   %LOAD FROM FILES
     %%{
     tic;
-    files = dir(strcat(params.dir_load,'DB*.mat'));
+    files = dir(strcat(dl,'DB*.mat'));
     for i = 1:length(files) %CHECK 36
         %i = 81;
-        data{i} = load(strcat(params.dir_load,files(i).name));
+        data{i} = load(strcat(dl,files(i).name),'db');
         data{i}.db.ind = i;
         cells{i} = process(data{i}.db, binsize); 
         fprintf('%d %.1f \n',i, (i*100/length(files)));
     end
+    toc
+    
+    tic
     save(fn,'cells');
     toc
     %}
     
     
     fprintf('loading %s ',fn); %ascii 48
-    tic; cells = load(fn); cells = cells.cells; toc;
+    tic; cells = load(fn); toc;
     %c1=cells{71}.before;, c2=cells{75}.before; n = 10;
     %batchTimeCorrelations (c1, c2, n);
     %stop
@@ -686,47 +670,7 @@ end
 %     end
 % end
 
-function r = process(data, binsize)
-nbins = 50;
-r.ind = data.ind;
-ep.x1 = 0; ep.x2 = 0; ep.y1 = 0; ep.y2 = 0; ep.t = 1;
-es.x = 0; es.x2 = 0;  es.y = 0;  es.y2 = 0; es.ts =1;
-%before
-r.before = makeSession(data.B(1).pos_data, data.B(1).spike_data,nbins,[-inf inf]);
-%middle
-r.midall = makeSession(data.B(2).pos_data, data.B(2).spike_data,nbins,[0,binsize*60]);
-%after
-if length(data.B) == 3 
-    r.after = makeSession(data.B(3).pos_data, data.B(3).spike_data,nbins,[-inf inf]);
-else
-    r.after = makeSession(ep, es, nbins,[-inf inf]);
-end
-r.tet  = data.tetrode;
-r.cell  = data.cell;
-r.type = data.cell_type_obj_new;
-r.area = data.area;
-r.id   = data.rat;
-r.date = data.date;
 
-% bins = bin_trajactory(tr, binLength*60, maxTime*60); %BIN LENGTH
-% for i = 1:length(bins)
-%     tr = bins{i};
-%     [bins{i}.rm, bins{i}.max_r] = Create_Rate_Map(tr.px, tr.py, tr.pt, tr.sx, tr.sy, tr.st,true,nbins);
-%     bins{i}.ac = Cross_Correlation(bins{i}.rm, bins{i}.rm);
-%     bins{i}.ac2 = xcorr2(bins{i}.rm); 
-%     %fprintf('%d %d\n', r.ind, i);
-%     %bins{i}.gridscore = gridscore(bins{i}.ac, r.ind);
-%     bins{i}.gridscore = gridscore2(bins{i}.ac2, r.ind);
-%     bins{i}.module = Find_Module(imgaussfilt(bins{i}.ac2, 2,'FilterDomain','spatial'));
-%     bins{i}.exists = false;
-%     if bins{i}.max_r ~= 0 %&&  bins{i}.gridscore ~= -2 %bins{i}.max_r ~= 50 &&
-%         bins{i}.exists = true;
-%     end
-% end
-% %r.middle = bins; %CHANGE BACK
-% r.midall = bins{1};
-
-end
 
 %refactored
 % function c = rat_trajectory(px1, px2, py1, py2, pt, st, mnxt) %sx1, sx2, sy1, sy2,

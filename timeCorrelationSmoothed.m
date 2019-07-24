@@ -1,5 +1,6 @@
 %lag in ms
-function [ pcor, timescale] = timeCorrelationSmoothed( train1,train2,p)
+function [ pcor, timescale, train1smooth, train2smooth] = ...
+                    timeCorrelationSmoothed( train1,train2,p)
 
 train1smooth = train1; train2smooth = train2;
 if isfield(p,'movmean') && p.movmean>0
