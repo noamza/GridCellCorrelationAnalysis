@@ -1,5 +1,7 @@
 %{
 load('C:\\Noam\\Data\\muscimol\\noam\\cells_45min_d_patchtraj_rayleigh'); %personal
+
+load('C:\\Noam\\Data\\muscimol\\cells15nan')
 load('.\data\pairs');
 cels = unique([pairs(:,1),pairs(:,2)])';
 %}
@@ -1140,6 +1142,24 @@ end %END FILE
 
 
 
+b='';
+for i = 1:length(files) %CHECK 36
+    a=cells{i};
+    if ~isequal(b,strcat(a.id,a.date))
+        b=strcat(a.id,a.date);a=a.midall.pt; c(end+1,:)=[min(a),max(a)];
+        %fprintf('%d %.1f %.1f \n',i, min(a)/60, max(a)/60);
+    end
+end
+c=[]; b='';
+for j = 1:length(cels) %CHECK 36
+    i=cels(j);
+    a=cells{i};
+    if ~isequal(b,strcat(a.id,a.date))
+        b=strcat(a.id,a.date);a=a.midall.pt; c(end+1,:)=[min(a),max(a)];
+        fprintf('%d %.1f %.1f \n',i, min(a)/60, max(a)/60);
+    end
+end
+    
 
 %}
 
