@@ -1,31 +1,32 @@
-function shufflingSpatial(cells,pairs)
+function shufflingSpatial(cellsn,pairs)
   
 %SHUFFLING Spatial + time
     
-    par=[]; par.n=250; par.movmean=25; par.nb = 50; t=zeros(len(pairs),par.n);
+    par=[]; par.n=1000; par.movmean=25; par.nb = 50; t=zeros(len(pairs),par.n);
     pscb = t; pscm = t; psca = t;
     
     ptcb = t; ptcm = t; ptca = t;
     
-    for i = 1:length(pairs)
-        tic
-        fprintf(' %d',i);
-        c1 = cells{pairs(i,1)};
-        c2 = cells{pairs(i,2)};
+    for i = 1:length(pairs)       
+        i
+        c1 = cellsn(pairs(i,1));%cells{pairs(i,1)};
+        c2 = cellsn(pairs(i,2));
         %space
-        %t = shuffleSpace2Correlations(c1.before, c2.before, par);
+        tic
         pscb(i,:) = shuffleSpace2Correlations(c1.before, c2.before,par); %[pairs(i,:), ]
         pscm(i,:) = shuffleSpace2Correlations(c1.midall, c2.midall,par);
         if(length(c1.after.pt)>1 && length(c2.after.pt)>1)
             psca(i,:) = shuffleSpace2Correlations(c1.after, c2.after,par);
         else;psca(i,:) = zeros(1,par.n);end
+        toc
         %time
-%         ptcb(i,:) = shuffleTimeCorrelations (c1.before, c2.before,par);
-%         ptcm(i,:) = shuffleTimeCorrelations (c1.midall, c2.midall,par);
-%         if(length(c1.after.pt)>1 && length(c2.after.pt)>1)
-%             ptca(i,:) = shuffleTimeCorrelations (c1.after, c2.after,par);
-%         else;ptca(i,:) = zeros(1,par.n);end 
-         toc
+        tic
+        ptcb(i,:) = shuffleTimeCorrelations (c1.before, c2.before,par);
+        ptcm(i,:) = shuffleTimeCorrelations (c1.midall, c2.midall,par);
+        if(length(c1.after.pt)>1 && length(c2.after.pt)>1)
+            ptca(i,:) = shuffleTimeCorrelations (c1.after, c2.after,par);
+        else;ptca(i,:) = zeros(1,par.n);end 
+        toc
     end
     
     return %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -128,8 +129,10 @@ function shufflingSpatial(cells,pairs)
     end
     
     
-    
-    
-    
 end
+    
+    
+    
+    
+
 

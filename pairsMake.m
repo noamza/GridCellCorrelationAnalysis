@@ -1,12 +1,12 @@
 
+
 %load('C:\Noam\Data\muscimol\cells15nan');
-%aclls=cellsn; clear cellsn;
-b=[aclls.before]; l =     arrayfun(@(z) len(z.st)>=100,b); 
-m=[aclls.midall]; l = l & arrayfun(@(z) len(z.st)>=100,m); 
+b=[cellsn.before]; l =     arrayfun(@(z) len(z.st)>=100,b); 
+m=[cellsn.midall]; l = l & arrayfun(@(z) len(z.st)>=100,m); 
 b=[b.gridscore]; m=[m.gridscore];
 %only take cells within threshold and spikes>100
-g= b>0.3 & m<0.25; clear b; clear m;
-gclls=aclls(g&l); clear g; clear l;
+g= b>0.5 & m<0.2; clear b; clear m;
+gclls=cellsn(g&l); clear g; clear l;
 
 %group by recording date and animal
 gs =                 unique(str2double(strcat({gclls.id},{gclls.date}))    )';
@@ -19,11 +19,10 @@ clear groupis; clear gs; clear i; clear gccls;
 
 threshRemoveSpikes=-1; 
 threshRemoveCell=0.05;
-rgs = [];
 percentremoved=[];
 for gi = 1:len(group)
     gcis=group{gi};
-    g = aclls(gcis);
+    g = cellsn(gcis);
     rcs = [];
     for j = 1:len(g)-1
         for k = j+1:len(g)
@@ -83,6 +82,10 @@ for gi = 1:len(group)
         group{gi} = setdiff(gcis, rcs);
     end
 end
+clear gi;clear gcis;clear g;clear rcs;clear rid;clear rem;clear brem;clear mrem;clear offset;
+clear c1;clear c2;clear s1;clear s2;clear s1i;clear s2i;clear rs1;clear rs2;clear max_time;
+clear min_time; clear threshRemoveSpikes;clear threshRemoveCell;
+
 
 %remove 1 cell groups
 group=group(cellfun(@(x) len(x)>1,group));

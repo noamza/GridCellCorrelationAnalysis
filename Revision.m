@@ -5,11 +5,36 @@ load('C:\\Noam\\Data\\muscimol\\cells15nan')
 load('.\data\pairs');
 cels = unique([pairs(:,1),pairs(:,2)])';
 %}
-function Revision(cells,pairs,cels)
+function Revision(cellsn, pairs)
+
+
+b=[cellsn.before]; l =     arrayfun(@(z) len(z.st)>=100,b); 
+m=[cellsn.midall]; l = l & arrayfun(@(z) len(z.st)>=100,m); 
+b=[b.gridscore]; m=[m.gridscore];
+g= b< 3 & b>0.5 & m<0.3 & m>0.1; clear b; clear m;
+t=cellsn(g&l); clear g; clear l;
+t=[t.ind]';
+
+t=unique(pairs(:));
+for i=t'
+    clf;
+    c=cellsn(i).before;
+    subplot(221)
+    imgsc(c.rm,1); title('before');
+    subplot(223)
+    imgsc(c.ac,2); title(c.gridscore);
+    c=cellsn(i).midall;
+    subplot(222)
+    imgsc(c.rm,1); title('during');
+    subplot(224)
+    imgsc(c.ac,2); title(c.gridscore);
+    suptitle(n2(i));
+end
 
 dbstop if error
 
-clls = [cells{cels}]; aclls=[cells{:}]; clear cells;
+cels = unique(pairs(:))';
+clls = [cellsn(cels)]; aclls=cellsn;
 s = {'before';'midall';'after'};tss = {'pre','dur','post'};
 vs='rayleigh_score';va='rayleigh_angle';
 
