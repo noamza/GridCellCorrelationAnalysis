@@ -1,11 +1,12 @@
 
 
 %load('C:\Noam\Data\muscimol\cells15nan');
+bthresh=0.5; mthresh=0.2;
 b=[cellsn.before]; l =     arrayfun(@(z) len(z.st)>=100,b); 
 m=[cellsn.midall]; l = l & arrayfun(@(z) len(z.st)>=100,m); 
 b=[b.gridscore]; m=[m.gridscore];
 %only take cells within threshold and spikes>100
-g= b>0.5 & m<0.2; clear b; clear m;
+g= b>bthresh & m<mthresh; clear b; clear m;
 gclls=cellsn(g&l); clear g; clear l;
 
 %group by recording date and animal
@@ -92,6 +93,7 @@ group=group(cellfun(@(x) len(x)>1,group));
 %get pairs
 pairs=cellfun(@(x) nchoosek(x,2),group,'uni',false);
 pairs=vertcat(pairs{:});
+cels=unique(pairs(:));
 
 
 

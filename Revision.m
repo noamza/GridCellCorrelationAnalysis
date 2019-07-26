@@ -8,33 +8,12 @@ cels = unique([pairs(:,1),pairs(:,2)])';
 function Revision(cellsn, pairs)
 
 
-b=[cellsn.before]; l =     arrayfun(@(z) len(z.st)>=100,b); 
-m=[cellsn.midall]; l = l & arrayfun(@(z) len(z.st)>=100,m); 
-b=[b.gridscore]; m=[m.gridscore];
-g= b< 3 & b>0.5 & m<0.3 & m>0.1; clear b; clear m;
-t=cellsn(g&l); clear g; clear l;
-t=[t.ind]';
 
-t=unique(pairs(:));
-for i=t'
-    clf;
-    c=cellsn(i).before;
-    subplot(221)
-    imgsc(c.rm,1); title('before');
-    subplot(223)
-    imgsc(c.ac,2); title(c.gridscore);
-    c=cellsn(i).midall;
-    subplot(222)
-    imgsc(c.rm,1); title('during');
-    subplot(224)
-    imgsc(c.ac,2); title(c.gridscore);
-    suptitle(n2(i));
-end
 
 dbstop if error
 
 cels = unique(pairs(:))';
-clls = [cellsn(cels)]; aclls=cellsn;
+clls = [cellsn(cels)]; %aclls=cellsn;
 s = {'before';'midall';'after'};tss = {'pre','dur','post'};
 vs='rayleigh_score';va='rayleigh_angle';
 
@@ -46,6 +25,31 @@ vs='rayleigh_score';va='rayleigh_angle';
 
     function reprocess()
         a=[];b=a;c=a;d=a;e=a;f=a;g=a;h=a;m=a;n=a;q=a;t=a;w=a;x=a;y=a;z=a; i=a;     
+        
+        
+        b=[cellsn.before]; l =     arrayfun(@(z) len(z.st)>=100,b); 
+        m=[cellsn.midall]; l = l & arrayfun(@(z) len(z.st)>=100,m); 
+        b=[b.gridscore]; m=[m.gridscore];
+        g= b< 3 & b>0.5 & m<0.3 & m>0.1; clear b; clear m;
+        t=cellsn(g&l); clear g; clear l;
+        t=[t.ind]';
+
+        t=unique(pairs(:));
+        for i=t'
+            clf;
+            c=cellsn(i).before;
+            subplot(221)
+            imgsc(c.rm,1); title('before');
+            subplot(223)
+            imgsc(c.ac,2); title(c.gridscore);
+            c=cellsn(i).midall;
+            subplot(222)
+            imgsc(c.rm,1); title('during');
+            subplot(224)
+            imgsc(c.ac,2); title(c.gridscore);
+            suptitle(n2(i));
+        end
+
         
         t = aclls; tl=arrayfun(@(z) len(z.st),t); 
         
@@ -450,10 +454,12 @@ a=[1:3;1:3]
     function hdangle()
         a=[],b=[],c=[],d=[],e=[],f=[],m=[],n=[],x=[],y=[],z=[];
         % ANGLE VILLE %%%% ^todo: alpha by score
-        %aclls = [     cells{:}]; clls = aclls(cels);
+        %aclls = [     cells{:}]; 
+        clls = cellsn(cels);
+        
         t = [clls.midall]; t = [t.rayleigh_score]; hdclls = clls(t>0.4);
         load('.\\data\\roomdose','room');
-        load('.\\data\\aclls15min','aclls');
+        %load('.\\data\\aclls15min','aclls');
         s = {'before';'midall';'after'}; vs='rayleigh_score';va='rayleigh_angle'; tss = {'pre','dur','post'};
         roomo=room;
         
@@ -468,14 +474,14 @@ a=[1:3;1:3]
         
 
         % vector sum of angle: add all sins and all coss of each angle, arctan of all; or mean sins / mean cos
-        x=2; t = [aclls.(s{x})]; tl=arrayfun(@(z) len(z.st),t);   
+        x=2; t = [cellsn.(s{x})]; tl=arrayfun(@(z) len(z.st),t);   
         ta = [t.(va)]; ts = [t.(vs)];  tis = ts>rst&tl>=100; ta = ta(tis);
         rad2deg(atan(sum(cos(ta))/sum(sin(ta))))
         
         
         function fp(x,rst)
             cla; xlabel('r angle');
-            t = [aclls.(s{x})]; tl=arrayfun(@(z) len(z.st),t); tl=tl>=100;   
+            t = [cellsn.(s{x})]; tl=arrayfun(@(z) len(z.st),t); tl=tl>=100;   
             ta = rad2deg([t.(va)]); ts = [t.(vs)];  tis = ts>rst; t = ta(tis & tl);
             histogram(t,-180:30:180); xlim([-180 180]); ylim([0 40]); axis square;
             title(tss{x});
@@ -490,7 +496,7 @@ a=[1:3;1:3]
         %         figure(2901);clf;rst=0.4;st='grid2HD';
         clf; pr = [200 10 800 800]; set(gcf,'position',pr); f=[clls.(s{2})];
         for x=1:3%session
-            t = [aclls.(s{x})]; ts = [t.(vs)]'; tl=arrayfun(@(z) len(z.st),t)';room=roomo;
+            t = [cellsn.(s{x})]; ts = [t.(vs)]'; tl=arrayfun(@(z) len(z.st),t)';room=roomo;
             %         t =  [clls.(s{x})]; ts = [f.(vs)]'; room=roomo; room=roomo(cels); %  [ HD ]
             z=unique(room);d= arrayfun(@(x) [t(ts>rst & room==x & tl>100).(va)],z,'uni',0);%z=unique(room(ts>rst));
             for y=1:len(z) %z to d
@@ -507,10 +513,10 @@ a=[1:3;1:3]
         rst=0.3;
         x=1;  pr = [200-10*x 10 800 700]; 
         figure(900+x); clf; %set(gcf,'position',pr);
-        t = [aclls.(s{x})]; ts = [t.(vs)]; tl=arrayfun(@(z) len(z.st),t); tis = ts>rst&tl>100;
-        t = [aclls.(s{1})]; tab=rad2deg([t(tis).(va)])'; %add tl's of all sessions??
-        t = [aclls.(s{2})]; tam=rad2deg([t(tis).(va)])';
-        t = [aclls.(s{3})]; taa=rad2deg([t(tis).(va)])';
+        t = [cellsn.(s{x})]; ts = [t.(vs)]; tl=arrayfun(@(z) len(z.st),t); tis = ts>rst&tl>100;
+        t = [cellsn.(s{1})]; tab=rad2deg([t(tis).(va)])'; %add tl's of all sessions??
+        t = [cellsn.(s{2})]; tam=rad2deg([t(tis).(va)])';
+        t = [cellsn.(s{3})]; taa=rad2deg([t(tis).(va)])';
         subplot(121); plot(tab,tam,'o'); axis equal; axis square;
         title('r-angle'); xlabel('pre'); ylabel('dur');
         subplot(122); plot(tab(taa~=0),taa(taa~=0),'o'); axis equal; axis square;
@@ -523,7 +529,7 @@ a=[1:3;1:3]
         
         % WINDOW ANGLE Figure
         rst=0.3; for x=1:3; pr = [200-10*x 10 800 700];
-        t = [aclls.(s{x})]; tl=arrayfun(@(z) len(z.st),t); 
+        t = [cellsn.(s{x})]; tl=arrayfun(@(z) len(z.st),t); 
         ts = [t.(vs)];  tis = ts>rst & tl>100; t=t(tis); %ta = rad2deg([t.(va)]);
         [ sum(tis)]
         figure(110+x); clf; %set(gcf,'position',pr);
@@ -563,8 +569,8 @@ a=[1:3;1:3]
         %a = [clls(ismember([clls.ind],gh1)).midall];
         hdgs = num2cell(findgroups({hdclls.id}, {hdclls.date}));
         [hdclls.group] = hdgs{:};
-        gs = unique( str2double(strcat({aclls.id}, {aclls.date})) );
-        atop = arrayfun(@(x) aclls(str2double(strcat({aclls.id}, {aclls.date}))==x),gs,'uni',0);
+        gs = unique( str2double(strcat({cellsn.id}, {cellsn.date})) );
+        atop = arrayfun(@(x) cellsn(str2double(strcat({cellsn.id}, {cellsn.date}))==x),gs,'uni',0);
         ai= cellfun (@(x) [x.ind],atop,'uni',0)';
         ctop = arrayfun(@(x) hdclls([hdclls.group]==x),unique([hdclls.group]),'uni',0);%cell per group
         ci= cellfun (@(x) [x.ind],ctop,'uni',0)';
@@ -602,7 +608,7 @@ a=[1:3;1:3]
         figure(200);clf;
         
         subplot(221); cla; hold on; v = 'rayleigh_angle';
-        a = [aclls.(s{1})];                     a = rad2deg([a.(v)]);plot(a,'.');
+        a = [cellsn.(s{1})];                     a = rad2deg([a.(v)]);plot(a,'.');
         b = [  clls.(s{1})]; bi = [clls.ind];   b = rad2deg([b.(v)]);plot(bi,b,'x');
         c = cellfun (@(x) [x.(s{1})],ctop,'uni',0)';
         c = cellfun (@(x,q) [q;rad2deg([x.(v)])]',c,ci,'uni',0);
@@ -611,7 +617,7 @@ a=[1:3;1:3]
         xlabel('cell id'); title(sprintf('%s %s',tss{1},v)); axis tight;
         
         subplot(222); hold on; v = 'rayleigh_score';
-        a = [aclls.(s{1})];                     a = [a.(v)];plot(a,'.');
+        a = [cellsn.(s{1})];                     a = [a.(v)];plot(a,'.');
         b = [  clls.(s{1})]; bi = [clls.ind];   b = [b.(v)];plot(bi,b,'x');
         c = cellfun (@(x) [x.(s{1})],ctop,'uni',0)';
         c = cellfun (@(x,q) [q;[x.(v)]]',c,ci,'uni',0);
@@ -619,7 +625,7 @@ a=[1:3;1:3]
         xlabel('cell id'); title(sprintf('%s %s',tss{1},v)); axis tight;
         
         subplot(223); hold on; v = 'rayleigh_angle';
-        a = [aclls.(s{2})];                     a = rad2deg([a.(v)]);plot(a,'.');
+        a = [cellsn.(s{2})];                     a = rad2deg([a.(v)]);plot(a,'.');
         b = [  clls.(s{2})]; bi = [clls.ind];   b = rad2deg([b.(v)]);plot(bi,b,'x');
         c = cellfun (@(x) [x.(s{2})],ctop,'uni',0)';
         c = cellfun (@(x,q) [q;rad2deg([x.(v)])]',c,ci,'uni',0);
@@ -627,7 +633,7 @@ a=[1:3;1:3]
         xlabel('cell id'); title(sprintf('%s %s',tss{2},v)); axis tight;
         
         subplot(224); hold on; v = 'rayleigh_score';
-        a = [aclls.(s{2})];                     a = [a.(v)];plot(a,'.');
+        a = [cellsn.(s{2})];                     a = [a.(v)];plot(a,'.');
         b = [  clls.(s{2})]; bi = [clls.ind];   b = [b.(v)];plot(bi,b,'x');
         c = cellfun (@(x) [x.(s{2})],ctop,'uni',0)';
         c = cellfun (@(x,q) [q;[x.(v)]]',c,ci,'uni',0);
@@ -638,7 +644,7 @@ a=[1:3;1:3]
         %plot hd per cell %LARGE PLOTS
         x=1;
         rst=0.3; str.x = ''; str.y = '';
-        t = [aclls.(s{x})]; tl=arrayfun(@(z) len(z.st),t)'; ts = [t.(vs)]'; t=t(ts>rst&tl>100); 
+        t = [cellsn.(s{x})]; tl=arrayfun(@(z) len(z.st),t)'; ts = [t.(vs)]'; t=t(ts>rst&tl>100); 
         [~, y] = sort(wrapTo360(rad2deg([t.(va)]))); t=t(y);
         n=sort(arrayfun(@(f) len(f.st),t ))';
         sprintf('%s n=%d a=%.2f +- %.2f',s{x},len(n),mean(n),std(n))
@@ -664,7 +670,7 @@ a=[1:3;1:3]
         end
         suptitle([s{x} ': moving direction angle [0=North 90=West] by cell rst> ' n2(rst)]);
         
-        x=1; t = [aclls.(s{x})];
+        x=1; t = [cellsn.(s{x})];
         figure(300+x); clf; pr = [100 10 1600 1000]; set(gcf,'position',pr);
         for i=1:len(t)
             subplot(ceil(sqrt(len(t))),ceil(sqrt(len(t))),i)
@@ -740,6 +746,15 @@ a=[1:3;1:3]
     function misc %Questions
         a=[];aa=a;b=[];bb=a;c=[];cc=a;d=[];e=[];f=[];g=[];h=[];m=[];q=[];t=[];w=[];z=[];
         % misc
+        
+        % Average Angle
+        % vector sum of angle: add all sins and all coss of each angle, arctan of all; or mean sins / mean cos
+        x=2; t = [cellsn.(s{x})]; tl=arrayfun(@(z) len(z.st),t);   
+        ta = [t.(va)]; ts = [t.(vs)];  tis = ts>rst&tl>=100; ta = ta(tis);
+        rad2deg(atan(sum(cos(ta))/sum(sin(ta))))
+        
+        
+        
         %was significance stable
         n = max(ptsbma(:,1));
         bar([sum(ptsbma(:,1)<= n*0.01)/length(pairs) + sum(n*0.99 <= ptsbma(:,1))/length(pairs);...

@@ -31,35 +31,36 @@ function shufflingSpatial(cellsn,pairs)
     
     return %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    tt = {ptcb,ptcm,ptca,pscb,pscm,psca};
-    ctsbma = zeros(len(pairs),6);
-    ptsbma = zeros(len(pairs),6);
-    lp = len(pairs);
-    for ii = 1: 6
+    tt = {ptcb,ptcm,ptca,pscb,pscm,psca}%,pgcb,pgcm,pgca};
+    ctsbma = zeros(len(pairs),len(tt));
+    ptsbma = zeros(len(pairs),len(tt));
+    for ii = 1: len(tt)
         ctsbma(:,ii) = tt{ii}(:,1);
-        for i = 1:lp
-            t = abs(tt{ii}(i,:));
-            [s,I] = sort((t),'descend');
-            %p = round(find(I==1)/length(I),3); %index of non shuffled
+        for i = 1:len(pairs)
+            t = (tt{ii}(i,:));
+            %[~,I]=sort(abs(t),'descend');if ii>6;[~,I]=sort(t,'descend');end
+            [~,I]=sort(t,'descend');
             pp = find(I==1); %index of non shuffled
             ptsbma(i,ii) = pp;
+            if t(1)==0 || t(1)==-2 %THIS IS FOR GRID SCORE CHECK
+                ptsbma(i,ii) = len(t);
+            end
         end
     end
+    clear i; clear ii; clear I; clear nb; clear par; clear t; clear tt; clear pp;
+    %clear ptca; clear ptcb; clear ptcm; clear psca; clear pscb; clear pscm; 
+    %VISUALIZE
+    n = len(ptcb); show = [1,2,3,4,5,6]; %n = len(ptcb) % ==1000
+    pp = ptsbma<= n*0.01;  sum(pp(:,show))/len(pairs) %LARGEST VAL (FIRST DESC)
+    pp = n*0.99 <= ptsbma; sum(pp(:,show))/len(pairs) %SMALLEST VAL (LAST DESC)
+    pp = ptsbma <= n*0.01 | n*0.99 <= ptsbma;
+    %pp(:,7:9) = ptsbma(:,7:9) <= n*0.01; %for GRID    
+    sum(pp(:,show))/length(pairs)  %COMPARE TO SHUFF
+    pptsbma = pp;
+    clear pp; clear n; clear show; 
     
-    pp = ptsbma<= par.n*0.01; sum(pp(:,4:6))/length(pairs)
-    pp = par.n*0.99 <= ptsbma; sum(pp(:,4:6))/length(pairs)
-    pp = ptsbma<= par.n*0.01 | par.n*0.99 <= ptsbma;
-    sum(pp(:,4:6))/length(pairs)
     
-    pp = ptsbma;
-    pp(ptsbma>par.n*0.01)=0;
-    pp(ptsbma>=par.n*0.99)=99;    
-    pp(pp>0)=1;
-    pptsbma = logical(pp);
-    pptsbma = pp>0;
-    %sum(ptsbma(:,:)<=par.n*0.01)/length(pairs)*100
-    pp = ptsbma<= par.n*0.01 || par.n*0.01 <= ptsbma;
-    sum(pptsbma(:,:))/length(pairs)
+    
     
     unique(q(:,2))
     figure;histogram(q(:,2),100)

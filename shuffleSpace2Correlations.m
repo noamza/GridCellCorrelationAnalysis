@@ -21,7 +21,11 @@ function pcor0 = shuffleSpace2Correlations (c1, c2, p)
         %[t1,t2] = removeOverlappingSpikes(t1,t2, p.remove); %USE??
         % t1=createMsSpikeTrain(t1);       
         t2s = movmean(t2,p.movmean);
-        st2=st(1:len(t2s)); %should be:  st = (1:len(trs))/1000;
+        if length(t2s) <= length(st)
+            st2=st(1:len(t2s)); %should be:  st = (1:len(trs))/1000;
+        else
+            st2=(1:len(t2s))/1000;
+        end
         rm2 = createSmoothRateMapNan(c2,p.nb,t2s,rt2,st2);  %createSmoothRate()
         pcor0(i)=ccof(rm2,rm1);
     end

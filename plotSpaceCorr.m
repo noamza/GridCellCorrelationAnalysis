@@ -2,7 +2,8 @@ function ax = plotSpaceCorr(ax,c1,c2,p,str)%SETS LIMITS OF ARENA TO 100
     title(ax, str.t);xlabel(ax, str.x);
     ylabel(ax, str.y);hold(ax, 'on');
     
-    cc = xcorr2(c2.rm,c1.rm); %reverse order for perspective
+    %cc = xcorr2(c2.rm,c1.rm); %reverse order for perspective
+    cc = xcorr2g(c2.rm,c1.rm); %reverse order for perspective
     %cc = xcorr2(c2.rm-mean(c2.rm(:)),c1.rm-mean(c1.rm(:))); %reverse order for perspective
     cc = imgaussfilt(cc,1.4);
     cenr = round(size(cc,2)/2); cenc = round(size(cc,1)/2);
