@@ -1,6 +1,47 @@
-function shufflingSpatial(cellsn,pairs)
-  
-%SHUFFLING Spatial + time
+function Shuffling(cellsn,pairs)
+
+%shuffling gridscore
+     nshuf=10;pval=0.1;   
+                                            nb=50;movm=25;asig=2;
+     pgb = []; pgm = [];
+     for i = 1:10% len(cellsn); 
+         i
+         c=cellsn(i); tic;
+         pgb(i,:) = shuffleGridscoreNan(c.before,nshuf,nb,movm,asig,pval,'before');
+         pgm(i,:) = shuffleGridscoreNan(c.midall,nshuf,nb,movm,asig,pval,'midall');
+        toc         
+     end
+     
+    tt = {pgb,pgm};ncls=size(pgb,1);
+    cgbma = [];%zeros(len(cellsn),len(tt));
+    pgbma = [];%zeros(len(cellsn),len(tt));
+    for ii = 1: len(tt)
+        cgbma(:,ii) = tt{ii}(:,1);
+        for i = 1:ncls
+            t = (tt{ii}(i,:));
+            %[~,I]=sort(abs(t),'descend');if ii>6;[~,I]=sort(t,'descend');end
+            [~,I]=sort(t,'descend');
+            pp = find(I==1); %index of non shuffled
+            pgbma(i,ii) = pp;
+            if t(1)==0 %THIS IS FOR GRID SCORE CHECK
+                pgbma(i,ii) = len(t);
+            end
+        end
+    end
+    %VISUALIZE
+    show = [1,2];
+    pp      = pgbma      <= nshuf*pval; %befire after
+    pp(:,2) = pgbma(:,2) >  nshuf*(1-pval);  
+    sum(pp(:,show))/ncls %LARGEST VAL (FIRST DESC)
+    ppgbma = pp;
+    clear pp; clear n; clear show; clear i; clear ii; clear I; clear t; clear tt;
+
+    %pp = n*0.99 <= ptsbma; sum(pp(:,show))/len(pairs) %SMALLEST VAL (LAST DESC)
+    %pp = ptsbma <= n*0.01 | n*0.99 <= ptsbma;    
+
+
+
+%shuffling Spatial + Time
     
     par=[]; par.n=1000; par.movmean=25; par.nb = 50; t=zeros(len(pairs),par.n);
     pscb = t; pscm = t; psca = t;

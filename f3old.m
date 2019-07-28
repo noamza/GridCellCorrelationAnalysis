@@ -7,7 +7,7 @@ fs = 14; afs = 10; mfs = 10; tfs = 12; lfs = 3;  p = {};
 gtop = uix.GridFlex('Parent', fig,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');
 
 %{
-
+a=1; b=4; %a=2; b=5;
 'sig:sig   sig:non   non:sig   non:non'
 [sum(pptsbma(:,a)&pptsbma(:,b)),...
 sum(pptsbma(:,a)&~pptsbma(:,b)),...
