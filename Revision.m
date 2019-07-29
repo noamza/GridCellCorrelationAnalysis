@@ -53,19 +53,23 @@ vs='rayleigh_score';va='rayleigh_angle';
         
         t = aclls; tl=arrayfun(@(z) len(z.st),t); 
         
-        nancllg=aclls;
+        nancllg=cellsn;
         %changing ratemap to nans noam method
         for ss=[s(:)']
-            for i = 1:len(aclls)
+            for i = 1:len(cellsn)
                 [n2(i) ss]
-                c=aclls(i).(ss{:});z=c; 
-                [c.rm, c.max_r] = createRateMapNan(c,50);
-                c.ac = xcorr2g(c.rm,c.rm);
-                c.gridscore=gridscore2(c.ac, 2);
-                [c.gridscore z.gridscore]
-                c.module = [];
-                %c.module = Find_Module(imgaussfilt(c.ac, 3,'FilterDomain','spatial'));
-                nancllg(i).(ss{:})=c; 
+                c=cellsn(i).(ss{:});z=c; 
+%                 [c.rm, c.max_r] = createRateMapNan(c,50);
+%                 %cellsn(i).(ss{:}).max_r=max_r;
+%                 c.ac = xcorr2g(c.rm,c.rm);
+                  ac2=xcorr2n(c.rm,c.rm);
+                  cellsn(i).(ss{:}).ac2=ac2;
+                  cellsn(i).(ss{:}).gs2=gridscore2(ac2,2);
+%                 c.gridscore=gridscore2(c.ac, 2);
+%                 [c.gridscore z.gridscore]
+%                 c.module = [];
+%                 c.module = Find_Module(imgaussfilt(c.ac, 3,'FilterDomain','spatial'));
+%                 nancllg(i).(ss{:})=c; 
             end
         end
         

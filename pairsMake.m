@@ -1,13 +1,28 @@
 
-
+%load
 %load('C:\Noam\Data\muscimol\cells15nan');
 bthresh=0.5; mthresh=0.2;
 b=[cellsn.before]; l =     arrayfun(@(z) len(z.st)>=100,b); 
 m=[cellsn.midall]; l = l & arrayfun(@(z) len(z.st)>=100,m); 
+
 b=[b.gridscore]; m=[m.gridscore];
 %only take cells within threshold and spikes>100
-g= b>bthresh & m<mthresh; clear b; clear m;
-gclls=cellsn(g&l); clear g; clear l;
+gth= b>bthresh & m<mthresh; clear b; clear m;
+gsig= (ppgbma(:,1) & ~ppgbma(:,2))'; %significant gridscores
+gclls=cellsn(gsig&l); clear gth; clear l;
+
+for i=1:len(gclls)
+    i
+   a=gclls(i).before;
+   subplot(221)
+   imgsc(a.rm,1); title(len(a.st));
+   subplot(222)
+   imgsc(a.ac,2); title(a.gridscore);
+   subplot(224)
+   imgsc(a.ac2,2); title(gridscore2(a.ac2,2));
+   suptitle(n2(i))
+   
+end
 
 %group by recording date and animal
 gs =                 unique(str2double(strcat({gclls.id},{gclls.date}))    )';
@@ -95,7 +110,8 @@ pairs=cellfun(@(x) nchoosek(x,2),group,'uni',false);
 pairs=vertcat(pairs{:});
 cels=unique(pairs(:));
 
-
+['groups cells pairs']
+[len(group) len(cels) len(pairs)]
 
 
 

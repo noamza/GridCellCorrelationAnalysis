@@ -1,14 +1,14 @@
 function [rm, max_r] = createRateMapNan(c, nbins)
 if ~isempty(c.sx)
-    mx = max(px);
-    my = max(py); 
-    rmt = histcounts2(py,px,0:my/nbins:my,0:mx/nbins:mx); 
-    rms = histcounts2(sy,sx,0:my/nbins:my,0:mx/nbins:mx);
+    mx = max(c.px);
+    my = max(c.py); 
+    rmt = histcounts2(c.py,c.px,0:my/nbins:my,0:mx/nbins:mx); 
+    rms = histcounts2(c.sy,c.sx,0:my/nbins:my,0:mx/nbins:mx);
     %add to bin where where time is 0 but there are spikes 
     rmt(rmt==0&rms~=0)=1; 
     rmt=rmt*0.02;
     rm = rms ./ rmt;
-    max_r = max(rm);
+    max_r = max(rm(:));
 else
     rm = nan(nbins);
     max_r = 0;

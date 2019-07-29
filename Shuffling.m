@@ -1,18 +1,19 @@
 function Shuffling(cellsn,pairs)
 
 %shuffling gridscore
-     nshuf=10;pval=0.1;   
+     nshuf=250;pval=0.05;   
                                             nb=50;movm=25;asig=2;
-     pgb = []; pgm = [];
-     for i = 1:10% len(cellsn); 
+     pgb2 = []; pgm2 = []; pga2 = [];
+     for i = 7%:len(cellsn) 
          i
          c=cellsn(i); tic;
-         pgb(i,:) = shuffleGridscoreNan(c.before,nshuf,nb,movm,asig,pval,'before');
-         pgm(i,:) = shuffleGridscoreNan(c.midall,nshuf,nb,movm,asig,pval,'midall');
+         pgb2(i,:) = shuffleGridscoreNan(c.before,nshuf,nb,movm,asig,pval,'before');
+         pgm2(i,:) = shuffleGridscoreNan(c.midall,nshuf,nb,movm,asig,pval,'midall');
+         pga2(i,:) = shuffleGridscoreNan(c.after, nshuf,nb,movm,asig,pval,'after' );
         toc         
      end
      
-    tt = {pgb,pgm};ncls=size(pgb,1);
+    tt = {pgb2,pgm2,pga2};ncls=size(pgb2,1);
     cgbma = [];%zeros(len(cellsn),len(tt));
     pgbma = [];%zeros(len(cellsn),len(tt));
     for ii = 1: len(tt)
@@ -24,15 +25,15 @@ function Shuffling(cellsn,pairs)
             pp = find(I==1); %index of non shuffled
             pgbma(i,ii) = pp;
             if t(1)==0 %THIS IS FOR GRID SCORE CHECK
-                pgbma(i,ii) = len(t);
+                pgbma(i,ii) = len(t); %do i need this???
             end
         end
     end
     %VISUALIZE
-    show = [1,2];
+    show = [1,2,3];
     pp      = pgbma      <= nshuf*pval; %befire after
-    pp(:,2) = pgbma(:,2) >  nshuf*(1-pval);  
-    sum(pp(:,show))/ncls %LARGEST VAL (FIRST DESC)
+    %pp(:,2) = pgbma(:,2) >  nshuf*(1-pval);  
+    nansum(pp(:,show))/ncls %LARGEST VAL (FIRST DESC)
     ppgbma = pp;
     clear pp; clear n; clear show; clear i; clear ii; clear I; clear t; clear tt;
 

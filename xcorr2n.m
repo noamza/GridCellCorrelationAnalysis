@@ -40,7 +40,7 @@ xc0 = xcorr2(A,B);%normxcorr2(A,B);
 %nans scaled
 xc2nansscaled = xc0 .* scalenans;
 
-figure(1);imgsc(xc2nansscaled,2);
+%figure(1);imgsc(xc2nansscaled,2);
 
 end
 

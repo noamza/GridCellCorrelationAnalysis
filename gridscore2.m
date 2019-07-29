@@ -70,13 +70,15 @@ else
         viscircles([cmaxx, cmaxy],R_inner,'Color','b');
         %}
         % make sure that after rotation and interpolation the center will remain the maximum point.
-        ac(cmaxx,cmaxy)= max(ac(:)) + 10; %NOT SURE THIS WORKS
+        %ac(cmaxx,cmaxy)= max(ac(:)) + max(ac(:))*0.2; %NOT SURE THIS WORKS
+        [y x] = meshgrid(1:len(ac), 1:len(ac)); del=(x-cmaxx).^2+(y-cmaxy).^2<2^2; %rad=b;
+        ac(del)=max(ac(:))*1.1; ac(cmaxx,cmaxy)=ac(cmaxx,cmaxy)*1.1;
         for i = 2:6
             % rotate the auto-correlation
-            rot_Acor=imrotate(ac,(i-1)*30,'bicubic');
+            rot_Acor=imrotate(ac,(i-1)*30,'bicubic'); %max(rot_Acor(:))
             % compute distance from new center
-            [val,tmp_center_x]=max(max(rot_Acor));
-            [val,tmp_center_y]=max(max(rot_Acor'));
+            [~,tmp_center_x]=max(max(rot_Acor)); 
+            [~,tmp_center_y]=max(max(rot_Acor'));
             [Y,X] = ndgrid(1:1:size(rot_Acor,1), 1:1:size(rot_Acor,2));
             tmp_dist_from_center=sqrt((Y-tmp_center_y).^2+(X-tmp_center_x).^2);
             % extract the anulus(ring)
