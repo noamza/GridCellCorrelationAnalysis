@@ -1,5 +1,6 @@
 %interpolates nans in ratemap
 function rmintrp=intrepnanrm(rm)
+    rmo=rm;
     [m n]=size(rm);
     [x y]=meshgrid(1:n,1:m);
     x=x(:);y=y(:);rm=rm(:);
@@ -7,7 +8,12 @@ function rmintrp=intrepnanrm(rm)
     nx(nni)=[];ny(nni)=[];rm(nni)=[];
     f = scatteredInterpolant(nx,ny,rm);
     rmintrp=f(x,y);
-    rmintrp=reshape(rmintrp,m,n);
+    if len(rmintrp) ~= len(rmo(:));
+        'error cannot interp ratemap'
+        rmintrp = zeros(m,n); rmintrp(1,1)=1;
+    else
+        rmintrp=reshape(rmintrp,m,n);
+    end
 end
 
 

@@ -13,6 +13,8 @@ function Shuffling(cellsn,pairs)
          if ix1 <= p.nshuf*p.pval;%index of non shuffled
              ['DO MIDALL ' n2(ix1) ' ' n2(t(1))]
          pgm3(i,:) = shuffleGridscoreNan(c.midall,p.nshuf,p.nb,p.movm,p.asig,p.pval,'midall');
+         else
+            pgm3(i,:)=zeros(1,nshuf); t=shuffleGridscoreNan(c.midall,nshuf,nb,movm,asig,pval,'midall');pgm3(i,1)=t(1);
          end
          %pga3(i,:) = shuffleGridscoreNan(c.after, p.nshuf,p.nb,p.movm,p.asig,p.pval,'after' );
         toc         
