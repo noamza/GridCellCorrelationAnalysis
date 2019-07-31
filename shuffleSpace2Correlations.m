@@ -12,9 +12,10 @@ function pcor0 = shuffleSpace2Correlations (c1, c2, p)
     d = (c2.pt(end)-c2.pt(1))/p.n;%right?  %amount to shift by each step
     %b=a+d; b(b>c(end))=b(b>c(end))-c(end)+c(1)    
       
-    pcor0 = []; 
-    for i = 1:p.n
-        
+    pcor0 = zeros(1, p.n); 
+    i=0;
+    while i < p.n
+        i=i+1;
         wi = (i-1)*d; %first one calculated is 0  
         t = c2.st + wi; t(t>c2.pt(end)) = t(t>c2.pt(end))-c2.pt(end)+c2.pt(1); %shift cells to beginning
         t2 = createMsSpikeTrain(t);
@@ -28,6 +29,15 @@ function pcor0 = shuffleSpace2Correlations (c1, c2, p)
         end
         rm2 = createSmoothRateMapNan(c2,p.nb,t2s,rt2,st2);  %createSmoothRate()
         pcor0(i)=ccof(rm2,rm1);
+        
+        if sum( abs(pcor0(2:end)) >= abs(pcor0(1)) ) >= ceil(p.n*p.pval)
+               % ['space abs(corr(1)) not significant shuffling i=' n2(i) ' pval=' n2(p.pval) ' more than ' n2(ceil(p.n*p.pval)) ' or gs(1)= '  n2(pcor0(1))]
+           i=inf;
+        elseif i==p.n
+            'TIME SIGNIFICANT'
+        end
+        
+        
     end
 end
 

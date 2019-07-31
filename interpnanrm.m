@@ -7,7 +7,7 @@ function rmintrp=intrepnanrm(rm)
     nx(nni)=[];ny(nni)=[];rm(nni)=[];
     f = scatteredInterpolant(nx,ny,rm);
     rmintrp=f(x,y);
-    rmintrp=reshape(rmintrp,m,n)
+    rmintrp=reshape(rmintrp,m,n);
 end
 
 
