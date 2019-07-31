@@ -1,6 +1,6 @@
 %% preamble
 dbstop if error  
-%load('.\\data\\shuffling1000nan','ctsbma','ptsbma','pptsbma');
+%load('.\\data\\shuffling1000nanv2','ctsbma','ptsbma','pptsbma');
 nshuffle=1000;
 fig = figure(993); tic
 set(fig,'Color','w', 'Position', [200 0 1000 600]);
@@ -111,4 +111,7 @@ set(gD,'Heights', [25 -1]);
 set(gTop,'Widths', [-1 -1 -1.5]);%,'Widths', [-1 -1 -1]);
 
 clear gTop; clear gA1;clear gA2;clear gC1;clear gC2; clear gB; clear gD;   
-
+clear fss; clear mss;clear fw;clear pnt;
+clear fs;clear afs;clear mfs;clear tfs; clear nshuffle
+clear tx;clear ty;clear tp;
+clear uip;clear aup;

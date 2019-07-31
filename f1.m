@@ -3,6 +3,7 @@
 %load('C:\\Noam\\Data\\muscimol\\noam\\cells_45min_d_patchtraj_rayleigh'); %personal
 %bthresh=0.5; mthresh=0.2;
 %%preamble 
+replace all ac and gridscore with ac2 gc2 etc
 dbstop if error  
 %loads();
 fig = figure(991);  fs = 12;

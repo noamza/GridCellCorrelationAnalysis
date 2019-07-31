@@ -1,58 +1,27 @@
-load('.\data\s7','wd')
-
-figure(1005); clf; xl = 'pre'; yl = 'dur';
+%EXTENDED TIME WINDOW
+load('.\data\shuffling1000nanV2')
+strt = 15 *60; midt = (45/1) *60; endt=45 *60 +inf;
+fig=figure(1005); clf; set(fig,'color','w', 'Position', [200 70 700 500]);
+xl = 'pre'; yl = 'dur';
 %TIME
 %1st half
-subplot(221);d1 = ctsbma(:,1); d2 = wd(:,1); plot(d1,d2,'.'); axis('tight'); axis square;
-title(sprintf('[15+ : %.0f min]',midt/60)); %strt/60,
-xlabel(xl); ylabel(yl); hold on; 
-f1 = fit(d1,d2,'poly1');plot(d1,f1(d1),'-');
-text(0.1,0.9,sprintf('a=%.3f r=%.3f',round(f1.p1,3), round(ccof(d1,d2),3)),'Units','normalized');
+subplot(221);x = ctsbma(:,1); y = wd(:,1);arg=[];
+plotARP(x,y,arg);xlabel(xl); ylabel(yl);
+title(sprintf('[15+ : %.0f min]',midt/60));
 %2nd half
-subplot(222);d1 = ctsbma(:,1); d2 = wd(:,2); plot(d1,d2,'.'); axis('tight'); axis square;
+subplot(222);x = ctsbma(:,1); y = wd(:,2);plotARP(x,y,arg);
+xlabel(xl); ylabel(yl);
 title(sprintf('[%.0f : %.0f min]',midt/60,endt/60));
-xlabel(xl); ylabel(yl); hold on;
-f1 = fit(d1,d2,'poly1');plot(d1,f1(d1),'-');
-text(0.1,0.9,sprintf('a=%.3f r=%.3f',round(f1.p1,3), round(ccof(d1,d2),3)),'Units','normalized');
+
 %SPACE
-subplot(223);d1 = ctsbma(:,4); d2 = wd(:,3); plot(d1,d2,'.'); axis('tight'); axis square;
-title(' ');xlabel(xl); ylabel(yl); hold on;
-f1 = fit(d1,d2,'poly1');plot(d1,f1(d1),'-');
-text(0.1,0.9,sprintf('a=%.3f r=%.3f',round(f1.p1,3), round(ccof(d1,d2),3)),'Units','normalized');
+subplot(223);x = ctsbma(:,4); y = wd(:,3);
+plotARP(x,y,arg);xlabel(xl); ylabel(yl);
 %2nd half
-subplot(224);d1 = ctsbma(:,4); d2 = wd(:,4); plot(d1,d2,'.'); axis('tight'); axis square;
-title(' ');xlabel(xl); ylabel(yl); hold on;
-f1 = fit(d1,d2,'poly1');plot(d1,f1(d1),'-');
-text(0.1,0.9,sprintf('a=%.3f r=%.3f',round(f1.p1,3), round(ccof(d1,d2),3)),'Units','normalized');
+subplot(224);x = ctsbma(:,4); y = wd(:,4);
+plotARP(x,y,arg);xlabel(xl); ylabel(yl);
 
 suptitle('correlations by muscimol time window (row 1 temporal, row 2 spatial)');
 
-figure(66353); clf; xl = 'corr pre'; yl = 'corr dur';
-%TIME
-%1st half
-subplot(221);d1 = ctsbma(:,1); d2 = wd(:,1); plot(d1,d2,'.'); axis('tight'); axis square;
-title(sprintf('[%.0f : %.0f min]',strt/60,midt/60));
-xlabel(xl); ylabel(yl); hold on; 
-f1 = fit(d1,d2,'poly1');plot(d1,f1(d1),'-');
-text(0.1,0.9,sprintf('a=%.3f r=%.3f',round(f1.p1,3), round(ccof(d1,d2),3)),'Units','normalized');
-%2nd half
-subplot(222);d1 = ctsbma(:,1); d2 = wd(:,2); plot(d1,d2,'.'); axis('tight'); axis square;
-title(sprintf('[%.0f : %.0f min]',midt/60,endt/60));
-xlabel(xl); ylabel(yl); hold on;
-f1 = fit(d1,d2,'poly1');plot(d1,f1(d1),'-');
-text(0.1,0.9,sprintf('a=%.3f r=%.3f',round(f1.p1,3), round(ccof(d1,d2),3)),'Units','normalized');
-%SPACE
-subplot(223);d1 = ctsbma(:,4); d2 = wd(:,3); plot(d1,d2,'.'); axis('tight'); axis square;
-title(' ');xlabel(xl); ylabel(yl); hold on;
-f1 = fit(d1,d2,'poly1');plot(d1,f1(d1),'-');
-text(0.1,0.9,sprintf('a=%.3f r=%.3f',round(f1.p1,3), round(ccof(d1,d2),3)),'Units','normalized');
-%2nd half
-subplot(224);d1 = ctsbma(:,4); d2 = wd(:,4); plot(d1,d2,'.'); axis('tight'); axis square;
-title(' ');xlabel(xl); ylabel(yl); hold on;
-f1 = fit(d1,d2,'poly1');plot(d1,f1(d1),'-');
-text(0.1,0.9,sprintf('a=%.3f r=%.3f',round(f1.p1,3), round(ccof(d1,d2),3)),'Units','normalized');
-
-suptitle('correlations by muscimol time window (row 1 temporal, row 2 spatial)');
 
 %{
 %load('C:\\Noam\\Data\\muscimol\\noam\\cells_Infmin_d_patchtraj_rayleigh'); %personal
@@ -70,7 +39,7 @@ for j=1:len(pairs)
 %     [a1, ~, t1sm, t2sm] = timeCorrelationSmoothed( train1,train2,p);
     
     %im = ceil(len(c1.midall.pt)/2); find index of half way
-    strt = 45 *60 -inf; midt = (45/1) *60; endt=45 *60 +inf;
+    strt = 15 *60; midt = (45/1) *60; endt=45 *60 +inf; assert nothing starts before 15
     %is = find(c1.midall.pt>=strt*60,1);
     %im = find(c1.midall.pt>=midt*60,1);
     %ie = len(c1.midall.pt);

@@ -1,5 +1,5 @@
 function [gridness2,cang] = gridscore2(ac, sigma) %R_inner,R_outer,[cenx ceny]
-if length(ac) == 1 || sum(~isnan(ac),'all')<25
+if length(ac) == 1 || sum(~isnan(ac(:)) )<25
     'bad ratemap nonnan<25' 
     gridness2 = 0; cang = 0;
 else

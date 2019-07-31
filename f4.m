@@ -1,7 +1,7 @@
 %{
 % Load before calling function!!
-load('.\data\shuffling1000nan');
-load('.\data\pairs'); cels = unique(pairs(:))';
+load('.\data\shuffling1000nanv2');
+load('.\data\pairsv2'); cels = unique(pairs(:))';
 %}
 
 function f4(cellsn, pairs)

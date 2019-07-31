@@ -7,6 +7,8 @@ dbstop if error
 fig = figure(992); tic
 set(fig,'Color','w', 'Position', [200 50 700 800]); p = {}; s1 = {};
 gtop = uix.GridFlex('Parent', fig,'Spacing',5, 'BackgroundColor','w','DividerMarkings','on');
+
+
 %% A
 gA = uix.GridFlex('Parent',gtop,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');
 axA = {}; fs = 14; p = [];

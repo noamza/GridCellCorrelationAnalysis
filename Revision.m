@@ -34,26 +34,27 @@ vs='rayleigh_score';va='rayleigh_angle';
         t=cellsn(g&l); clear g; clear l;
         t=[t.ind]';
 
-        t=unique(pairs(:));
-        for i=t'
-            clf;
-            c=cellsn(i).before;
-            subplot(221)
-            imgsc(c.rm,1); title('before');
-            subplot(223)
-            imgsc(c.ac,2); title(c.gridscore);
-            c=cellsn(i).midall;
-            subplot(222)
-            imgsc(c.rm,1); title('during');
-            subplot(224)
-            imgsc(c.ac,2); title(c.gridscore);
-            suptitle(n2(i));
-        end
+%         t=unique(pairs(:));
+%         for i=t'
+%             clf;
+%             c=cellsn(i).before;
+%             subplot(221)
+%             imgsc(c.rm,1); title('before');
+%             subplot(223)
+%             imgsc(c.ac,2); title(c.gridscore);
+%             c=cellsn(i).midall;
+%             subplot(222)
+%             imgsc(c.rm,1); title('during');
+%             subplot(224)
+%             imgsc(c.ac,2); title(c.gridscore);
+%             suptitle(n2(i));
+%         end
 
         
-        t = aclls; tl=arrayfun(@(z) len(z.st),t); 
+%        t = aclls; tl=arrayfun(@(z) len(z.st),t); 
         
-        nancllg=cellsn;
+        %nancllg=cellsn;
+        s = {'before';'midall';'after'};tss = {'pre','dur','post'};
         %changing ratemap to nans noam method
         for ss=[s(:)']
             for i = 1:len(cellsn)

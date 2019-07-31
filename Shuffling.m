@@ -1,19 +1,19 @@
 function Shuffling(cellsn,pairs)
-
+%load('Z:\data\noam\muscimol\cells15nan');
 %shuffling gridscore
-     nshuf=250;pval=0.05;   
+     nshuf=250;pval=0.01;   
                                             nb=50;movm=25;asig=2;
      pgb2 = []; pgm2 = []; pga2 = [];
-     for i = 7%:len(cellsn) 
+     for i = 1:len(cellsn) 
          i
          c=cellsn(i); tic;
          pgb2(i,:) = shuffleGridscoreNan(c.before,nshuf,nb,movm,asig,pval,'before');
          pgm2(i,:) = shuffleGridscoreNan(c.midall,nshuf,nb,movm,asig,pval,'midall');
-         pga2(i,:) = shuffleGridscoreNan(c.after, nshuf,nb,movm,asig,pval,'after' );
+         %pga2(i,:) = shuffleGridscoreNan(c.after, nshuf,nb,movm,asig,pval,'after' );
         toc         
      end
      
-    tt = {pgb2,pgm2,pga2};ncls=size(pgb2,1);
+    tt = {pgb2,pgm2};ncls=size(pgb2,1);
     cgbma = [];%zeros(len(cellsn),len(tt));
     pgbma = [];%zeros(len(cellsn),len(tt));
     for ii = 1: len(tt)
@@ -30,12 +30,12 @@ function Shuffling(cellsn,pairs)
         end
     end
     %VISUALIZE
-    show = [1,2,3];
     pp      = pgbma      <= nshuf*pval; %befire after
     %pp(:,2) = pgbma(:,2) >  nshuf*(1-pval);  
-    nansum(pp(:,show))/ncls %LARGEST VAL (FIRST DESC)
+    nansum(pp)/ncls %LARGEST VAL (FIRST DESC)
     ppgbma = pp;
-    clear pp; clear n; clear show; clear i; clear ii; clear I; clear t; clear tt;
+    clear pp; clear n; clear i; clear ii; clear I; clear t; clear tt; 
+    
 
     %pp = n*0.99 <= ptsbma; sum(pp(:,show))/len(pairs) %SMALLEST VAL (LAST DESC)
     %pp = ptsbma <= n*0.01 | n*0.99 <= ptsbma;    
@@ -44,7 +44,7 @@ function Shuffling(cellsn,pairs)
 
 %shuffling Spatial + Time
     
-    par=[]; par.n=1000; par.movmean=25; par.nb = 50; t=zeros(len(pairs),par.n);
+    par=[]; par.n=2; par.movmean=25; par.nb = 50; t=zeros(len(pairs),par.n);
     pscb = t; pscm = t; psca = t;
     
     ptcb = t; ptcm = t; ptca = t;

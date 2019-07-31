@@ -1,6 +1,32 @@
 TODO
 
-- check whether correlations came out the same in previous ptcb 
+- converge to which cells to use in figures : threshold or shuffling etc.
 
-- change which cells are shown in figures 
+- make sure all figures use correct rm, ac, gridscore, based on cross-correlation method (gilad or normxcorr2+interp2)
+
+- change which cells are shown in figure examples so that they are in the cohort and are good examples
+
+- remove supplamentery 1 2 3
+
+- add p values to all figures with r values
+
+- change stats in paper
+
+- change supplamentary indices and all references to corrected ones  
+
+- change methods where needed
+
+- udate all figure and supplamentary discriptions
+
+- make sure all axes in paper have labels
+
+- redo s7 text labeling.
+
+- s8 add axis to A
+
+- add box size variation in methods
+
+- box size by room if I get a chance
+
+
 
