@@ -1,11 +1,11 @@
 % uncomment to load cells
 %load(sprintf('C:\\Noam\\Data\\muscimol\\noam\\cells_%dmin_d_patchtraj_rayleigh',45));
 %load('Z:\\data\\noam\\Data\\muscimol\\noam\\cells_45min_d_patchtraj_rayleigh'); %lab
-add more to quantify gridscpre ??
+%add more to quantify gridscpre ??
 %preamble
 dbstop if error    
 fig = figure(992); tic
-set(fig,'Color','w', 'Position', [200 50 700 800]); p = {}; s1 = {};
+set(fig,'Color','w', 'Position', [200 50 800 800]); p = {}; s1 = {};
 gtop = uix.GridFlex('Parent', fig,'Spacing',5, 'BackgroundColor','w','DividerMarkings','on');
 
 

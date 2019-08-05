@@ -7,7 +7,7 @@ function ax = plotHD(ax,c,str,w180)%SETS LIMITS OF ARENA TO 100
     rd = histcounts(wa(c.hd(c.si),l),bins)./(histcounts(wa(c.hd,l),bins)+0.00001);
     rd = movmean(rd,round(len(rd)/5));
     p=plot(ax,bins(2:end),rd/1); p.LineWidth = 1.5; 
-    
+    xlabel('\theta'); ylabel(' ');
     set(ax,'xtick',l,'yticklabel',{},'ylim',[0 max(rd)],... 
         'xticklabel',{sprintf('%d%c',l(1),char(176)); sprintf('%d%c',l(2),char(176))})
            

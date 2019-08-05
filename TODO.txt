@@ -6,7 +6,7 @@ TODO
 
 - change which cells are shown in figure examples so that they are in the cohort and are good examples
 
-- remove supplamentery 1 2 3
+X remove supplamentery 1 2 3
 
 - add p values to all figures with r values
 
@@ -16,7 +16,7 @@ TODO
 
 - change methods where needed
 
-- udate all figure and supplamentary discriptions
+- update all figure and supplamentary discriptions
 
 - make sure all axes in paper have labels
 
@@ -28,5 +28,4 @@ TODO
 
 - box size by room if I get a chance
 
-
-
+- revision mode track changes

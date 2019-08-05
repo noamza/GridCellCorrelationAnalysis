@@ -6,7 +6,7 @@ function rmintrp=intrepnanrm(rm)
     x=x(:);y=y(:);rm=rm(:);
     nni=isnan(rm); nx=x;ny=y;
     nx(nni)=[];ny(nni)=[];rm(nni)=[];
-    f = scatteredInterpolant(nx,ny,rm);
+    f = scatteredInterpolant(nx,ny,rm,'natural','nearest');
     rmintrp=f(x,y);
     if len(rmintrp) ~= len(rmo(:));
         'error cannot interp ratemap'

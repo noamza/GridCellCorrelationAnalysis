@@ -37,7 +37,7 @@ function gshuf = shuffleGridscoreNan(c,nshuf,nb,movm,sig,pval,s)
                 ['mid: NEG or TOO significant gridscore shuffling i=' n2(i) ' pval=' n2(pval) ' more than ' n2(ceil(nshuf*pval)) ' or gs(1)= '  n2(gshuf(1))]
                 i=inf;
                 if gshuf(1)>0
-                    [gshuf(:)]
+                   % [gshuf(:)]
                 end
             end
             else

@@ -17,9 +17,9 @@ clls = [cellsn(cels)]; %aclls=cellsn;
 s = {'before';'midall';'after'};tss = {'pre','dur','post'};
 vs='rayleigh_score';va='rayleigh_angle';
 
- %reprocess
+ reprocess
  %fieldAngle
- hdangle;
+ %hdangle;
  %drift;
 
 
@@ -30,26 +30,44 @@ vs='rayleigh_score';va='rayleigh_angle';
         b=[cellsn.before]; l =     arrayfun(@(z) len(z.st)>=100,b); 
         m=[cellsn.midall]; l = l & arrayfun(@(z) len(z.st)>=100,m); 
         b=[b.gridscore]; m=[m.gridscore];
-        g= b< 3 & b>0.5 & m<0.3 & m>0.1; clear b; clear m;
+        g= b>0 & m<0; clear b; clear m;
         t=cellsn(g&l); clear g; clear l;
-        t=[t.ind]';
+        t=[t.ind];
 
-%         t=unique(pairs(:));
-%         for i=t'
-%             clf;
-%             c=cellsn(i).before;
-%             subplot(221)
-%             imgsc(c.rm,1); title('before');
-%             subplot(223)
-%             imgsc(c.ac,2); title(c.gridscore);
-%             c=cellsn(i).midall;
-%             subplot(222)
-%             imgsc(c.rm,1); title('during');
-%             subplot(224)
-%             imgsc(c.ac,2); title(c.gridscore);
-%             suptitle(n2(i));
-%         end
-
+        %t=unique(pairs(:));
+        figure(1);
+        for i=t
+            clf;
+            c=cellsn(i).before;
+            subplot(241)
+            imgsc(c.rm,1); title('before');
+            subplot(243)
+            imgsc(c.ac3,2); title(['ac3 ' n2(c.gs3)]);
+            %c=cellsn(i).midall;
+            subplot(242)
+            rm=interpnanrm(c.rm);
+            %imgsc(normxcorr2ni(rm),2); title(['interp' n2(gridscore2(normxcorr2ni(rm),2))]);
+            %imgsc(c.ac2,2); title(['ac2 ' n2(c.gs2)]);
+            subplot(244)
+            imgsc(c.ac,2); title(['ac ' n2(c.gridscore)]);
+            suptitle(n2(i));
+                        c=cellsn(i).midall;
+            subplot(245)
+            imgsc(c.rm,1); title('midall');
+            subplot(246)
+            %imgsc(c.ac3,2); title(['ac3 ' n2(c.gs3)]);
+            %c=cellsn(i).midall;
+            subplot(247)
+            rm=interpnanrm(c.rm);
+            imgsc(c.ac3,2); title(['ac3 ' n2(c.gs3)]);
+            %imgsc(normxcorr2ni(rm),2); title(['interp' n2(gridscore2(normxcorr2ni(rm),2))]);
+            %imgsc(c.ac2,2); title(['ac2 ' n2(c.gs2)]);
+            subplot(248)
+            imgsc(c.ac,2); title(['ac ' n2(c.gridscore)]);
+            suptitle(n2(cellsn(i).ind));
+        end
+        
+        assert(false);
         
 %        t = aclls; tl=arrayfun(@(z) len(z.st),t); 
         
@@ -63,7 +81,12 @@ vs='rayleigh_score';va='rayleigh_angle';
 %                 [c.rm, c.max_r] = createRateMapNan(c,50);
 %                 %cellsn(i).(ss{:}).max_r=max_r;
 %                 c.ac = xcorr2g(c.rm,c.rm);
-                  ac2=xcorr2n(c.rm,c.rm);
+
+                  ac3=normxcorr2ni(c.rm);
+                  cellsn(i).(ss{:}).ac3=ac3;
+                  cellsn(i).(ss{:}).gs3=gridscore2(ac3,2);
+                  
+                  ac2=xcorr2n(c.rm);
                   cellsn(i).(ss{:}).ac2=ac2;
                   cellsn(i).(ss{:}).gs2=gridscore2(ac2,2);
 %                 c.gridscore=gridscore2(c.ac, 2);

@@ -3,11 +3,11 @@
 %load('C:\\Noam\\Data\\muscimol\\noam\\cells_45min_d_patchtraj_rayleigh'); %personal
 %bthresh=0.5; mthresh=0.2;
 %%preamble 
-replace all ac and gridscore with ac2 gc2 etc
+%???replace all ac and gridscore with ac2 gc2 etc?????
 dbstop if error  
 %loads();
 fig = figure(991);  fs = 12;
-set(fig,'Color','w', 'Position', [600 0 1200 800]);
+set(fig,'Color','w', 'Position', [600 0 1400 800]);
 gtop = uix.GridFlex('Parent',fig,'Spacing',5, 'BackgroundColor','w');
 gl = uix.GridFlex('Parent',gtop,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');
 axes('Parent',uicontainer('Parent',gl,'BackgroundColor','w'),'visible','off');
@@ -24,26 +24,33 @@ gr = uix.GridFlex('Parent',gtop,'Spacing',5, 'BackgroundColor','w','DividerMarki
 
 %1A - trajectory / auto for group
 ii = [100, 103, 104, 105, 111];
-axg = []; ug = []; s1 = []; s2 = s1;
-s1.x='position(cm)'; s1.y = s1.x;
-s2.x=''; s2.y = s2.x;
+axg = []; ug = []; sb = []; sm = sb;
+sb.x='position(cm)'; sb.y = sb.x;
+sm.x=''; sm.y = sm.x;
+t=0
+for i = 1:len(ii)
+     c = cellsn(ii(i));
+     t=max([t max(c.before.px) max(c.midall.px) max(c.after.px)]);
+     t=max([t max(c.before.py) max(c.midall.py) max(c.after.py)]);
+end
+sb.lim = t;sm.lim = t;
 for i = 1:len(ii)
     c = cellsn(ii(i));%cells{ii(i)};
-    s1.t = ' ';
-    axg(end+1) = axes('Parent',uicontainer('Parent',gA)); if(i==3); s1.t = 'pre'; end 
-    axg(end)=plotTR(axg(end),c.before,s1);
-    s1.x=''; s1.y = s1.x;
-    axg(end+1) = axes('Parent',uicontainer('Parent',gA));  if(i==3); s1.t = 'dur'; end 
-    axg(end)=plotTR(axg(end),c.midall,s1);
-    axg(end+1) = axes('Parent',uicontainer('Parent',gA));  if(i==3); s1.t = 'post'; end 
-    axg(end)=plotTR(axg(end),c.after,s1);
+    sb.t = ' '; 
+    axg(end+1) = axes('Parent',uicontainer('Parent',gA)); if(i==3); sb.t = 'pre'; end 
+    axg(end)=plotTR(axg(end),c.before,sb);
+    sb.x=''; sb.y = sb.x;
+    axg(end+1) = axes('Parent',uicontainer('Parent',gA));  if(i==3); sb.t = 'dur'; end 
+    axg(end)=plotTR(axg(end),c.midall,sb);
+    axg(end+1) = axes('Parent',uicontainer('Parent',gA));  if(i==3); sb.t = 'post'; end 
+    axg(end)=plotTR(axg(end),c.after,sb);
     g = [c.before.gridscore c.midall.gridscore c.after.gridscore]; g(g==-2)=0;
-    axg(end+1) = axes('Parent',uicontainer('Parent',gA));  s2.t = sprintf('%s%.1f','grid=',g(1));
-    axg(end)=plotAC(axg(end),c.before,s2);
-    axg(end+1) = axes('Parent',uicontainer('Parent',gA));  s2.t = sprintf('%s%.1f','grid=',g(2));
-    axg(end)=plotAC(axg(end),c.midall,s2);
-    axg(end+1) = axes('Parent',uicontainer('Parent',gA));  s2.t = sprintf('%s%.1f','grid=',g(3));
-    axg(end)=plotAC(axg(end),c.after,s2);
+    axg(end+1) = axes('Parent',uicontainer('Parent',gA));  sm.t = sprintf('%s%.1f','grid=',g(1));
+    axg(end)=plotAC(axg(end),c.before,sm);
+    axg(end+1) = axes('Parent',uicontainer('Parent',gA));  sm.t = sprintf('%s%.1f','grid=',g(2));
+    axg(end)=plotAC(axg(end),c.midall,sm);
+    axg(end+1) = axes('Parent',uicontainer('Parent',gA));  sm.t = sprintf('%s%.1f','grid=',g(3));
+    axg(end)=plotAC(axg(end),c.after,sm);
 end
 set(gA,'Widths', [-1 -1 -1 -1 -1], 'Heights', [-1 -1 -1 -1 -1 -1])
 

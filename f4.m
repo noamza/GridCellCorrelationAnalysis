@@ -11,10 +11,11 @@ function f4(cellsn, pairs)
 %% preamble
 dbstop if error 
 
-load('.\\data\\shuffling1000nan','ctsbma','ptsbma','pptsbma');
+% load('.\\data\\shuffling1000nan','ctsbma','ptsbma','pptsbma');
+load('.\\data\\shuffling1000nanv2','ctsbma','ptsbma','pptsbma');
 
 fig = figure(994); 
-set(fig,'color','w', 'Position', [200 70 1200 900]);
+set(fig,'color','w', 'Position', [70 10 1800 1000]);
 
 fss='fontsize';mss='markersize';p='Parent';fwss='fontweight';bss='bold';vss='visible';noss='none';
 bcss='BackgroundColor'; btss='BorderType';spss='spacing';dmss='DividerMarkings';ofss='off';onss='on';
@@ -23,7 +24,7 @@ s = {'before';'midall';'after'};tss = {'pre','dur','post'};
 vs='rayleigh_score';va='rayleigh_angle';
 %fs ={fss 14}; afs ={fss 10}; mfs ={mss 10}; tfs = {fss,12}; fw={fwss,bss};
 tx=0;ty=0.5; ty2=0.9;
-fs = 12; afs = 10; mfs = 10; tfs = 12;  lfs = 3; h = 25;
+fs = 12; afs = 10; mfs = 10; tfs = 12;  lfs = 3; h = 15;
 
 rst=0.45; rsth=rst; rstl=rst;
 ci = [112, 114, 117, 118, 119]; %ci = [103, 104, 105, 100,111];  ci = [282,283,287]; ci = [112, 114, 115, 116, 117,118,119]; 115
@@ -57,10 +58,14 @@ hdclls=cellsn(chd);
 [sum(cl2) sum(cl1)];
 rmi = ctsbma(:,1)<0.15 & ctsbma(:,2)<0.07;
 
-%% gTop
-gTop = uix.GridFlex(p, fig,spss,5, bcss,'w',dmss,ofss);
-%% gLeft
-gLeft = uix.GridFlex(p, gTop,spss,5, bcss,'w',dmss,ofss);
+%% GRIDS TOP
+gAll =   uix.GridFlex(p, fig, spss,1, bcss,'w',dmss,onss);
+gTop =   uix.GridFlex(p, gAll,spss,1, bcss,'w',dmss,onss);
+gBot =   uix.GridFlex(p, gAll,spss,1, bcss,'w',dmss,ofss);
+gLeft =  uix.GridFlex(p, gTop,spss,1, bcss,'w',dmss,ofss);
+gCent =  uix.GridFlex(p, gTop,spss,1, bcss,'w',dmss,ofss);
+gRight = uix.GridFlex(p, gTop,spss,1, bcss,'w',dmss,ofss);
+
 
 %% A
 %axes(p,uicontainer(p,gleft,bcss,'w'),vss,ofss);
@@ -99,12 +104,12 @@ set(gA,'Heights', [15 -1 -1 -1 -1 -1 -1]);%,'Widths', [-1 -1 -1]);
 %}
 
 %% B
-axes(p,uix.Panel(p,gLeft,bcss,'w',btss,noss),vss,ofss);
+axes(p,uix.Panel(p,gBot,bcss,'w',btss,noss),vss,ofss);
 text(0,0.0,'B',fwss,bss,fss,fs,hzss,cnss);  axis off;
-gB = uix.GridFlex(p,gLeft,spss,5, bcss,'w',dmss,ofss);
+gB = uix.GridFlex(p,gBot,spss,1, bcss,'w',dmss,ofss);
 %%{
 axB = {}; pf = []; s1 = [];
-s1.x=''; s1.y = ''; s1.t = ''; pf.off = 0; pf.lag = 1000; pf.movmean = 100;
+s1.x=''; s1.y = ''; s1.t = ''; pf.lag = 1000; pf.movmean = 100;%pf.off = 0;
 for i = 1:len(ci)-1
     for ii = i+1:len(ci)
         c1 = cellsn(ci(i));c2 = cellsn(ci(ii));
@@ -129,10 +134,7 @@ end
 set(gB,'Heights', [15 -1 -1 -1 -1]);%,'Widths', [-1 -1 -1]);
 %}
 
-set(gLeft,'Heights', [25 -2 25 -1]);
-
 %gCenter
-gCent = uix.GridFlex(p, gTop,spss,5, bcss,'w',dmss,ofss);
 
 %EMPTY
 axes(p,uicontainer(p,gCent,bcss,'w'),vss,ofss);
@@ -204,10 +206,9 @@ xlabel('pre',fss,afs);ylabel('dur',fss,afs);xlim(mm); ylim(mm); axis square;
 set(gE,'Heights', [h -1]);
 
 %% gCent end
-set(gCent,'Heights', [-1 -1 -1 -1]);
 
 %% Right
-gRight = uix.GridFlex(p, gTop,spss,5, bcss,'w',dmss,ofss);
+
 
 %% F hd cell 
 gF = uix.GridFlex(p,gRight,spss,1, bcss,'w',dmss,ofss);
@@ -248,14 +249,13 @@ end
 set(gG,'Heights', [h -1 h -1 h -1]);    
 
 
-%% gRight
-set(gRight,'Heights', [-1 -3]);
-
-
-
-
 %% epilogue
-set(gTop,'width', [-3 -1 -1]);
+set(gLeft,'Heights', [15 -1]);
+set(gCent,'Heights', [-1 -1 -1 -1]);
+set(gRight,'Heights', [-1 -3]);
+set(gTop,'Widths', [-2.5 -1 -1]);
+set(gBot,'Heights', [15 -1]);
+set(gAll,'Heights', [-3 -2]);
 
 end
 %

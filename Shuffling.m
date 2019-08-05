@@ -1,7 +1,7 @@
 function Shuffling(cellsn,pairs)
 %load('Z:\data\noam\muscimol\cells15nan');
 %shuffling gridscore
-     p.nshuf=10;p.pval=0.2;   
+     p.nshuf=1000;p.pval=0.02;p.spval=0.01;  
                                             p.nb=50;p.movm=25;p.asig=2;
      pgb3 = []; pgm3 = []; pga3 = [];
      for i = 1:len(cellsn) 
@@ -14,13 +14,15 @@ function Shuffling(cellsn,pairs)
              ['DO MIDALL ' n2(ix1) ' ' n2(t(1))]
          pgm3(i,:) = shuffleGridscoreNan(c.midall,p.nshuf,p.nb,p.movm,p.asig,p.pval,'midall');
          else
-            pgm3(i,:)=zeros(1,nshuf); t=shuffleGridscoreNan(c.midall,nshuf,nb,movm,asig,pval,'midall');pgm3(i,1)=t(1);
+            pgm3(i,:)=zeros(1,p.nshuf); t=shuffleGridscoreNan(c.midall,p.nshuf,p.nb,p.movm,p.asig,p.pval,'midall');pgm3(i,1)=t(1);
          end
          %pga3(i,:) = shuffleGridscoreNan(c.after, p.nshuf,p.nb,p.movm,p.asig,p.pval,'after' );
         toc         
      end
-     
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
     tt = {pgb3,pgm3};ncls=size(pgb3,1);
+   %tt = {pgb,pgm};ncls=size(pgb,1);
     cgbma = [];%zeros(len(cellsn),len(tt));
     pgbma = [];%zeros(len(cellsn),len(tt));
     for ii = 1: len(tt)
@@ -32,15 +34,13 @@ function Shuffling(cellsn,pairs)
             pp = find(I==1); %index of non shuffled
             pgbma(i,ii) = pp;
             if t(1)==0 %THIS IS FOR GRID SCORE CHECK
-                pgbma(i,ii) = len(t); %do i need this???
+                pgbma(i,ii) = len(t); %do i need this??? ???SDSDWDEWE
             end
         end
     end
     %VISUALIZE
-    pp      = pgbma      <= p.nshuf*p.pval; %befire after
-    %pp(:,2) = pgbma(:,2) >  nshuf*(1-pval);  
-    nansum(pp)/ncls %LARGEST VAL (FIRST DESC)
-    ppgbma = pp;
+    ppgbma = pgbma <= p.nshuf*p.spval; 
+    sum(ppgbma)/ncls
     clear pp; clear n; clear i; clear ii; clear I; clear t; clear tt; 
     
 
@@ -48,11 +48,10 @@ function Shuffling(cellsn,pairs)
 
     %shuffling Spatial + Temporal
     
-    par=[]; par.n=5; par.pval=0.2; par.movmean=25; par.nb = 50; %t=zeros(len(pairs),par.n);
+    par=[]; par.n=5; par.pval=0.02;par.spval=0.01; par.movmean=25; par.nb = 50; %t=zeros(len(pairs),par.n);   
+    pscb3 = []; pscm3 = []; psca3 = []; ptcb3 = []; ptcm3 = []; ptca3 = [];
     
-    pscb3 = []; pscm3 = []; psca3 = [];
-    ptcb3 = []; ptcm3 = []; ptca3 = [];
-    for i = 1:10%len(pairs)       
+    for i = 1:     10%len(pairs) %<<<<<<<<<<<<<  
         i
         c1 = cellsn(pairs(i,1));%cells{pairs(i,1)};
         c2 = cellsn(pairs(i,2));
@@ -94,11 +93,11 @@ disp('ta');ptca3(i,:) = shuffleTimeCorrelations (c1.after, c2.after,par);
     clear i; clear ii; clear I; clear t; clear tt; clear pp;
     %VISUALIZE
     '(+) corr'
-    sum(ptsbma<= par.n*par.pval&ctsbma>0)/niter
+    sum(ptsbma<= par.n*par.spval&ctsbma>0)/niter
     '(-) corr'
-    sum(ptsbma<= par.n*par.pval&ctsbma<0)/niter
+    sum(ptsbma<= par.n*par.spval&ctsbma<0)/niter
     %pptsbma = pp;
-    pptsbma= ptsbma <= par.n*par.pval;
+    pptsbma= ptsbma <= par.n*par.spval;
     'corr'
     sum(pptsbma)/niter
     

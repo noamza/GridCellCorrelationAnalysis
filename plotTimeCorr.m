@@ -23,5 +23,6 @@ function ax = plotTimeCorr(ax,c1,c2,p,str)
     if (isfield(p,'off'))
         set(ax, 'XTick', []); set(ax, 'YTick', []);
     end
+    ylabel('corr');xlabel('lag');
 end
 
