@@ -3,35 +3,17 @@
 %load
 %load('Z:\data\noam\muscimol\cells15nan');
 %load('C:\Noam\Data\muscimol\cells15nan');
-%load('.\Data\gshuffling1000xcn');sss=['non-norm cross correlation with nans'];
-load('.\Data\gshuffling250nan');sss=['non-norm cross correlation with nans'];
+load('.\Data\gshuff 06-Aug-2019-547 with aggr');sss='pearson with nans';
 bthresh=0; mthresh=0;
 b=[cellsn.before]; l =     arrayfun(@(z) len(z.st)>=100,b)'; 
 m=[cellsn.midall]; l = l & arrayfun(@(z) len(z.st)>=100,m)'; 
 gss='gridscore'; acss='ac';
 b=[b.(gss)]'; m=[m.(gss)]';
-gth= b>bthresh & m<mthresh; 
+gth= b>bthresh & m<mthresh; gth= b>0 & m<0; 
 ppgbma = pgbma <= ceil(max(pgbma(:))*0.01); %%<<%% picking percentile significance
-gsig= (ppgbma(:,1)) %& ~ppgbma(:,2)); %significant gridscores
+gsig= (ppgbma(:,1));% & ~ppgbma(:,2)); %significant gridscores
 gclls=cellsn(gsig&l&gth); clear gth; clear l;clear b; clear m;
 sss=[sss ' | selection: pre pos sign gscore | dur neg gscore |'];
-
-% for i=1:len(gclls)
-%    i
-%    a=gclls(i).before;
-%    subplot(222)
-%    imgsc(a.rm,1); title(len(a.st));
-%    subplot(221)
-%    imgsc(a.ac2,2); title(gridscore2(a.ac2,2));
-%    a=gclls(i).midall;
-%    subplot(223)
-%    imgsc(a.ac2,2); title(['midall ' n2(a.gs2)]);
-%    subplot(224)
-%    imgsc(a.rm,1); title(['midall shi' n2(pgbma(gclls(i).ind,2))]);
-%    
-%    suptitle(n2(gclls(i).ind))
-%    
-% end
 
 %group by recording date and animal
 gs =                 unique(str2double(strcat({gclls.id},{gclls.date}))    )';
@@ -45,6 +27,7 @@ clear groupis; clear gs; clear i; clear gccls;
 threshRemoveSpikes=-1; 
 threshRemoveCell=0.05;
 percentremoved=[];
+
 for gi = 1:len(group)
     gcis=group{gi};
     g = cellsn(gcis);
@@ -64,7 +47,7 @@ for gi = 1:len(group)
             else
                 percentremoved(end+1)=brem;
             end
-            if brem >  threshRemoveCell;
+            if brem >  threshRemoveCell
                 %remove cell with higher percentage spikes removed
                 rid = gcis(j);
                 %s2 got reduced more
@@ -78,7 +61,7 @@ for gi = 1:len(group)
             s1=floor(c1.st*1000)+1; s2=floor(c2.st*1000)+1; min_time=min(min(s1),min(s2)); %TIME IN MS
             offset = 0; s1 = s1-min_time+offset; s2 = s2-min_time+offset; max_time=max(max(s1),max(s2))+offset;
             [s1i, s2i] = removeOverlappingSpikes(s1,s2, 1); rs1=s1(s1i); rs2=s2(s2i);
-            rem = length(s1)-length(rs1); assert(abs( (length(s1)-length(rs1)) - (length(s2)-length(rs2)) )<3)
+            rem = length(s1)-length(rs1); assert(abs( (length(s1)-length(rs1)) - (length(s2)-length(rs2)) )<=3)
             mrem = max( rem/length(s1), rem/length(s2) );
             if mrem>threshRemoveCell || false
                 fprintf('m.g%2d: spikes removed %3dx%3d = %3d, --- c1 %2d%% c2 %2d%% \n',gi, g(j).ind,g(k).ind,rem,...
@@ -119,8 +102,24 @@ pairs=cellfun(@(x) nchoosek(x,2),group,'uni',false);
 pairs=vertcat(pairs{:});
 cels=unique(pairs(:));
 
+[chd, phd] =clusters(0.4,0.4,pairs,cellsn,cels); %SAME AS f4
 
-rsp=[];rs=[]; rsth=0.4; rstl=0.4;
+['cells pairs hdcells hdpairs']
+[len(cels) len(pairs) len(chd) len(phd)]
+sss=[sss ' cells ' n2(len(cels)) ' pairs ' n2(len(pairs)) ' hd cells ' n2(len(chd)) ' hd pairs ' n2(len(phd))];
+
+%%{
+%CALLING PLOTS
+fp(1,sss,pairs,cellsn,acss,gss); fp(0,sss,pairs,cellsn,acss,gss);
+
+%}
+clear acss;clear gclls;clear gq;clear gr;clear gsig;clear gss;clear gt;clear j;clear nl;clear k;clear p;
+clear pgb;clear pgm;clear ax;clear s1;clear fig;%clear ;clear ;
+
+
+function [chd, phd]=clusters(rsth,rstl,pairs,cellsn,cels)
+%   rsth=0.4; rstl=0.4;    
+rsp=[];rs=[]; 
 for i=1:length(pairs)
     rsp(i,:) = [cellsn(pairs(i,1)).before.rayleigh_score,...
                 cellsn(pairs(i,2)).before.rayleigh_score,...
@@ -142,14 +141,34 @@ cl1 = rsp(:,3)< rstl & rsp(:,4)< rstl ...     %midall
 chd = cels(ccl2);
 phd = pairs(cl2);
 clear rs;clear rsp;clear rsth;clear rstl;clear ccl1;clear ccl2; clear cl1;clear cl2; 
+clear i; clear rsth; clear rstl;
 
-['cells pairs hdcells hdpairs']
-[len(cels) len(pairs) len(chd) len(phd)]
-sss=[sss ' cells ' n2(len(cels)) ' pairs ' n2(len(pairs)) ' hd cells ' n2(len(chd)) ' hd pairs ' n2(len(phd))];
+end
 
-%%{
-%CALLING PLOTS
-fp(1,sss,pairs,cellsn,acss,gss); fp(0,sss,pairs,cellsn,acss,gss);
+function fp(sh,sss,pairs,cellsn,acss,gss)
+cels=unique(pairs(:));
+if sh;ss='bef ';fig = figure(21);set(fig,'Color','w', 'Position', [40     50 900 900]);
+else; ss='mid ';fig = figure(22);set(fig,'Color','w', 'Position', [50+900 50 900 900]);end;clf
+gt = uix.GridFlex('Parent', fig,'Spacing',5, 'BackgroundColor','w','DividerMarkings','on');
+gq = uix.GridFlex('Parent', gt ,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');
+ax=axes('Parent',uicontainer('Parent',gq,'BackgroundColor','w'),'visible','off');
+ss=[ss sss];
+text(ax,0,0.5,ss,'fontweight','bold','fontsize',12);
+gr = uix.GridFlex('Parent', gt,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');
+for i = toRow(cels)
+    c=cellsn(i);
+axes('Parent',uicontainer('Parent',gr,'BackgroundColor','w'),'visible','off');
+if sh 
+    imgsc(c.before.(acss),2);axis off;title(['i' n2(c.ind) 'pre' n2(c.before.(gss),1)]);
+else
+    imgsc(c.midall.(acss),2);axis off;title(['i' n2(c.ind) 'mid' n2(c.midall.(gss),1)],'color','r');
+end
+end
+nl = ceil(sqrt(len(cels)));if mod(nl, 2)==1;nl=nl-1;end
+set(gr,'Heights',zeros(1,nl)-1);
+set(gt,'Heights',[25 -1]);
+end
+
 
 % %mid
 % fig = figure(22); clf; gr=[]; gt=[];
@@ -170,35 +189,6 @@ fp(1,sss,pairs,cellsn,acss,gss); fp(0,sss,pairs,cellsn,acss,gss);
 % nl = ceil(sqrt(len(cels)));if mod(nl, 2)==1;nl=nl-1;end
 % set(gr,'Heights',zeros(1,nl)-1);
 % set(gt,'Heights',[25 -1]);
-
-%}
-clear acss;clear gclls;clear gq;clear gr;clear gsig;clear gss;clear gt;clear j;clear nl;clear k;clear p;
-clear pgb;clear pgm;clear ax;clear s1;clear fig;%clear ;clear ;
-
-function fp(sesh,sss,pairs,cellsn,acss,gss)
-fig = figure(21); cels=unique(pairs(:));
-set(fig,'Color','w', 'Position', [10 50 1800 900]);
-if sesh; ss='bef ';clf; else; ss='mid '; fig=figure(22);clf; end
-gt = uix.GridFlex('Parent', fig,'Spacing',5, 'BackgroundColor','w','DividerMarkings','on');
-gq = uix.GridFlex('Parent', gt ,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');
-ax=axes('Parent',uicontainer('Parent',gq,'BackgroundColor','w'),'visible','off');
-ss=[ss sss];
-text(ax,0,0.5,ss,'fontweight','bold','fontsize',12);
-gr = uix.GridFlex('Parent', gt,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');
-for i = toRow(cels)
-    c=cellsn(i);
-axes('Parent',uicontainer('Parent',gr,'BackgroundColor','w'),'visible','off');
-if sesh 
-    imgsc(c.before.(acss),2);axis off;title(['i' n2(c.ind) 'pre' n2(c.before.(gss),1)]);
-else
-    imgsc(c.midall.(acss),2);axis off;title(['i' n2(c.ind) 'mid' n2(c.midall.(gss),1)],'color','r');
-end
-end
-nl = ceil(sqrt(len(cels)));if mod(nl, 2)==1;nl=nl-1;end
-set(gr,'Heights',zeros(1,nl)-1);
-set(gt,'Heights',[25 -1]);
-end
-
 
 %end
 %{
@@ -221,3 +211,20 @@ end
 
 %}
 
+
+% for i=1:len(gclls)
+%    i
+%    a=gclls(i).before;
+%    subplot(222)
+%    imgsc(a.rm,1); title(len(a.st));
+%    subplot(221)
+%    imgsc(a.ac2,2); title(gridscore2(a.ac2,2));
+%    a=gclls(i).midall;
+%    subplot(223)
+%    imgsc(a.ac2,2); title(['midall ' n2(a.gs2)]);
+%    subplot(224)
+%    imgsc(a.rm,1); title(['midall shi' n2(pgbma(gclls(i).ind,2))]);
+%    
+%    suptitle(n2(gclls(i).ind))
+%    
+% end

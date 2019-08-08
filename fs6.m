@@ -1,11 +1,12 @@
 %load('C:\Noam\Data\muscimol\cells15nan')
-load('.\data\shuffling1000nanv2')
-load('.\data\pairsv2')
-gridscore='gridscore'; 
+%load('.\data\shuffling1000nanv2')
+%load('.\data\pairsv2')
+%gridscore='gridscore'; 
 %for v3%
 %gridscore='gs2';
-
+function fs6(cellsn,pairs,ctsbma)
 %GRIDSCORE VS CORR
+gridscore='gridscore';
 mb=[];md=[];
 for j=1:len(pairs)
     c1 = cellsn(pairs(j,1)); c2 = cellsn(pairs(j,2));%c1.ind, c2.ind
@@ -43,4 +44,5 @@ title('spatial pre');xlabel(xl); ylabel(yl);
 subplot(248);x = md(:,3); y = ctsbma(:,tos+1); y = abs(y); plotARP(x,y,arg); 
 title('spatial dur');xlabel(xl); ylabel(yl); 
 
-suptitle('Mean Grid Score vs Correlation');
+suptitle('Mean grid score vs correlation');
+end

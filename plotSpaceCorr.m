@@ -1,10 +1,16 @@
-function ax = plotSpaceCorr(ax,c1,c2,p,str)%SETS LIMITS OF ARENA TO 100
+function ax = plotSpaceCorr(ax,c1,c2,p,str,cmeth)%SETS LIMITS OF ARENA TO 100
     title(ax, str.t);xlabel(ax, str.x);
     ylabel(ax, str.y);hold(ax, 'on');
-
-    %cc = xcorr2(c2.rm,c1.rm); %reverse order for perspective
-    cc = xcorr2g(c2.rm,c1.rm); %reverse order for perspective
-    %cc = xcorr2(c2.rm-mean(c2.rm(:)),c1.rm-mean(c1.rm(:))); %reverse order for perspective
+    cmet='g';
+    if nargin==6
+        cmet=cmeth;
+    end
+    if isequal(cmet,'n')
+        cc = xcorr2n(c2.rm,c1.rm); %reverse order for perspective
+    else
+        cc = xcorr2g(c2.rm,c1.rm); %reverse order for perspective
+    end
+    
     cc = imgaussfilt(cc,2);
     cenr = round(size(cc,2)/2); cenc = round(size(cc,1)/2);
     imagesc(ax, cc);

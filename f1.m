@@ -4,6 +4,7 @@
 %bthresh=0.5; mthresh=0.2;
 %%preamble 
 %???replace all ac and gridscore with ac2 gc2 etc?????
+function f1(cellsn, cels)
 dbstop if error  
 %loads();
 fig = figure(991);  fs = 12;
@@ -95,7 +96,7 @@ plot(agbm(:,1),agbm(:,2),'b.'); hold on
 plot(sigbma(:,1),sigbma(:,2),'ro');
 %plot(gbm((gbm(:,2) == 0),1),gbm((gbm(:,2) == 0),2),'rx');
 l= slimd(axD); axD.XLim = l; axD.YLim = l;
-plot([bthresh bthresh],[l(1) mthresh],'g');plot([bthresh l(2)],[mthresh mthresh],'g');
+%plot([bthresh bthresh],[l(1) mthresh],'g');plot([bthresh l(2)],[mthresh mthresh],'g');
 hold off; axis(axD,'square');
 xlabel('gridscore pre'); ylabel('gridscore during');
 title('gridscore all vs cohort'); 
@@ -136,5 +137,6 @@ for i = 1:len(a)
     a(i).BackgroundColor = 'w';
 end
 
+end
 %print(f, 'f1.png', '-dpng', '-r300' );   %save file as PNG w/ 300dpi
 

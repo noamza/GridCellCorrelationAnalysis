@@ -1,7 +1,7 @@
 function ax = plotTR(ax,c,str,p)%SETS LIMITS OF ARENA TO 100
     title(ax, str.t);xlabel(ax, str.x);ylabel(ax, str.y);
     plot(ax, c.px, c.py,'k','linewidth',1.5); hold(ax, 'on');
-    plot(ax, c.sx, c.sy, 'r.','markersize',2.7);
+    plot(ax, c.sx, c.sy, 'r.','markersize',2.7);% 4 , 2.7
     set(ax,'ydir','normal');colormap(ax,'jet');axis(ax,'square');
     xlabel('cm');ylabel('cm');ax=gca;
     if exist('str','var') && (isfield(str,'lim'))

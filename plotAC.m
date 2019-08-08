@@ -1,5 +1,5 @@
 function ax = plotAC(ax,c,str)
-    title(ax, str.t);xlabel(ax, str.x);ylabel(ax, str.y); hold(ax, 'on');    
+    title(ax, str.t);xlabel(ax, str.x);ylabel(ax, str.y); hold(ax, 'on');
     imagesc( imgaussfilt(c.ac,2,'FilterDomain','spatial')); lw = 0.5;
     %title(ax, sprintf('%sspk%d',s, length(p.sx)));
     %center point ADD BACK

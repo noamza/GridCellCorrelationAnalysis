@@ -1,14 +1,16 @@
 %% preamble
+
+function f3(pairs,ctsbma, pptsbma)
+
 dbstop if error  
-%load('.\\data\\shuffling1000nanv2','ctsbma','ptsbma','pptsbma');
 nshuffle=1000;
-fig = figure(993); tic
-set(fig,'Color','w', 'Position', [200 0 1000 600]);
-fss='fontsize'; mss='markersize';fw={'fontweight','bold'}; pnt='Paren';
-fs ={fss 14}; afs ={fss 10}; mfs ={mss 10}; tfs = {fss,12}; 
+fig = figure(993);clf; tic
+set(fig,'Color','w', 'Position', [200 0 1000 650]); 
+fss='fontsize'; mss='markersize';fw={'fontweight','bold'}; pnt='Parent';
+fs ={fss 14}; afs ={fss 10}; mfs ={mss 10}; tfs = {fss,12};hts='Heights'; 
 
 
-gTop = uix.GridFlex('Parent', fig,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');
+gTop = uix.GridFlex(pnt, fig,'Spacing',5,'padding',5, 'BackgroundColor','w','DividerMarkings','off');
 gfp={'Spacing',5, 'BackgroundColor','w','DividerMarkings','off'};
 
 tx=0;ty=0.5;tp={fw{:},fs{:}};
@@ -24,87 +26,88 @@ if(a==1) disp('pre'); else disp('dur'); end
 %}
 
 %% A1 : Before During Temporal
-gA1 = uix.GridFlex('Parent',gTop,gfp{:});
-axes('Parent',uicontainer('Parent',gA1,uip{:}),aup{:});
+gA1 = uix.GridFlex(pnt,gTop,gfp{:});
+axes(pnt,uicontainer(pnt,gA1,uip{:}),aup{:});
 text(tx,ty,'A',tp{:});
-axes('Parent',uicontainer('Parent',gA1,uip{:}),aup{:});
+axes(pnt,uicontainer(pnt,gA1,uip{:}),aup{:});
 x=ctsbma(:,1);y=ctsbma(:,2);arg=[];arg.show=[0 1 1];
 plotARP(x,y,arg);
 xlabel('pre',afs{:}); 
 ylabel('dur',afs{:},fw{:});
 title('time correlations',tfs{:}); legend off;
 
-set(gA1,'Heights', [25 -1]);
+set(gA1,hts, [25 -1]);
 
 
 %% C1 : Before During Spatial
-gC1 = uix.GridFlex('Parent',gTop,gfp{:});
-axes('Parent',uicontainer('Parent',gC1,uip{:}),aup{:});
+gC1 = uix.GridFlex(pnt,gTop,gfp{:});
+axes(pnt,uicontainer(pnt,gC1,uip{:}),aup{:});
 text(tx,ty,'C',tp{:});
-axes('Parent',uicontainer('Parent',gC1,uip{:}),aup{:});
+axes(pnt,uicontainer(pnt,gC1,uip{:}),aup{:});
 x=ctsbma(:,4);y=ctsbma(:,5);arg=[];arg.show=[0 1 1];
 plotARP(x,y,arg);
 xlabel('pre',afs{:}); 
 ylabel('dur',afs{:},fw{:});
 title('spatial correlations',tfs{:}); legend off;
 
-set(gC1,'Heights', [25 -1]);
+set(gC1,hts, [25 -1]);
 
 %% A2 : Before After Temporal
-gA2 = uix.GridFlex('Parent',gTop,gfp{:});
-axes('Parent',uicontainer('Parent',gA2,uip{:}),aup{:});
+gA2 = uix.GridFlex(pnt,gTop,gfp{:});
+axes(pnt,uicontainer(pnt,gA2,uip{:}),aup{:});
 text(tx,ty,'',tp{:});
-axes('Parent',uicontainer('Parent',gA2,uip{:}),aup{:});
+axes(pnt,uicontainer(pnt,gA2,uip{:}),aup{:});
 x=ctsbma(:,1);y=ctsbma(:,3);arg=[];arg.show=[0 1 1];
 plotARP(x,y,arg);
 xlabel('pre',afs{:}); 
 ylabel('post',afs{:},fw{:});
 
-set(gA2,'Heights', [25 -1]);
+set(gA2,hts, [25 -1]);
 
 
 %% C2 : Before After Spatial
-gC2 = uix.GridFlex('Parent',gTop,gfp{:});
-axes('Parent',uicontainer('Parent',gC2,uip{:}),aup{:});
+gC2 = uix.GridFlex(pnt,gTop,gfp{:});
+axes(pnt,uicontainer(pnt,gC2,uip{:}),aup{:});
 text(tx,ty,'',tp{:});
-axes('Parent',uicontainer('Parent',gC2,uip{:}),aup{:});
+axes(pnt,uicontainer(pnt,gC2,uip{:}),aup{:});
 x=ctsbma(:,4);y=ctsbma(:,6);arg=[];arg.show=[0 1 1];
 plotARP(x,y,arg);
 xlabel('pre',afs{:}); 
 ylabel('post',afs{:},fw{:});
 
-set(gC2,'Heights', [25 -1]);
+set(gC2,hts, [25 -1]);
 
 N = nshuffle;
 %% HISTOGRAMs
-gB = uix.GridFlex('Parent',gTop,gfp{:});
-axes('Parent',uicontainer('Parent',gB,uip{:}),aup{:});
+gB = uix.GridFlex(pnt,gTop,gfp{:});
+axes(pnt,uicontainer(pnt,gB,uip{:}),aup{:});
 text(0,0.0,'B',tp{:});
-gBB = uix.GridFlex('Parent',gB,gfp{:});
-axes('Parent',uicontainer('Parent',gBB,uip{:}),aup{:});
-bar([sum(ptsbma(:,1)<= N*0.01)/length(pairs), sum(N*0.99 <= ptsbma(:,1))/length(pairs);...
-     sum(ptsbma(:,2)<= N*0.01)/length(pairs), sum(N*0.99 <= ptsbma(:,2))/length(pairs);...
-     sum(ptsbma(:,3)<= N*0.01)/length(pairs), sum(N*0.99 <= ptsbma(:,3))/length(pairs);]*100,'stacked')
+gBB = uix.GridFlex(pnt,gB,gfp{:});
+axes(pnt,uicontainer(pnt,gBB,uip{:}),aup{:});
+lp=len(pairs);
+bar([sum(pptsbma(ctsbma(:,1)>0,1))/lp, sum(pptsbma(ctsbma(:,1)<0,1))/lp;...
+     sum(pptsbma(ctsbma(:,2)>0,2))/lp, sum(pptsbma(ctsbma(:,2)<0,2))/lp;...
+     sum(pptsbma(ctsbma(:,3)>0,3))/lp, sum(pptsbma(ctsbma(:,3)<0,3))/lp;]*100,'stacked')
 ylabel('% total',fss,10);
 set(gca,'xticklabel',{'pre';'during';'post'},'YLim',[0,100],'xticklabelrotation',90);
-title(sprintf('shuffling significance'));
-legend({'(-)  corr';'(+) corr'}); axis square;
-set(gB,'Heights', [25 -1]);
+title(sprintf('shuffling significance'),tfs{:});
+legend({'(+) corr';'(-)  corr'}); axis square;
+set(gB,hts, [25 -1]);
 
-gD = uix.GridFlex('Parent',gTop,gfp{:});
-axes('Parent',uicontainer('Parent',gD,uip{:}),aup{:});
+gD = uix.GridFlex(pnt,gTop,gfp{:});
+axes(pnt,uicontainer(pnt,gD,uip{:}),aup{:});
 text(0,0.0,'D',tp{:});
-gDD = uix.GridFlex('Parent',gD,gfp{:});
-axes('Parent',uicontainer('Parent',gDD,uip{:}),aup{:});
-bar([sum(ptsbma(:,4)<= N*0.01)/length(pairs), sum(N*0.99 <= ptsbma(:,4))/length(pairs);...
-     sum(ptsbma(:,5)<= N*0.01)/length(pairs), sum(N*0.99 <= ptsbma(:,5))/length(pairs);...
-     sum(ptsbma(:,6)<= N*0.01)/length(pairs), sum(N*0.99 <= ptsbma(:,6))/length(pairs);]*100,'stacked')
+gDD = uix.GridFlex(pnt,gD,gfp{:});
+axes(pnt,uicontainer(pnt,gDD,uip{:}),aup{:});
+bar([sum(pptsbma(ctsbma(:,4)>0,4))/lp, sum(pptsbma(ctsbma(:,4)<0,4))/lp;...
+     sum(pptsbma(ctsbma(:,5)>0,5))/lp, sum(pptsbma(ctsbma(:,5)<0,5))/lp;...
+     sum(pptsbma(ctsbma(:,6)>0,6))/lp, sum(pptsbma(ctsbma(:,6)<0,6))/lp;]*100,'stacked')
 ylabel('% total',fss,10);
 set(gca,'xticklabel',{'pre';'during';'post'},'YLim',[0,100],'xticklabelrotation',90);
-title(sprintf('shuffling significance'));
-legend({'(-)  corr';'(+) corr'}); axis square;
+title(sprintf('shuffling significance'),tfs{:});
+legend({'(+) corr';'(-)  corr'}); axis square;
 
-set(gD,'Heights', [25 -1]);
+set(gD,hts, [25 -1]);
 %space
 
 %% epilogue

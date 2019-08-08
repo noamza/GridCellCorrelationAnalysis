@@ -17,9 +17,10 @@ function Shuffling(cellsn,pairs)
             pgm3(i,:)=zeros(1,p.nshuf); t=shuffleGridscoreNan(c.midall,p.nshuf,p.nb,p.movm,p.asig,p.pval,'midall');pgm3(i,1)=t(1);
          end
          %pga3(i,:) = shuffleGridscoreNan(c.after, p.nshuf,p.nb,p.movm,p.asig,p.pval,'after' );
+         save(['../gshuff ' date '-' ts], 'pgb3','pgm3','pga3','p')
         toc         
      end
- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %%%%%%%%%%%%%%%%%%%% grid analysis%%%%%%%%%%%%%%%%%%%%%%%%%%
  
     tt = {pgb3,pgm3};ncls=size(pgb3,1);
    %tt = {pgb,pgm};ncls=size(pgb,1);
@@ -51,16 +52,16 @@ function Shuffling(cellsn,pairs)
     par=[]; par.n=5; par.pval=0.02;par.spval=0.01; par.movmean=25; par.nb = 50; %t=zeros(len(pairs),par.n);   
     pscb3 = []; pscm3 = []; psca3 = []; ptcb3 = []; ptcm3 = []; ptca3 = [];
     
-    for i = 1:     10%len(pairs) %<<<<<<<<<<<<<  
+    for i = 1:     len(pairs) %<<<<<<<<<<<<<  
         i
         c1 = cellsn(pairs(i,1));%cells{pairs(i,1)};
         c2 = cellsn(pairs(i,2));
         %space
         tic
-disp('sb');pscb3(i,:) = shuffleSpace2Correlations(c1.before, c2.before,par); 
-disp('sm');pscm3(i,:) = shuffleSpace2Correlations(c1.midall, c2.midall,par);
+disp('sb');pscb3(i,:) = shuffleSpaceCorrelations(c1.before, c2.before,par); 
+disp('sm');pscm3(i,:) = shuffleSpaceCorrelations(c1.midall, c2.midall,par);
         if(length(c1.after.pt)>1 && length(c2.after.pt)>1) %after
-disp('sa');psca3(i,:) = shuffleSpace2Correlations(c1.after, c2.after,par);
+disp('sa');psca3(i,:) = shuffleSpaceCorrelations(c1.after, c2.after,par);
         else;psca3(i,:) = zeros(1,par.n);end
         toc
         %time
@@ -71,6 +72,7 @@ disp('tm');ptcm3(i,:) = shuffleTimeCorrelations (c1.midall, c2.midall,par);
 disp('ta');ptca3(i,:) = shuffleTimeCorrelations (c1.after, c2.after,par);
         else;ptca3(i,:) = zeros(1,par.n);end 
         toc
+        save(['../tsshuff ' date '-' ts], 'pscb3','pscm3','psca3','par')
     end    
      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
     tt = {ptcb3,ptcm3,ptca3,pscb3,pscm3,psca3}%,pgcb,pgcm,pgca};

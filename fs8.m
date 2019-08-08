@@ -1,81 +1,93 @@
 %based on 'Revisopm.m'
-function s8()
+function fs8(cellsn,pairs)
 
-    a=[],b=[],c=[],d=[],e=[],f=[],m=[],n=[],x=[],y=[],z=[];
-    tic
     %load('C:\Noam\Data\muscimol\aclls15min','aclls'); %personal
-    load('.\data\pairs','pairs');
-%     load('.\\data\\dxdyrate','dxywinrd','dxywinrn','gridwin','autowin');
-    load('.\\data\\dxdyrate15','dxywinrd15');
-    %cels = unique([pairs(:,1),pairs(:,2)])';
-    toc;
-
+%   load('.\\data\\dxdyrate','dxywinrd','dxywinrn','gridwin','autowin');
+    %load('.\\data\\dxdyrate15','dxywinrd15');
     nbins = 100; twins = [1 2 3 5 10] ; %window in secs
+    dxywinrdshufpairs=makeWins();
+    
     s = {'before', 'midall','after'}; ts = {'pre','dur','post'};
-
-    fig = figure(81); clf;  fs = 12;
+    fs = 12;
+    gp={'Spacing',5, 'BackgroundColor','w','DividerMarkings','off'};
+    ap={'visible','off'};pnt='Parent'; 
+    tp={'fontweight','bold','fontsize',fs};
+    pp={'BackgroundColor','w','bordertype','none'};
+    
+    fig = figure(81); clf;
     set(fig,'Color','w', 'Position', [600 0 1200 800]);
-    g0 = uix.GridFlex('Parent',fig,'Spacing',5, 'BackgroundColor','w');
-    gtop = uix.GridFlex('Parent',g0,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');
-    axes('Parent',uicontainer('Parent',gtop,'BackgroundColor','w'),'visible','off');
-    text(0,0.5,'A','fontweight','bold','fontsize',fs);
-    gA = uix.GridFlex('Parent',gtop,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');    
-    gbot = uix.GridFlex('Parent',g0,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');
-    axes('Parent',uicontainer('Parent',gbot,'BackgroundColor','w'),'visible','off');
-    text(0,0.5,'B','fontweight','bold','fontsize',fs);
-    gB = uix.GridFlex('Parent',gbot,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');    
+    gAll = uix.GridFlex(pnt,fig,gp{:});
+    gTop = uix.GridFlex(pnt,gAll,gp{:});
+    gBot = uix.GridFlex(pnt,gAll,gp{:});
+     
+    axes(pnt,uix.Panel(pnt,gTop,pp{:}),ap{:});
+    text(0,0.2,'A',tp{:});
+    gA = uix.GridFlex(pnt,gTop,gp{:});   
     %A - imgsc 
-    a = [12 13 16]; d = 16; d = 50-d:51+d; %b=1;
-    axg = [];  twin=1; dxyr=dxywinrd15;
-    for b = a
-        %c = aclls(pairs(b,1)); d = aclls(pairs(b,2));
-        x=1; c = dxyr{b,twin}.(s{x}); c=c(d,d);
-        axg(end+1) = axes('Parent',uicontainer('Parent',gA));
-        axg(end)= imgsc(c,2); title(sprintf('p%d 1s %s',b,ts{x})); axis off;
-        x=2; c = dxyr{b,twin}.(s{x}); c=c(d,d);
-        axg(end+1) = axes('Parent',uicontainer('Parent',gA));
-        axg(end)= imgsc(c,2); title(sprintf('p%d 1s %s',b,ts{x}),'color','red'); axis off;
+    a = [12 13 16]; doff = 16; d = 50-doff:51+doff;
+    twin=1; dxyr=dxywinrdshufpairs;
+    for id = a
+        axes(pnt,uicontainer(pnt,gA));
+        x=1; c = dxyr{id,twin}.(s{x}); c=c(d,d);
+        fp(c,id,doff,x,'k');
+        axes(pnt,uicontainer(pnt,gA));
+        x=2; c = dxyr{id,twin}.(s{x}); c=c(d,d);
+        fp(c,id,doff,x,'r');
     end
-    set(gA,'Widths', zeros(1,len(a)*2)-1, 'Heights', -1)
-    set(gtop,'Widths', -1, 'Heights', [ 25, -1]);
-    %end gtop A
-    % gbottom SCATTER
-    bxg=[]; m=1;w=2; mm=['corr ' ts{m} ' ' ts{w}];
+    set(gA,'Widths', zeros(1,len(a)*2) -1 )    
+    set(gTop,'Heights', [ 25, -1]);
+   
+    function fp(c,id,doff,x,cr)
+        imgsc(c,2); title(sprintf('p%d 1s %s',id,ts{x}),'color',cr);         
+        tmax=round(doff*2/5)*5; 
+        tt=slim(gca);%t=floor(t/10)*10;xlim(t);ylim(t);
+        tt(3)=tt(end);tt(2)=round(tt(end)/2);%dd=1; %t(1)=t(1)+dd; t(end)=t(end)-dd; 
+        xticks(tt);yticks(tt); 
+        tl={n2(-tmax);'0';n2(tmax)};xticklabels(tl);yticklabels(tl);
+        xlabel('cm');ylabel('cm');
+        %axis(gca,'square');%set(gca,'ydir','norm');
+    end
+    
+    axes(pnt,uix.Panel(pnt,gBot,pp{:}),ap{:});
+    text(0,0.5,'B',tp{:});
+    gB = uix.GridFlex(pnt,gBot,gp{:});    
+    
+    %SCATTER
+    m=1;w=2; mm=['corr ' ts{m} ' ' ts{w}];
     for h =1:len(twins)
         twin=twins(h);
-        g={}; %scatter
-        for w = 2:3 %scatter
+        g={}; 
+        for w = 2:3 %X mid after
             a=[];
             for i = 1:len(dxyr)
-                %tic; [twin i]
+                %[twin i]
                 %corr sesh vs sesh for dxdy
                 t=corr(dxyr{i,twin}.(s{m})(:),dxyr{i,twin}.(s{w})(:),'rows','complete');
-                a(end+1,:)=t; %toc
+                a(end+1,:)=t;
             end
-            %g(:,h)=a; %g{h}=a(~isnan(a));%
-            g{w}=a; %scatter
-            %gridwin{twin}=a;
+            g{w}=a;
         end
-        bxg(end+1) = axes('Parent',uicontainer('Parent',gB));
-        y=toCol(g{2});x=toCol(g{3});t=~isnan(y)&~isnan(x);x=x(t);y=y(t); bxg(end)=scatter(x,y); hold on;
-        f = fit(x, y,'poly1');plot(x,f(x),'-'); axis('tight'); axis square; [a b]=ccof(x,y);
-        text(0.1,0.9,sprintf('a=%.2f r=%.2f p=%.3f',round(f.p1,2), round(a,2), round(b,3)),'Units','normalized');
+        axes(pnt,uicontainer(pnt,gB));
+        y=toCol(g{2});x=toCol(g{3});%2 mid, 3 after
+        t=~isnan(y)&~isnan(x);x=x(t);y=y(t); 
+        scatter(x,y); hold on;
+        f = fit(x, y,'poly1');plot(x,f(x),'-'); axis('tight'); axis square; [a id]=ccof(x,y);
+        text(0.1,0.9,sprintf('a=%.2f r=%.2f p=%.2f',round(f.p1,2), round(a,2), round(id,2)),'Units','normalized');
         title([n2(twin) 's']); xlabel('pre vs post corr'); ylabel('pre vs dur corr'); box on
         e=slim(gca);xlim(e);ylim(e);
     end
     %scatter
-    t=['correlation of dxdy by time window ' z];
+    t=['correlation of dxdy by time window ' twin];
     %suptitle(t);
     set(gB,'Widths', [-1 -1 -1], 'Heights', [-1 -1])
-    set(gbot,'Widths', -1, 'Heights', [ 25, -1]);
-    set(g0,'Widths', -1, 'Heights', [ -1, -4]);
+    set(gBot,'Widths', -1, 'Heights', [ 25, -1]);
+    set(gAll,'Widths', -1, 'Heights', [ -1, -4]);
     a = findobj(fig,'type','UIContainer');
     for i = 1:len(a)
         a(i).BackgroundColor = 'w';
     end
     %saveas(f,['./figs/scatter ' t '.png']);
-   
-    
+%{
             % % % % graphics imagesc 
         d = 16; d = 50-d:51+d; %b=1;
         pr = [200 10 1800 900];  t=2; e = 2;% f=5;f=ceil(sqrt(f));%f-#pairs %t 
@@ -83,14 +95,14 @@ function s8()
             figure(1000+10*twin+t); clf; set(gcf,'position',pr);
             for i = 1:20%(pairs)
                 subplot(4,e*5,e*i-e+1);x = 1; %PRE 1 DUR 2
-                a = dxywinrd15{i,twin}.(s{x}); a=a(d,d); %b = gridscore2(a,t);
+                a = dxywinrdshufpairs{i,twin}.(s{x}); a=a(d,d); %b = gridscore2(a,t);
                 imagesc(imgaussfilt(a, t,'FilterDomain','spatial'));
                 %imagesc(xcorr2(imgaussfilt(a, t,'FilterDomain','spatial')));
                 %a(isnan(a))=-1;%imagesc(a);
                 colormap jet; axis off; axis square;title(sprintf('p%d:%s',i,ts{x}));
                 
                 subplot(4,e*5,e*i); x = 2;%PRE 1 DUR 2
-                a = dxywinrd15{i,twin}.(s{x}); a=a(d,d); % b = gridscore2((a),t);
+                a = dxywinrdshufpairs{i,twin}.(s{x}); a=a(d,d); % b = gridscore2((a),t);
                 imagesc(imgaussfilt(a, t,'FilterDomain','spatial'));
                 %imagesc(imgaussfilt(xcorr2(a), t,'FilterDomain','spatial'));
                 colormap jet; axis off; axis square;title(sprintf('p%d:%s',i,ts{x}),'color','red');
@@ -100,18 +112,24 @@ function s8()
             %saveas(gcf, sprintf('./figs/drift_diff_%ds_sig%d_zoom_dmet.png',twin,t) );
         end
     
-    
-    %{
     t=[aclls.(s{1})];d=cellfun(@(x) max(diff(x)),{t.pt},'uni',1);
     t=[aclls.(s{2})];e=cellfun(@(x) max(diff(x)),{t.pt},'uni',1); off=max([d e]);%0.04
-    dxywinrd15={};
+    %}
+
+    %{%
+
+    function dxywinrdshufpairs = makeWins()
+     s = {'before', 'midall','after'};
+    t=[cellsn.(s{1})];d=cellfun(@(x) max(diff(x)),{t.pt},'uni',1);
+    t=[cellsn.(s{2})];e=cellfun(@(x) max(diff(x)),{t.pt},'uni',1); off=max([d e]);%0.04
+    dxywinrdshufpairs={};
     for h = 1:len(twins)
         twin = twins(h);
         for j=1:len(pairs)
             ['a ' n2(twin) ' ' n2(j)]
             tic
-            for ss= {'midall'}%[s(:)']
-                a = aclls(pairs(j,1)).(ss{:}); b = aclls(pairs(j,2)).(ss{:});
+            for ss= [s(:)']
+                a = cellsn(pairs(j,1)).(ss{:}); b = cellsn(pairs(j,2)).(ss{:});
                 rmsa = nan(nbins); rmta=rmsa; tssi = 1;tppi = 1; %norm=zeros(nbins);
                 for i = 1:len(a.st)
                     sr = driftwin(twin,a.st(i),a.sx(i),a.sy(i),b.st,b.sx,b.sy,tssi,0);
@@ -134,19 +152,13 @@ function s8()
                 %assert(isequal(norm==0,isnan(dxyr)));
                 dxyr=rmsa./rmta;
                 %assert( max(dxyr(:) ) <= 1 );
-                dxywinrd15{j,twin}.(ss{:}) = dxyr;
+                dxywinrdshufpairs{j,twin}.(ss{:}) = dxyr;
             end
             toc;
         end
     end
-    for h = 1:len(twins)
-        twin = twins(h);
-        for j=1:len(pairs)
-            ss= 'after';
-                dxywinrd15{j,twin}.(ss) = dxywinrd{j,twin}.(ss);
-        end
-    end
-    
+    end %end makeWin()
+
     %drift window
     %has rounding error between discrete x y vals and time x y
     function r = driftwin(twin,t,tx,ty,st,sx,sy,tsi,off)

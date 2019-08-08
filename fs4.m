@@ -1,6 +1,5 @@
 %s4
-function s4()
-load('.\data\shuffling1000nan','ctsbma','pptsbma');
+function s4(ctsbma,pptsbma)
 cts=ctsbma;ppts=pptsbma;mfs=20;lfs=3; m='.';yls='space';
 xl=mnmx(cts(:,[1 2])); yl=mnmx(cts(:,[4 5])); mss='markersize';
 fig=figure(1002); clf; set(fig,'color','w', 'Position', [200 70 400 800]);

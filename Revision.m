@@ -80,7 +80,7 @@ vs='rayleigh_score';va='rayleigh_angle';
                 c=cellsn(i).(ss{:});z=c; 
 %                 [c.rm, c.max_r] = createRateMapNan(c,50);
 %                 %cellsn(i).(ss{:}).max_r=max_r;
-%                 c.ac = xcorr2g(c.rm,c.rm);
+%                 c.ac = xcorr2g(c.rm,c.rm); <IMPORTANT DO NOT DELETE
 
                   ac3=normxcorr2ni(c.rm);
                   cellsn(i).(ss{:}).ac3=ac3;

@@ -1,5 +1,6 @@
 %EXTENDED TIME WINDOW
-load('.\data\shuffling1000nanV2')
+%MAKE WD FIRST BELOW or %  load('.\data\fs5_F')
+function fs5(ctsbma,wd)
 strt = 15 *60; midt = (45/1) *60; endt=45 *60 +inf;
 fig=figure(1005); clf; set(fig,'color','w', 'Position', [200 70 700 500]);
 xl = 'pre'; yl = 'dur';
@@ -20,34 +21,22 @@ plotARP(x,y,arg);xlabel(xl); ylabel(yl);
 subplot(224);x = ctsbma(:,4); y = wd(:,4);
 plotARP(x,y,arg);xlabel(xl); ylabel(yl);
 
-suptitle('correlations by muscimol time window (row 1 temporal, row 2 spatial)');
-
+suptitle('Correlations by muscimol time window (row 1 temporal, row 2 spatial)');
+end
 
 %{
 %load('C:\\Noam\\Data\\muscimol\\noam\\cells_Infmin_d_patchtraj_rayleigh'); %personal
-
 tic; wd=[]; wb=[]; %was 100 (anylysis done in 50?)
 for j=1:len(pairs)
     j
     c1 = cells{pairs(j,1)}; c2 = cells{pairs(j,2)};
-    ['midall end ' n2(c1.midall.pt(end)/60)]
+    %['midall end ' n2(c1.midall.pt(end)/60)]
     
     p=[]; p.movmean = 25; nbins = 50; %spatial
-%     wb(j) = c1.midall.pt(end)-c1.midall.pt(1);
-%    t = c1.midall.pt; tm = t(1)+(t(end)-t(1))/2;
-%     [train1,train2] = createMsSpikeTrain(c1.midall.st,t(end),c2.midall.st, t(1),tm);
-%     [a1, ~, t1sm, t2sm] = timeCorrelationSmoothed( train1,train2,p);
+
+    strt = 15 *60; midt = (45/1) *60; endt=45 *60 +inf;% start at 15?
+    %c1.midall.pt(1)/60; assert( c1.midall.pt(1)>= str ); fails
     
-    %im = ceil(len(c1.midall.pt)/2); find index of half way
-    strt = 15 *60; midt = (45/1) *60; endt=45 *60 +inf; assert nothing starts before 15
-    %is = find(c1.midall.pt>=strt*60,1);
-    %im = find(c1.midall.pt>=midt*60,1);
-    %ie = len(c1.midall.pt);
-    %ie = find(c1.midall.pt<=endt*60,1,'last');
-    
-    
-    %c1a = windowsesh(c1.midall,is,im); c2a = windowsesh(c2.midall,is,im); %was 1
-    %c1b = windowsesh(c1.midall,im,ie); c2b = windowsesh(c2.midall,im,ie);
     c1a = windowsesh(c1.midall,0,0,strt,midt); c2a = windowsesh(c2.midall,0,0,strt,midt); %was 1
     c1b = windowsesh(c1.midall,0,0,midt,endt); c2b = windowsesh(c2.midall,0,0,midt,endt);
     
@@ -67,5 +56,10 @@ for j=1:len(pairs)
     wd(j,:) = [ta tb sa sb];  
 end
 wd(isnan(wd))=0; toc
+clear c1;clear c2;clear c1a;clear c2a;clear c1b;clear c2b;clear endt;clear j;clear midt;
+clear nbins;clear p;clear sa;clear sb;clear strt;clear t1;clear t1sm;clear t2;clear t2sm;
+clear ta;clear tb;clear wb;
+clear cells;
+
 %}
 

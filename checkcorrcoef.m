@@ -83,7 +83,7 @@ subplot(236);imagesc(rm6);title(sprintf('rm3(mid) %.3f',ccof(rm6,rm4))); axis sq
 %gridscore2(xcorr(rm1),1)
 
 %OUT OF GROUP
-p=[]; p.nb = 100; p.movmean=25; csb=[];csm=[];ctb=[];ctm=[];cii=[];
+p=[]; p.nb = 50; p.movmean=25; csb=[];csm=[];ctb=[];ctm=[];cii=[];
 for i = 1:len(cels)
     fprintf(' %d',i)
     tic
