@@ -1,5 +1,5 @@
 %EXTENDED TIME WINDOW
-%MAKE WD FIRST BELOW or %  load('.\data\fs5_F')
+%MAKE WD FIRST BELOW or %  load('.\data\fs5_F');  load('.\data\fs5_v2')
 function fs5(ctsbma,wd)
 strt = 15 *60; midt = (45/1) *60; endt=45 *60 +inf;
 fig=figure(1005); clf; set(fig,'color','w', 'Position', [200 70 700 500]);
@@ -8,11 +8,11 @@ xl = 'pre'; yl = 'dur';
 %1st half
 subplot(221);x = ctsbma(:,1); y = wd(:,1);arg=[];
 plotARP(x,y,arg);xlabel(xl); ylabel(yl);
-title(sprintf('[15+ : %.0f min]',midt/60));
+title(sprintf('[15+ : %.0f] minutes',midt/60));
 %2nd half
 subplot(222);x = ctsbma(:,1); y = wd(:,2);plotARP(x,y,arg);
 xlabel(xl); ylabel(yl);
-title(sprintf('[%.0f : %.0f min]',midt/60,endt/60));
+title(sprintf('[%.0f : %s] minutes',midt/60,'End'));
 
 %SPACE
 subplot(223);x = ctsbma(:,4); y = wd(:,3);

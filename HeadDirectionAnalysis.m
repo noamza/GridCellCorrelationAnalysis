@@ -1,3 +1,36 @@
+
+
+trandclusters = [];
+n=100000;tic
+for i = 1:n
+    rphd = logical(zeros(len(pairs),1));
+    rnphd = logical(zeros(len(pairs),1));
+    t=randperm(len(pairs),len(phd) + len(nphd))'; 
+    rphd(t(1:len(phd)))=true;
+    rnphd(t(len(phd)+1:end))=true;
+    
+    trandclusters(i,:)=[ccof(ctsbma(rphd,1),ctsbma(rphd,2)),...
+                        ccof(ctsbma(rnphd,1),ctsbma(rnphd,2)),...
+                        ccof(ctsbma(rphd,4),ctsbma(rphd,5)),...
+                        ccof(ctsbma(rnphd,4),ctsbma(rnphd,5))];
+end
+toc
+figure(1);
+subplot(211)
+stats(trandclusters(:,1)-trandclusters(:,2))
+t = ccof(ctsbma(phd,1),ctsbma(phd,2)) - ccof(ctsbma(nphd,1),ctsbma(nphd,2))
+histogram(trandclusters(:,1)-trandclusters(:,2),100)
+line([t, t], ylim, 'LineWidth', 2, 'Color', 'r');
+title('time')
+subplot(212)
+stats(trandclusters(:,3)-trandclusters(:,4))
+t=ccof(ctsbma(phd,4),ctsbma(phd,5)) - ccof(ctsbma(nphd,4),ctsbma(nphd,5))
+histogram(trandclusters(:,3)-trandclusters(:,4),100)
+line([t, t], ylim, 'LineWidth', 2, 'Color', 'r');
+title('spatial')
+suptitle(sprintf('histogram of n=%d runs of random clusters \n[nonHD - HD] of corr(before,during)',n)) 
+
+
 figure(1);
 trandclusters = [];
 n=10000

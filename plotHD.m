@@ -11,7 +11,7 @@ function ax = plotHD(ax,c,str,w180)%SETS LIMITS OF ARENA TO 100
     set(ax,'xtick',l,'yticklabel',{},'ylim',[0 max(rd)],... 
         'xticklabel',{sprintf('%d%c',l(1),char(176)); sprintf('%d%c',l(2),char(176))})
            
-    axis(ax, 'square');colormap(ax,'jet');
+    axis(ax, 'square');colormap(ax,'jet'); 
     %figure, plot(rd/sum(rd)), ylim([0 1/10000])
     
     function o=wa(a,l)

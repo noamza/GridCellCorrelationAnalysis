@@ -87,9 +87,9 @@ p=[]; p.nb = 50; p.movmean=25; csb=[];csm=[];ctb=[];ctm=[];cii=[];
 for i = 1:len(cels)
     fprintf(' %d',i)
     tic
-    c1 = cells{cels(i)};
+    c1 = cellsn(cels(i));
     for j = i+1:len(cels)
-        c2 = cells{cels(j)};
+        c2 = cellsn(cels(j));
         if ~isequal(sprintf('%s%s',c1.date,c1.id),sprintf('%s%s',c2.date,c2.id));
             csb(end+1) = spaceCorrelationSmoothed(c1.before,c2.before,p);
             csm(end+1) = spaceCorrelationSmoothed(c1.midall,c2.midall,p);

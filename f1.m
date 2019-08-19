@@ -1,24 +1,20 @@
 % uncomment to load cells
 %load('Z:\\data\\noam\\Data\\muscimol\\noam\\cells_45min_d_patchtraj_rayleigh'); %lab
 %load('C:\\Noam\\Data\\muscimol\\noam\\cells_45min_d_patchtraj_rayleigh'); %personal
-%bthresh=0.5; mthresh=0.2;
+%bthresh=0.5; mthresh=0.2; %MAKE SURE TO MATCH PAIRS MAKE
 %%preamble 
 %???replace all ac and gridscore with ac2 gc2 etc?????
-function f1(cellsn, cels)
+function f1(cellsn, cels, bthresh, mthresh)
 dbstop if error  
-%loads();
+
 fig = figure(991);  fs = 12;
 set(fig,'Color','w', 'Position', [600 0 1400 800]);
 gtop = uix.GridFlex('Parent',fig,'Spacing',5, 'BackgroundColor','w');
 gl = uix.GridFlex('Parent',gtop,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');
 axes('Parent',uicontainer('Parent',gl,'BackgroundColor','w'),'visible','off');
 text(0,0.5,'A','fontweight','bold','fontsize',fs);
-% uix.Empty('Parent',gl);
-% txt = uicontrol('Style','text', 'String','A','Parent',gl,...
-%     'BackgroundColor','w','FontSize',11, 'fontweight','bold','position',[0 0 0 0])
 gA = uix.GridFlex('Parent',gl,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');
-%axes('Parent',uicontainer('Parent',gA,'BackgroundColor','w'),'visible','off');
-%text(0,0.5,'A','fontweight','bold','fontsize',fs);
+
 
 set(gl,'Widths', [-1], 'Heights', [ 25, -1]);
 gr = uix.GridFlex('Parent',gtop,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');
@@ -36,7 +32,7 @@ for i = 1:len(ii)
 end
 sb.lim = t;sm.lim = t;
 for i = 1:len(ii)
-    c = cellsn(ii(i));%cells{ii(i)};
+    c = cellsn(ii(i));
     sb.t = ' '; 
     axg(end+1) = axes('Parent',uicontainer('Parent',gA)); if(i==3); sb.t = 'pre'; end 
     axg(end)=plotTR(axg(end),c.before,sb);
@@ -96,7 +92,7 @@ plot(agbm(:,1),agbm(:,2),'b.'); hold on
 plot(sigbma(:,1),sigbma(:,2),'ro');
 %plot(gbm((gbm(:,2) == 0),1),gbm((gbm(:,2) == 0),2),'rx');
 l= slimd(axD); axD.XLim = l; axD.YLim = l;
-%plot([bthresh bthresh],[l(1) mthresh],'g');plot([bthresh l(2)],[mthresh mthresh],'g');
+plot([bthresh bthresh],[l(1) mthresh],'g');plot([bthresh l(2)],[mthresh mthresh],'g');
 hold off; axis(axD,'square');
 xlabel('gridscore pre'); ylabel('gridscore during');
 title('gridscore all vs cohort'); 
@@ -120,7 +116,6 @@ title('mean firing rate pre vs post');
 axes('Parent',uicontainer('Parent',gr,'BackgroundColor','w'),'visible','off');
 text(0,0.5,'E','fontweight','bold','fontsize',fs);
 uE = uicontainer('Parent',gr,'BackgroundColor','w');axE = axes(uE); 
-%figure(9914)aspace
 d1=sigbma(:,1);d2=sigbma(:,3); t=mrbda(:,3)~=inf; d1=d1(t);d2=d2(t);%d1(d1==inf)=0;d2(d2==inf)=0;
 plot(d1,d2,'ko'); hold on;
 axE.XLim = slim(axE); axE.YLim = axE.XLim; axis(axE,'square');
@@ -131,7 +126,6 @@ hold off
 xlabel('gridscore pre'); ylabel('gridscore post');
 title('gridscore pre vs post');
 set( gr, 'Heights', [25 -1 25 -1] );
-%set( gr, 'Widths', [-1], 'Heights', [-1 -1 -1]);
 a = findobj(fig,'type','UIContainer');
 for i = 1:len(a)
     a(i).BackgroundColor = 'w';

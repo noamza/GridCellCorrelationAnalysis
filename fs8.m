@@ -1,11 +1,17 @@
 %based on 'Revisopm.m'
-function fs8(cellsn,pairs)
+%load('.\data\fs8dxywin');
+%load('.\data\fs8_v2_dxywin');
+
+function fs8(cellsn,pairs,dxywinrdshufpairs)
 
     %load('C:\Noam\Data\muscimol\aclls15min','aclls'); %personal
 %   load('.\\data\\dxdyrate','dxywinrd','dxywinrn','gridwin','autowin');
-    %load('.\\data\\dxdyrate15','dxywinrd15');
+    %load('.\\data\\dxdyrate15','dxywinrd15'); F %
     nbins = 100; twins = [1 2 3 5 10] ; %window in secs
-    dxywinrdshufpairs=makeWins();
+    
+    a = [1 10 12]% 11 [1 15 18]; %CELLS TO SHOW %12 13 16
+    
+    %dxywinrdshufpairs=makeWins(); %to make dxywinrdshufpairs
     
     s = {'before', 'midall','after'}; ts = {'pre','dur','post'};
     fs = 12;
@@ -15,7 +21,7 @@ function fs8(cellsn,pairs)
     pp={'BackgroundColor','w','bordertype','none'};
     
     fig = figure(81); clf;
-    set(fig,'Color','w', 'Position', [600 0 1200 800]);
+    set(fig,'Color','w', 'Position', [600 0 750 720]);
     gAll = uix.GridFlex(pnt,fig,gp{:});
     gTop = uix.GridFlex(pnt,gAll,gp{:});
     gBot = uix.GridFlex(pnt,gAll,gp{:});
@@ -24,7 +30,7 @@ function fs8(cellsn,pairs)
     text(0,0.2,'A',tp{:});
     gA = uix.GridFlex(pnt,gTop,gp{:});   
     %A - imgsc 
-    a = [12 13 16]; doff = 16; d = 50-doff:51+doff;
+    doff = 16; d = 50-doff:51+doff;
     twin=1; dxyr=dxywinrdshufpairs;
     for id = a
         axes(pnt,uicontainer(pnt,gA));
@@ -71,22 +77,27 @@ function fs8(cellsn,pairs)
         y=toCol(g{2});x=toCol(g{3});%2 mid, 3 after
         t=~isnan(y)&~isnan(x);x=x(t);y=y(t); 
         scatter(x,y); hold on;
-        f = fit(x, y,'poly1');plot(x,f(x),'-'); axis('tight'); axis square; [a id]=ccof(x,y);
-        text(0.1,0.9,sprintf('a=%.2f r=%.2f p=%.2f',round(f.p1,2), round(a,2), round(id,2)),'Units','normalized');
+        f = fit(x, y,'poly1');%plot(x,f(x),'-'); 
+        axis('tight'); 
+        [r p]=ccof(x,y);
+        text(0.1,0.9,sprintf('a=%.2f r=%.2f p=%.2f',round(f.p1,2), round(r,2), round(p,2)),'Units','normalized');
         title([n2(twin) 's']); xlabel('pre vs post corr'); ylabel('pre vs dur corr'); box on
         e=slim(gca);xlim(e);ylim(e);
+        plot(e,f(e),'-'); axis square; 
     end
     %scatter
     t=['correlation of dxdy by time window ' twin];
     %suptitle(t);
-    set(gB,'Widths', [-1 -1 -1], 'Heights', [-1 -1])
-    set(gBot,'Widths', -1, 'Heights', [ 25, -1]);
-    set(gAll,'Widths', -1, 'Heights', [ -1, -4]);
+    set(gB,'Widths', [-1 -1 -1])
+    set(gBot,'Heights', [ 25 -1]);
+    set(gAll,'Heights', [ -1 -3]);
     a = findobj(fig,'type','UIContainer');
     for i = 1:len(a)
         a(i).BackgroundColor = 'w';
     end
     %saveas(f,['./figs/scatter ' t '.png']);
+    
+    
 %{
             % % % % graphics imagesc 
         d = 16; d = 50-d:51+d; %b=1;
@@ -111,9 +122,6 @@ function fs8(cellsn,pairs)
             suptitle(sprintf('%ds: dxdy-spike/dxdy-pos and gridscore by pair sigma=%d',twin,t));
             %saveas(gcf, sprintf('./figs/drift_diff_%ds_sig%d_zoom_dmet.png',twin,t) );
         end
-    
-    t=[aclls.(s{1})];d=cellfun(@(x) max(diff(x)),{t.pt},'uni',1);
-    t=[aclls.(s{2})];e=cellfun(@(x) max(diff(x)),{t.pt},'uni',1); off=max([d e]);%0.04
     %}
 
     %{%

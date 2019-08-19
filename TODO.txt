@@ -2,33 +2,44 @@ TODO
 
 X converge to which cells to use in figures : threshold or shuffling etc.
 
-- make sure all figures use correct rm, ac, gridscore, 
+X make sure all figures use correct rm, ac, gridscore, 
   based on cross-correlation method (gilad or normxcorr2+interp2)
 
-- change which cells are shown in figure examples so that they are 
+X change which cells are shown in figure examples so that they are 
   in the cohort and are good examples
 
-- make sure all axes in paper have labels
+X make sure all axes in paper have labels
 
-- add p values to all figures with r values
+X add p values to all figures with r values
 
+X s5 change inf to end
+
+- s6 wording change, mild relationship with gridness and correlation
+
+- check f1 why cells in threshold not cohort
+
+X s9 to 0.4
 
 PAPER
 
 X remove supplamentery 1 2 3
 
-- revision mode track changes
+X revision mode track changes
 
 - change stats in paper
 
 - change supplamentary indices and all references to corrected ones  
 
-- change methods where needed (mention Pvalues)
+- change methods where needed 
 
-- update all figure and supplamentary discriptions
+- go over rebuttal also
 
-- add box size variation in methods
+- make sure we tried different thresholds
 
-- box size by room if I get a chance
+X update all figure and supplamentary discriptions
+
+X add box size variation in methods
+
+X box size by room if I get a chance
 
 

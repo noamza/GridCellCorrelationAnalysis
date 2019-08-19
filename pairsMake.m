@@ -1,19 +1,21 @@
-%function pairsMake(cellsn)
+function [pairs,cels,group,chd,phd,chdn,phdn]=pairsMake(cellsn, bthresh, mthresh)
 
 %load
 %load('Z:\data\noam\muscimol\cells15nan');
 %load('C:\Noam\Data\muscimol\cells15nan');
-load('.\Data\gshuff 06-Aug-2019-547 with aggr');sss='pearson with nans';
-bthresh=0; mthresh=0;
+%load('.\Data\gshuff 06-Aug-2019-547 with aggr');
+sss='pearson with nans';
+%bthresh=0.5; mthresh=0.2; %V2
 b=[cellsn.before]; l =     arrayfun(@(z) len(z.st)>=100,b)'; 
 m=[cellsn.midall]; l = l & arrayfun(@(z) len(z.st)>=100,m)'; 
 gss='gridscore'; acss='ac';
 b=[b.(gss)]'; m=[m.(gss)]';
-gth= b>bthresh & m<mthresh; gth= b>0 & m<0; 
-ppgbma = pgbma <= ceil(max(pgbma(:))*0.01); %%<<%% picking percentile significance
-gsig= (ppgbma(:,1));% & ~ppgbma(:,2)); %significant gridscores
+gth= b>bthresh & m<mthresh; %gth= b>0 & m<0; 
+%ppgbma = pgbma <= ceil(max(pgbma(:))*0.01); %%<<%% picking percentile significance
+gsig=ones(len(cellsn),1);%gsig= (ppgbma(:,1));% & ~ppgbma(:,2)); %significant gridscores
 gclls=cellsn(gsig&l&gth); clear gth; clear l;clear b; clear m;
-sss=[sss ' | selection: pre pos sign gscore | dur neg gscore |'];
+%sss=[sss ' | selection: pre pos sign gscore | dur neg gscore |'];
+sss=[sss ' | selection: pre ' n2(bthresh) ' | dur ' n2(mthresh) ' |'];
 
 %group by recording date and animal
 gs =                 unique(str2double(strcat({gclls.id},{gclls.date}))    )';
@@ -102,7 +104,7 @@ pairs=cellfun(@(x) nchoosek(x,2),group,'uni',false);
 pairs=vertcat(pairs{:});
 cels=unique(pairs(:));
 
-[chd, phd] =clusters(0.4,0.4,pairs,cellsn,cels); %SAME AS f4
+[chd, phd, chdn,phdn ] =clusters(0.4,0.4,pairs,cellsn,cels); %SAME AS f4
 
 ['cells pairs hdcells hdpairs']
 [len(cels) len(pairs) len(chd) len(phd)]
@@ -110,14 +112,14 @@ sss=[sss ' cells ' n2(len(cels)) ' pairs ' n2(len(pairs)) ' hd cells ' n2(len(ch
 
 %%{
 %CALLING PLOTS
-fp(1,sss,pairs,cellsn,acss,gss); fp(0,sss,pairs,cellsn,acss,gss);
+%fp(1,sss,pairs,cellsn,acss,gss); fp(0,sss,pairs,cellsn,acss,gss);
 
 %}
 clear acss;clear gclls;clear gq;clear gr;clear gsig;clear gss;clear gt;clear j;clear nl;clear k;clear p;
 clear pgb;clear pgm;clear ax;clear s1;clear fig;%clear ;clear ;
 
 
-function [chd, phd]=clusters(rsth,rstl,pairs,cellsn,cels)
+function [chd, phd, chdn,phdn ]=clusters(rsth,rstl,pairs,cellsn,cels)
 %   rsth=0.4; rstl=0.4;    
 rsp=[];rs=[]; 
 for i=1:length(pairs)
@@ -139,7 +141,12 @@ cl1 = rsp(:,3)< rstl & rsp(:,4)< rstl ...     %midall
     & rsp(:,1)< rstl & rsp(:,2)< rstl;     %before
 %cl1 = ~cl2;
 chd = cels(ccl2);
-phd = pairs(cl2);
+chdn = cels(ccl1);
+i=1:len(pairs);
+phd =  i(cl2)';%pairs(cl2,:);
+phdn = i(cl1)'; 
+
+
 clear rs;clear rsp;clear rsth;clear rstl;clear ccl1;clear ccl2; clear cl1;clear cl2; 
 clear i; clear rsth; clear rstl;
 
@@ -169,6 +176,7 @@ set(gr,'Heights',zeros(1,nl)-1);
 set(gt,'Heights',[25 -1]);
 end
 
+end
 
 % %mid
 % fig = figure(22); clf; gr=[]; gt=[];
