@@ -1,4 +1,8 @@
 references/
 temp/
+logs/
+plots/
+figs/
+data/
 *.mpg
 *.avi
