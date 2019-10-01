@@ -49,7 +49,7 @@ function Shuffling(cellsn,pairs)
 
     %shuffling Spatial + Temporal
     
-    par=[]; par.n=5; par.pval=0.02;par.spval=0.01; par.movmean=25; par.nb = 50; %t=zeros(len(pairs),par.n);   
+    par=[]; par.n=1000; par.pval=0.02;par.spval=0.01; par.movmean=25; par.nb = 50; %t=zeros(len(pairs),par.n);   
     pscb3 = []; pscm3 = []; psca3 = []; ptcb3 = []; ptcm3 = []; ptca3 = [];
     
     for i = 1:     len(pairs) %<<<<<<<<<<<<<  
@@ -75,7 +75,8 @@ disp('ta');ptca3(i,:) = shuffleTimeCorrelations (c1.after, c2.after,par);
         save(['../tsshuff ' date '-' ts], 'pscb3','pscm3','psca3','par')
     end    
      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-    tt = {ptcb3,ptcm3,ptca3,pscb3,pscm3,psca3}%,pgcb,pgcm,pgca};
+    %tt = {ptcb3,ptcm3,ptca3,pscb3,pscm3,psca3}%,pgcb,pgcm,pgca};
+    tt = {ptcb,ptcm,ptca,pscb,pscm,psca}%,pgcb,pgcm,pgca};
     niter=size(tt{1},1);
     ctsbma = zeros(niter,len(tt));
     ptsbma = zeros(niter,len(tt));

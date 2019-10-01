@@ -124,15 +124,17 @@ function h = plotFrame(m)
             %plot rate mat
             ax = subplot(r,c,i*r,'Parent', m.parent); imagesc(ax, imgaussfilt(w1.rm,2));
             xlabel(ax,'RM');title(ax,sprintf('c%d',w1.ind));
-            axis(ax,'equal'); axis(ax,'tight'); set(ax,'ydir','normal','xticklabel',[],'yticklabel',[]);
-            assert(sum(isnan(w1.rm(:)))==0,'sum(isnan(w1.rm))==0'); colormap(ax, 'jet');
+            axis(ax,'equal'); axis(ax,'tight'); set(ax,'ydir','normal','xticklabel',[],'yticklabel',[]);   
+            %assert(sum(isnan(w1.rm(:)))==0,'sum(isnan(w1.rm))==0'); colormap(ax, 'jet');
+            %values now have nans
             %myColorMap = jet(256); myColorMap(1,:) = 1; colormap(ax, myColorMap);
         end
         %plot last rate mat ?
         ax = subplot(r,c,r*r,'Parent', m.parent); imagesc(ax, imgaussfilt(wlast.rm,2));
         xlabel(ax,'RM');title(ax, sprintf('c%d',wlast.ind));
         axis(ax,'equal'); axis(ax,'tight'); set(ax,'ydir','normal','xticklabel',[],'yticklabel',[]);
-        assert(sum(isnan(w1.rm(:)))==0,'sum(isnan(w1.rm))==0'); colormap(ax, 'jet');
+         %values now have nans
+        %assert(sum(isnan(w1.rm(:)))==0,'sum(isnan(w1.rm))==0'); colormap(ax, 'jet');
         %myColorMap = jet(256); myColorMap(1,:) = 1; colormap(ax, myColorMap);
         % SCATTER of gridscore
         %ax = subplot(r,c,r*(r-1)+1,'Parent', m.parent,'Position',[0.05 0.09 0.35 0.45]);

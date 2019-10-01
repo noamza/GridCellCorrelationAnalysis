@@ -1,4 +1,5 @@
 % MEAN FIRING RATE
+% f4s1
 %load('C:\Noam\Data\muscimol\cells15nan')
 %load('.\data\shuffling1000nanv2')
 %load('.\data\pairsv2')

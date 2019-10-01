@@ -1,4 +1,7 @@
 %misc_paper
+% load('Z:\data\noam\muscimol\cells15nan');
+% load('C:\Noam\Data\muscimol\cells15nan');
+% load('C:\\Noam\\Data\\muscimol\\noam\\cells_Infmin_d_patchtraj_rayleigh'); %personal
 a=[1 1]; b=[0 1];
 c=zeros(1,1000); [r,p]=ccof([c a],[c b],10)
 c=zeros(1,10); [r,p]=ccof([c a],[c b],10)
@@ -6,47 +9,35 @@ c=zeros(1,10); [r,p]=ccof([c a],[c b],10)
 %Animals in Study
 t= [cellsn(cels).id]; len(unique(t))
 
-%threshold test
-bt=0.9:-0.1:0.2;
-mt=0.5:-0.1:0; 
-tbm=[];sbm=[];tbmp=[];sbmp=[];
-for b=bt
-    v=[];w=[];vp=[];wp=[]; tic
-    for m=mt
-        [b m]
-        prs=pairsMake(cellsn,b,m);
-        t=tsbma(cellsn,prs);
-        [r,p]=ccof(t(:,1),t(:,2));
-        v(end+1)=r;vp(end+1)=p;
-        [r,p]=ccof(t(:,4),t(:,5));
-        w(end+1)=r;wp(end+1)=p;
+%long term gridscore
+gab=[]
+for j=cels'
+    j
+    c1 = cells{j};
+    mm = 25; nbins = 50; 
+    strt = 15 *60; midt = (45/1) *60; endt=45 *60 +inf;% start at 15?
+    c1a = windowsesh(c1.midall,0,0,strt,midt); 
+    c1b = windowsesh(c1.midall,0,0,midt,endt); 
+    if ~(isempty(c1a) || isempty(c1b))
+        %1st half
+        t1 = createMsSpikeTrain(c1a.st);
+        t1s=movmean(t1,mm);
+        rm=createSmoothRateMap(c1a,nbins,t1s);
+        ga = gridscore2(xcorr2g(rm),2);
+        %2nd half
+        t1 = createMsSpikeTrain(c1b.st);
+        t1s=movmean(t1,mm);
+        rm=createSmoothRateMap(c1b,nbins,t1s);
+        gb = gridscore2(xcorr2g(rm),2);
+    else
+        'EMPTY SESSION'
+        ga=0;gb=0;
     end
-    tbm(end+1,:)=v;tbmp(end+1,:)=vp;
-    sbm(end+1,:)=w;sbmp(end+1,:)=wp;
-    toc
+    gab(j,:) = [ga gb];  
 end
-x=repmat(bt',1,len(mt));
-y=repmat(mt,len(bt),1);
-figure(3); clf; set(gcf,'position',[100,100, 900,900]); 
-p=(4-1)*len(bt)+5; ['thresh paper ' n2(x(p)) ' ' n2(y(p))]  % 0.5 0.2 thresh in paper  4
-subplot(221);plot3(x,   y,   tbm,   'ko','markerfacecolor','g');
-hold on;     plot3(x(p),y(p),tbm(p),'ko','markerfacecolor','b');
-title('temporal corr by grid thresh');grid on; zlim([0 1]); 
-xlabel('min grid score pre');ylabel('max grid score dur');zlabel('corr pre x dur'); 
-subplot(222);plot3(x,   y,   tbmp,   'ko','markerfacecolor','g');
-hold on;     plot3(x(p),y(p),tbmp(p),'ko','markerfacecolor','b');
-grid on; title('temporal corr pval by grid thresh'); zlim([0 1]);
-xlabel('min grid score pre');ylabel('max grid score dur');zlabel('pval pre x dur');
-subplot(223);plot3(x,   y,   sbm,   'ko','markerfacecolor','m'); 
-hold on;     plot3(x(p),y(p),sbm(p),'ko','markerfacecolor','b');
-grid on; title('spatial corr by grid thresh'); zlim([0 1]);
-xlabel('min grid score pre');ylabel('max grid score dur');zlabel('corr pre x dur'); 
-subplot(224);plot3(x,   y,   sbmp,   'ko','markerfacecolor','m');
-hold on;     plot3(x(p),y(p),sbmp(p),'ko','markerfacecolor','b');
-grid on; title('spatial corr pval by grid thresh'); zlim([0 1]);
-xlabel('min grid score pre');ylabel('max grid score dur');zlabel('pval pre x dur');
-
-figure(5); surf(x,y,tbm); colormap jet;
+mean(gab), std(gab)
+figure(1);
+subplot(131);imgsc(rm);subplot(132);imgsc(xcorr2g(rm));
 
 %mean gridscore
 t=[cellsn(cels).before]; [mean([t.gridscore]),std([t.gridscore])]
@@ -174,17 +165,42 @@ line([t34, t34], ylim, 'LineWidth', 2, 'Color', 'r');
 suptitle(sprintf('histogram of n=%d runs of random clusters \n[nonHD - HD] of corr(before,during)',10000)) 
 clear t12;clear t34; clear tt12;clear tt34; clear rphd; clear rphdn;
 
-
+%first field angle
+%from fs11 based on cang
+all=wrapTo180(cang(:,2)-cang(:,1));
+all2=wrapTo180(cang(:,3)-cang(:,1));
+[p,z]=circ_rtest(deg2rad(all2))
+[p,z]=circ_rtest(deg2rad(all))
 
 % Average Angle
 rst=0.4; t = [cellsn.before]; tl=arrayfun(@(z) len(z.st),t); ta = [t.('rayleigh_angle')]; 
 ts = [t.('rayleigh_score')]; tis = ts>rst&tl>=100; ta = ta(tis); ta=toCol(ta);
-rad2deg([circ_mean(ta) circ_std(ta)])
+rad2deg([circ_mean(ta) circ_std(ta)/sqrt(len(ta))])
 rst=0.4; t = [cellsn.midall]; tl=arrayfun(@(z) len(z.st),t); ta = [t.('rayleigh_angle')]; 
 ts = [t.('rayleigh_score')]; tis = ts>rst&tl>=100; ta = ta(tis); ta=toCol(ta);
-rad2deg([circ_mean(ta) circ_std(ta)])
+rad2deg([circ_mean(ta) circ_std(ta)/sqrt(len(ta))])
+rst=0.4; t = [cellsn.after]; tl=arrayfun(@(z) len(z.st),t); ta = [t.('rayleigh_angle')]; 
+ts = [t.('rayleigh_score')]; tis = ts>rst&tl>=100; ta = ta(tis); ta=toCol(ta);
+rad2deg([circ_mean(ta) circ_std(ta)/sqrt(len(ta))])
 rst=0.4; t = [cellsn(chd).midall]; tl=arrayfun(@(z) len(z.st),t); ta = [t.('rayleigh_angle')]; 
 ts = [t.('rayleigh_score')]; tis = ts>rst&tl>=100; ta = ta(tis); ta=toCol(ta);
-rad2deg([circ_mean(ta) circ_std(ta)])
+rad2deg([circ_mean(ta) circ_std(ta)/sqrt(len(ta))])
+
+figure(1); yl=41;
+subplot(131); x = 1; fp(ss{x},cellsn,rst,yl,ss{x});
+subplot(132); x = 2; fp(ss{x},cellsn,rst,yl,ss{x}); 
+subplot(133); x = 3; fp(ss{x},cellsn,rst,yl,ss{x});
+suptitle('rayleigh angle for cells with rayleigh score > 0.4');
 
 
+function h=fp(x,cll,rst,yl,tit,c)
+    cla;
+    t = [cll.(x)]; tl=arrayfun(@(z) len(z.st),t); tl=tl>=100;   
+    ta = ([t.('rayleigh_angle')]); ts = [t.('rayleigh_score')];  tis = ts>rst; t = ta(tis & tl);
+    h=histogram(rad2deg(t),-180:30:180); xlim([-180 180]);  axis square; ylim([0 yl]);
+    h.FaceColor='g'; if nargin==6; h.FaceColor=c; h.FaceAlpha=1; end 
+    title(tit); xlabel('r-angle'); ylabel(' ');
+    l=[-180 180]; d=char(176); sf='%d%c';
+    set(gca,'xtick',l,'xticklabel',{sprintf(sf,l(1),d); sprintf(sf,l(2),d)});
+    text(0.1,0.95,sprintf('n=%d a=%.1f%c',len(t),meanang(t),176),'units','normalized');
+end        

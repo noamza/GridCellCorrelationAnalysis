@@ -30,7 +30,8 @@ a=f.p1; [r, p]=ccof(x,y); as=''; rs=''; ps='';
 ff=['%0.' n2(rd) 'f'];
 if show(1); as= sprintf(['a=' ff], round(a,rd)); end
 if show(2); rs= sprintf(['r=' ff], round(r,rd)); end
-if show(3); ps= sprintf(['p=' ff], round(p,rd)); end
+%if show(3); ps= sprintf(['p=' ff], round(p,rd)); end
+if show(3); ps= pstr(p,rd); end
 
 text(tx,ty,[as ' ' rs ' ' ps],'Units','normalized');
 

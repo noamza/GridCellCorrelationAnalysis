@@ -1,4 +1,5 @@
 %EXTENDED TIME WINDOW
+% f3s1                   3s1
 %MAKE WD FIRST BELOW or %  load('.\data\fs5_F');  load('.\data\fs5_v2')
 function fs5(ctsbma,wd)
 strt = 15 *60; midt = (45/1) *60; endt=45 *60 +inf;

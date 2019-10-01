@@ -1,9 +1,12 @@
 % uncomment to load cells
 %load('Z:\\data\\noam\\Data\\muscimol\\noam\\cells_45min_d_patchtraj_rayleigh'); %lab
 %load('C:\\Noam\\Data\\muscimol\\noam\\cells_45min_d_patchtraj_rayleigh'); %personal
-%bthresh=0.5; mthresh=0.2; %MAKE SURE TO MATCH PAIRS MAKE
 %%preamble 
-%???replace all ac and gridscore with ac2 gc2 etc?????
+%{ 
+ load('C:\Noam\Data\muscimol\cells15nan');
+ bthresh=0.5; mthresh=0.2; %MAKE SURE TO MATCH PAIRS MAKE
+ [pairs,cels,group,chd,phd,chdn,phdn]=pairsMake(cellsn, bthresh, mthresh)
+%}
 function f1(cellsn, cels, bthresh, mthresh)
 dbstop if error  
 
@@ -24,7 +27,7 @@ ii = [100, 103, 104, 105, 111];
 axg = []; ug = []; sb = []; sm = sb;
 sb.x='position(cm)'; sb.y = sb.x;
 sm.x=''; sm.y = sm.x;
-t=0
+t=0;
 for i = 1:len(ii)
      c = cellsn(ii(i));
      t=max([t max(c.before.px) max(c.midall.px) max(c.after.px)]);
@@ -66,7 +69,8 @@ plot(d1,d2,'ko'); hold on;
 % plot(mrbda(:,3),mrbda(:,2),'bo');
 axB.XLim = slim(axB); axB.YLim = axB.XLim; axis(axB,'square');
 f = fit(d1,d2,'poly1');plot(axB.XLim,f(axB.XLim),'-'); [r p]=ccof(d1,d2);
-text(0.1,0.9,sprintf('a=%.2f r=%.2f p=%.2f',rnd(f.p1,2), rnd(r,2), rnd(p,2)),'Units','normalized');
+text(0.1,0.9,sprintf('a=%.2f r=%.2f %s',rnd(f.p1,2), rnd(r,2), pstr(p,2)),'Units','normalized');
+%text(0.1,0.9,sprintf('a=%.2f r=%.2f p<%.3f',rnd(f.p1,2), rnd(r,2), rnd(p,2)),'Units','normalized');
 %text(0.1,0.9,sprintf('a=%.3f r=%.3f',round(f.p1,3), round(ccof(d1,d2),3)),'Units','normalized');
 hold off
 xlabel('pre (Hz)'); ylabel('dur (Hz)');
@@ -94,7 +98,7 @@ plot(sigbma(:,1),sigbma(:,2),'ro');
 l= slimd(axD); axD.XLim = l; axD.YLim = l;
 plot([bthresh bthresh],[l(1) mthresh],'g');plot([bthresh l(2)],[mthresh mthresh],'g');
 hold off; axis(axD,'square');
-xlabel('gridscore pre'); ylabel('gridscore during');
+xlabel('gridscore pre'); ylabel('gridscore dur');
 title('gridscore all vs cohort'); 
 %legend(axC, {'all','significant','thresholds'});
 
@@ -106,7 +110,7 @@ d1=mrbda(:,1); d2=mrbda(:,3); t=mrbda(:,3)~=inf; d1=d1(t);d2=d2(t);%d1(d1==inf)=
 plot(d1,d2,'ko'); hold on;
 axC.XLim = slim(axC); axC.YLim = axC.XLim; axis(axC,'square');
 f = fit(d1,d2,'poly1');plot(axC.XLim,f(axC.XLim),'-');[r p]=ccof(d1,d2);
-text(0.1,0.9,sprintf('a=%.2f r=%.2f p=%.2f',rnd(f.p1,2), rnd(r,2), rnd(p,2)),'Units','normalized');
+text(0.1,0.9,sprintf('a=%.2f r=%.2f %s',rnd(f.p1,2), rnd(r,2), pstr(p,2)),'Units','normalized');
 %text(0.1,0.9,sprintf('a=%.3f r=%.3f',round(f1.p1,3), round(ccof(d1,d2),3)),'Units','normalized');
 hold off
 xlabel('pre (Hz)'); ylabel('post (Hz)');
@@ -120,7 +124,8 @@ d1=sigbma(:,1);d2=sigbma(:,3); t=mrbda(:,3)~=inf; d1=d1(t);d2=d2(t);%d1(d1==inf)
 plot(d1,d2,'ko'); hold on;
 axE.XLim = slim(axE); axE.YLim = axE.XLim; axis(axE,'square');
 f = fit(d1,d2,'poly1');plot(axE.XLim,f(axE.XLim),'-');[r p]=ccof(d1,d2);
-text(0.1,0.9,sprintf('a=%.2f r=%.2f p=%.2f',rnd(f.p1,2), rnd(r,2), rnd(p,2)),'Units','normalized');
+text(0.1,0.9,sprintf('a=%.2f r=%.2f %s',rnd(f.p1,2), rnd(r,2), pstr(p,2)),'Units','normalized');
+%text(0.1,0.9,sprintf('a=%.2f r=%.2f p=%.2f',rnd(f.p1,2), rnd(r,2), rnd(p,2)),'Units','normalized');
 %text(0.1,0.9,sprintf('a=%.3f r=%.3f',round(f1.p1,3), round(ccof(d1,d2),3)),'Units','normalized');
 hold off
 xlabel('gridscore pre'); ylabel('gridscore post');

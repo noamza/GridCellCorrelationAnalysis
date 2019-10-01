@@ -1,4 +1,5 @@
 %% preamble
+% load('.\data\shuffling1000nanv2');
 
 function f3(pairs,ctsbma, pptsbma)
 
@@ -19,7 +20,7 @@ aup={'visible','off'};
 %{
 'sig:sig   sig:non   non:sig   non:non'
 [sum(pptsbma(:,a)&pptsbma(:,b)),...
-sum(pptsbma(:,a)&~pptsbma(:,b)),...
+sum(pptsbma(:,a)&~pptsbma(:,b)),... 
 sum(~pptsbma(:,a)&pptsbma(:,b)),...
 sum(~pptsbma(:,a)&~pptsbma(:,b)) ]
 if(a==1) disp('pre'); else disp('dur'); end
@@ -89,7 +90,7 @@ bar([sum(pptsbma(ctsbma(:,1)>0,1))/lp, sum(pptsbma(ctsbma(:,1)<0,1))/lp;...
      sum(pptsbma(ctsbma(:,2)>0,2))/lp, sum(pptsbma(ctsbma(:,2)<0,2))/lp;...
      sum(pptsbma(ctsbma(:,3)>0,3))/lp, sum(pptsbma(ctsbma(:,3)<0,3))/lp;]*100,'stacked')
 ylabel('% total',fss,10);
-set(gca,'xticklabel',{'pre';'during';'post'},'YLim',[0,100],'xticklabelrotation',90);
+set(gca,'xticklabel',{'pre';'dur';'post'},'YLim',[0,100],'xticklabelrotation',90);
 title(sprintf('shuffling significance'),tfs{:});
 legend({'(+) corr';'(-)  corr'}); axis square;
 set(gB,hts, [25 -1]);
@@ -103,7 +104,7 @@ bar([sum(pptsbma(ctsbma(:,4)>0,4))/lp, sum(pptsbma(ctsbma(:,4)<0,4))/lp;...
      sum(pptsbma(ctsbma(:,5)>0,5))/lp, sum(pptsbma(ctsbma(:,5)<0,5))/lp;...
      sum(pptsbma(ctsbma(:,6)>0,6))/lp, sum(pptsbma(ctsbma(:,6)<0,6))/lp;]*100,'stacked')
 ylabel('% total',fss,10);
-set(gca,'xticklabel',{'pre';'during';'post'},'YLim',[0,100],'xticklabelrotation',90);
+set(gca,'xticklabel',{'pre';'dur';'post'},'YLim',[0,100],'xticklabelrotation',90);
 title(sprintf('shuffling significance'),tfs{:});
 legend({'(+) corr';'(-)  corr'}); axis square;
 

@@ -1,5 +1,7 @@
 function xc2mat=xcorr2g(A,B)%(mat1,mat2)
-
+if nargin==1
+    B=A;
+end
 [mA,nA] = size(A);
 [mB,nB] = size(B); 
 xc2mat = nan(mA+mB-1,nA+nB-1);

@@ -227,7 +227,7 @@ function onExit( ~, ~ )
 end % onExit
 function run()
     set(gui.status, 'ForegroundColor',[0,0,1]);
-    disp(['yo what dude ', num2str(gui.m.gid)]);
+    disp(['quest ', num2str(gui.m.gid)]);
     %delete(findobj(gui.Window,'type','axes'));
     delete(findobj(gui.m.tab,'type','axes'));
     drawnow();

@@ -1,4 +1,5 @@
-%s4
+%Sig non sig 
+% f3s3
 function s4(ctsbma,pptsbma)
 cts=ctsbma;ppts=pptsbma;mfs=20;lfs=3; m='.';yls='space';
 xl=mnmx(cts(:,[1 2])); yl=mnmx(cts(:,[4 5])); mss='markersize';

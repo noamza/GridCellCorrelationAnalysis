@@ -13,9 +13,18 @@ end
         fn = sprintf('C:\\Noam\\Data\\muscimol\\noam\\mini%dmin.mat', 45);
         fn = sprintf('C:\\Noam\\Data\\muscimol\\noam\\cells_%dmin_d_patchtraj_rayleigh',45);
         %fn = sprintf('C:\\Noam\\Data\\muscimol\\noam\\cells_%dmin_c_midall_gridscore.mat',45); ORIGINAL results
-        disp(['loading....  ' fn]); %ascii 48
-        tic; cells = load(fn); cells = cells.cells; toc;
-        groups = findSimultaneouslyRecordedCells(cells);
+        %disp(['loading....  ' fn]); %ascii 48
+        %tic; cells = load(fn); cells = cells.cells; toc; %cells = cells.cells;
+        
+        tic; load('C:\\Noam\\Data\\muscimol\\cells15nan','cellsn')
+        for i=1:len(cellsn)
+            %c=cellsn(1);
+            cellsn(i).before.max_r=max(cellsn(i).before.rm(:));
+            cellsn(i).midall.max_r=max(cellsn(i).midall.rm(:));
+            cellsn(i).after.max_r=max(cellsn(i).after.rm(:));
+        end
+        cells = arrayfun(@(x) {x}, cellsn); clear cellsn; %ideally functions would be refactored to use cellsn as is
+        groups = findSimultaneouslyRecordedCells(cells); toc;
         for i = 1:length(groups)
         end
         m.groups = groups;
@@ -46,7 +55,7 @@ end
         gui.CellTab  = uix.Panel('Parent', Tabs, 'Tag', 'cell tab');  t{end+1} = 'Cell';
         gui.MiscTab  = uix.Panel('Parent', Tabs, 'Tag', 'agg tab');   t{end+1} = 'Aggregate';
 
-                 Tabs.Selection = 2; % <<<< START UP TAB                
+                 Tabs.Selection = 1; % <<<< START UP TAB                
 
         TabGroup(  gui.Window, gui.GroupTab ,m);
         TabTime(   gui.Window, gui.TimeTab  ,m);

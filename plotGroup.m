@@ -48,9 +48,11 @@ function ai = plotAC(p)%m,n,l
     %title(ax, sprintf('%sspk%d',s, length(p.sx)));
     lw = 0.5;
     %center point
+    if ~isempty(p.c.module)
     if length(p.c.module.hex_peaks) == 7 %CHANGE TO EXISTS
             plot(ax, p.c.module.x, p.c.module.y,'w','LineWidth',lw);  %ADD BACK IN 
             plot(ax, p.c.module.hex_peaks(:,1),p.c.module.hex_peaks(:,2),'wo','LineWidth',lw); %ADD BACK IN
+    end
     end
     title(ax, p.title,'fontweight','bold');
     xlim(ax, x); ylim(ax, y);
@@ -105,16 +107,16 @@ function titl = plotGroupPrivate(parent, g)
         
         %PLOT RM
         %before
-        p.c = r.before; p.title = sprintf('max bin %0.fHz',round(r.before.max_r));
+        p.c = r.before; p.title = sprintf('max bin %0.fHz',round(max(r.before.max_r(:))));
         p.xl = 'position(cm)'; p.yl = 'position(cm)'; p.ai = plotRM(p);
-        %midle
+        %middle
         if  goodCell(r.midall, rmt)
-        p.c = r.midall; p.title = sprintf('max bin %0.fHz',round(r.before.max_r));
+        p.c = r.midall; p.title = sprintf('max bin %0.fHz',round(max(r.midall.max_r(:))));
         p.xl = ''; p.yl = ''; p.ai = plotRM(p);
         else;p.ai = p.ai+1;end
         %after
         if r.after.exists
-        p.c = r.after; p.title = sprintf('max bin %0.fHz',round(r.before.max_r));
+        p.c = r.after; p.title = sprintf('max bin %0.fHz',round(max(r.after.max_r(:))));
         p.xl = ''; p.yl = '';p.ai = plotRM(p);
         else;p.ai = p.ai+1;end
         

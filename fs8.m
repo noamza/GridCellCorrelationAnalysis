@@ -1,3 +1,5 @@
+% window drift
+% f3s4
 %based on 'Revisopm.m'
 %load('.\data\fs8dxywin');
 %load('.\data\fs8_v2_dxywin');
@@ -9,7 +11,7 @@ function fs8(cellsn,pairs,dxywinrdshufpairs)
     %load('.\\data\\dxdyrate15','dxywinrd15'); F %
     nbins = 100; twins = [1 2 3 5 10] ; %window in secs
     
-    a = [1 10 12]% 11 [1 15 18]; %CELLS TO SHOW %12 13 16
+    a = [1 10 12];% 11 [1 15 18]; %CELLS TO SHOW %12 13 16
     
     %dxywinrdshufpairs=makeWins(); %to make dxywinrdshufpairs
     
@@ -80,7 +82,8 @@ function fs8(cellsn,pairs,dxywinrdshufpairs)
         f = fit(x, y,'poly1');%plot(x,f(x),'-'); 
         axis('tight'); 
         [r p]=ccof(x,y);
-        text(0.1,0.9,sprintf('a=%.2f r=%.2f p=%.2f',round(f.p1,2), round(r,2), round(p,2)),'Units','normalized');
+        %text(0.1,0.9,sprintf('a=%.2f r=%.2f p=%.2f',round(f.p1,2), round(r,2), round(p,2)),'Units','normalized');
+        text(0.1,0.9,sprintf('a=%.2f r=%.2f %s',round(f.p1,2), round(r,2), pstr(p,2)),'Units','normalized');
         title([n2(twin) 's']); xlabel('pre vs post corr'); ylabel('pre vs dur corr'); box on
         e=slim(gca);xlim(e);ylim(e);
         plot(e,f(e),'-'); axis square; 
