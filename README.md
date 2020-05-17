@@ -19,13 +19,23 @@ If you are interested in exploring this data, the Pandora.m GUI tool is a great 
 
 ![exploratory visualization of grid cells](GUI_pics/1.PNG)
 
+exploratory visualization of grid cells
+
 ![temporal and spatial correlations between cells](GUI_pics/2.PNG)
+
+temporal and spatial correlations between cells
 
 ![grid drift for smaller time intervals](GUI_pics/3.PNG)
 
+grid drift for smaller time intervals
+
 ![animating rodent trajectory with neuron firing](GUI_pics/4.PNG)
 
+animating rodent trajectory with neuron firing
+
 ![more exploratory analysis](GUI_pics/5.PNG)
+
+more exploratory analysis
 
 ## Contact
 
