@@ -1,6 +1,6 @@
 %room angles
 % f4s2
-function fs9(cellsn)
+function fs9(cellsn)% f4s2
 dbstop if error
 load('.\data\roomdose','room');
 

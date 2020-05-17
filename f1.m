@@ -12,7 +12,7 @@ dbstop if error
 
 fig = figure(991);  fs = 12;
 set(fig,'Color','w', 'Position', [600 0 1400 800]);
-gtop = uix.GridFlex('Parent',fig,'Spacing',5, 'BackgroundColor','w');
+gtop = uix.GridFlex('Parent',fig,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');
 gl = uix.GridFlex('Parent',gtop,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');
 axes('Parent',uicontainer('Parent',gl,'BackgroundColor','w'),'visible','off');
 text(0,0.5,'A','fontweight','bold','fontsize',fs);

@@ -2,6 +2,27 @@
 % load('Z:\data\noam\muscimol\cells15nan');
 % load('C:\Noam\Data\muscimol\cells15nan');
 % load('C:\\Noam\\Data\\muscimol\\noam\\cells_Infmin_d_patchtraj_rayleigh'); %personal
+%FIGURES
+load('C:\Noam\Data\muscimol\cells15nan');
+bthresh=0.5; mthresh=0.2; %MAKE SURE TO MATCH PAIRS MAKE
+[pairs,cels,group,chd,phd,chdn,phdn]=pairsMake(cellsn, bthresh, mthresh)
+f1(cellsn, cels, bthresh, mthresh)
+f2(cellsn)
+load('.\data\shuffling1000nanv2_aggr_corrected');
+f3(pairs,ctsbma, pptsbma)
+f4(cellsn, pairs,ctsbma)
+load('.\data\fs5_v2')
+fs5(ctsbma,wd )%f3s1
+fs6(cellsn,pairs,ctsbma) %f3s2
+fs4(ctsbma,pptsbma) %f3s3
+load('.\data\fs8_v2_dxywin');
+fs8(cellsn,pairs,dxywinrdshufpairs)% f3s4
+fs10(cellsn) %f3s5
+fs11(cellsn,pairs) %f3s6    
+fs7(cellsn,pairs,ctsbma)% f4s1
+fs9(cellsn)% f4s2
+
+
 a=[1 1]; b=[0 1];
 c=zeros(1,1000); [r,p]=ccof([c a],[c b],10)
 c=zeros(1,10); [r,p]=ccof([c a],[c b],10)
@@ -68,9 +89,9 @@ for i = 1:len(cels)
 end
 100*(mean(mr(:,2))/mean(mr(:,1)))
 100*(mean(mr(mr(:,3)~=inf,3))/mean(mr(:,1)))
-stats(mr(:,1),1,2)
-stats(mr(:,2),1,2)
-stats(mr(:,3),1,2)
+stats(mr(:,1),-1,-1)
+stats(mr(:,2),-1,-1)
+stats(mr(:,3),-1,-1)
 clear mr;
 
 % agg shuff
@@ -106,8 +127,15 @@ pptsbma= ptsbma <= par.n*par.spval;
 [~,~,s] = ccof(ctsbma(:,4),ctsbma(:,5),5)
 [~,~,s] = ccof(ctsbma(:,4),ctsbma(:,6),5)
 
+ %Wilcoxon
+[p,h,wstats]=signrank(ctsbma(:,1),ctsbma(:,2)) %pre mid
+[p,h,wstats]=signrank(ctsbma(ctsbma(:,3)~=0,1),ctsbma(ctsbma(:,3)~=0,3)) %pre post
+%h=1 - rejection of the null hypothesis that x-y comes from a distribuation
+%whose median [difference] is 0 (h=1, they dont come from the same distribution).
+
+
 %out group corrs
-load('.data/outgroupcorrs_v2');
+load('./data/outgroupcorrs_v2');
 p.nb = 50; p.movmean=25; csb=[];csm=[];ctb=[];ctm=[];cii=[];
 for i = 1:len(cels)
     fprintf(' %d',i)
@@ -139,6 +167,12 @@ clear cii; clear c1; clear c2; clear i; clear j;
 [~,~,s] = ccof(ctsbma(:,2),ctsbma(:,5),5)
 [~,~,s] = ccof(ctsbma(:,3),ctsbma(:,6),5)
 
+
+%HD
+[c,p,s] = ccof(ctsbma(phd,1),ctsbma(phd,2))
+[c,p,s] = ccof(ctsbma(phdn,1),ctsbma(phdn,2))
+[c,p,s] = ccof(ctsbma(phd,4),ctsbma(phd,5))
+[c,p,s] = ccof(ctsbma(phdn,4),ctsbma(phdn,5))
 
 % random hd clusters
 trandclusters = [];

@@ -57,27 +57,27 @@ hdclls=cellsn(chd);
 [sum(hdp) sum(hdpn)];
 %rmi = ctsbma(:,1)<0.15 & ctsbma(:,2)<0.07; LOOK INTO INCLUDE IN PAPER
 
-%% GRIDS TOP
-gAll  = uix.GridFlex(p,  fig,spss,sp,bcss,'w',dmss,ofss);%,'padding',1);
-gTop  = uix.GridFlex(p, gAll,spss,sp,bcss,'w',dmss,ofss);
-gBot  = uix.GridFlex(p, gAll,spss,sp,bcss,'w',dmss,ofss);
-gLeft = uix.GridFlex(p, gTop,spss,sp,bcss,'w',dmss,ofss);
-gCent = uix.GridFlex(p, gTop,spss,sp,bcss,'w',dmss,ofss);
-gRigt = uix.GridFlex(p, gTop,spss,sp,bcss,'w',dmss,ofss);
+%% GRIDS TOP %GridFlex
+gAll  = uix.Grid(p,  fig,spss,sp,bcss,'w');%,dmss,ofss);%,'padding',1);
+gTop  = uix.Grid(p, gAll,spss,sp,bcss,'w');%,dmss,ofss);
+gBot  = uix.Grid(p, gAll,spss,sp,bcss,'w');%,dmss,ofss);
+gLeft = uix.Grid(p, gTop,spss,sp,bcss,'w');%,dmss,ofss);
+gCent = uix.Grid(p, gTop,spss,sp,bcss,'w');%,dmss,ofss);
+gRigt = uix.Grid(p, gTop,spss,sp,bcss,'w');%,dmss,ofss);
 
 
 
 %% A
 %axes(p,uicontainer(p,gleft,bcss,'w'),vss,ofss);
 
-gA = uix.GridFlex(p,gLeft,spss,1,bcss,'w',dmss,onss);
+gA = uix.Grid(p,gLeft,spss,1,bcss,'w');%,dmss,ofss);
 axes(p,uix.Panel(p,gA,bcss,'w',btss,noss),vss,ofss);
 text(tx,ty,'A',fwss,bss,fss,fs); axis off;
 %%{
 axA = {}; pf = []; ps = [];
 for i = 1:len(ci)
     if i>1
-       uix.Empty(p,gA);
+       uix.Empty(p,gA,bcss,'w');
     end  
     c = cellsn(ci(i));
     %TRAJ
@@ -110,7 +110,7 @@ set(gA,htss, [h 15 -1 -1 -1 -1 -1 -1]);%,wtss, [-1 -1 -1]);
 %% B
 
 
-gB = uix.GridFlex(p,gBot,spss,1,bcss,'w',dmss,ofss);
+gB = uix.Grid(p,gBot,spss,1,bcss,'w');%,dmss,ofss);
 %uix.Empty(p,gB); %EMPTY
 axes(p,uix.Panel(p,gB,bcss,'w',btss,noss),vss,ofss);
 text(0,ty,'B',fwss,bss,fss,fs,hzss,cnss);  axis off;
@@ -146,7 +146,7 @@ set(gB,htss, [h 15 -1 -1 -1 -1]);%,wtss, [-1 -1 -1]);
 %}
 
 %gCenter
-%gCent =  uix.GridFlex(p,gRigt,spss,sp,bcss,'w',dmss,ofss);
+%gCent =  uix.Grid(p,gRigt,spss,sp,bcss,'w');%,dmss,ofss);
 
 
 
@@ -161,7 +161,7 @@ set(gB,htss, [h 15 -1 -1 -1 -1]);%,wtss, [-1 -1 -1]);
 % legend({'cohort';'cluster 1';'cluster 2'},fss,afs, 'position',[0.3 0.4 0.4 0.2]);
 
 %% C hd single
-gC = uix.GridFlex(p,gCent,spss,1,bcss,'w',dmss,ofss);
+gC = uix.Grid(p,gCent,spss,1,bcss,'w');%,dmss,ofss);
 axes(p,uicontainer(p,gC,bcss,'w'),vss,ofss);
 text(0,ty,'C',fwss,bss,fss,fs);
 axes(p,uicontainer(p,gC,bcss,'w'),vss,ofss);
@@ -181,7 +181,7 @@ set(gC,htss, [h -1]);
 
 
 %% D pairs time by hd
-gD = uix.GridFlex(p,gCent,spss,1,bcss,'w',dmss,ofss);
+gD = uix.Grid(p,gCent,spss,1,bcss,'w');%,dmss,ofss);
 axes(p,uicontainer(p,gD,bcss,'w'),vss,ofss);
 %Text
 text(0,ty2,'D',fwss,bss,fss,fs);
@@ -207,7 +207,7 @@ end
 set(gD,htss, [h -1]);
 
 %% D2 pairs spatial by hd %fig D2
-gE = uix.GridFlex(p,gCent,spss,1,bcss,'w',dmss,ofss);
+gE = uix.Grid(p,gCent,spss,1,bcss,'w');%,dmss,ofss);
 axes(p,uicontainer(p,gE,bcss,'w'),vss,ofss);
 text(0,ty2,' ',fwss,bss,fss,fs); %empty
 axes(p,uicontainer(p,gE,bcss,'w'),vss,ofss);
@@ -218,7 +218,7 @@ title('spatial correlations',fss,tfs); legend off;
 set(gE,htss, [h -1]);
 
 %% E hd cell %fig E
-gF = uix.GridFlex(p,gRigt,spss,1,bcss,'w',dmss,ofss);
+gF = uix.Grid(p,gRigt,spss,1,bcss,'w');%,dmss,ofss);
 axes(p,uicontainer(p,gF,bcss,'w'),vss,ofss);
 text(tx,ty2,'E',fwss,bss,fss,fs); 
 yl=12;
@@ -228,7 +228,7 @@ x = 2; t = []; a=fp(x, hdclls, rst,yl,'hd cluster dur','r'); len(t);
 set(gF,htss, [h -1]);   
         
 %% F hd cell by session %fig F
-gG = uix.GridFlex(p,gRigt,spss,1,bcss,'w',dmss,ofss);
+gG = uix.Grid(p,gRigt,spss,1,bcss,'w');%,dmss,ofss);
 axes(p,uicontainer(p,gG,bcss,'w'),vss,ofss);
 text(tx,ty2,'F',fwss,bss,fss,fs);
 t1 = 'r-angle '; t2=' all';

@@ -1,17 +1,16 @@
-function stat = stats( i,nans,infs)
-    i = toCol(i);
+function stat = stats( a,nans,infs)
+    a = toCol(a);
     if nargin > 1 
-        i=i(~isnan(i));
-        if nargin==3; i=i(i~=inf&i~=-inf);end;
+        a=a(~isnan(a)); % only non-nans
+        if nargin==3; a=a(a~=inf&a~=-inf);end %only non infs
     end
-    a.n = len(i);
-    a.mean = mean(i);
-    a.median=median(i);
-    a.min=min(i);
-    a.max=max(i);
-    a.std=std(i);
-    stat=a;
-    stat
+    s.n = len(a);
+    s.mean = mean(a);
+    s.median=median(a);
+    s.min=min(a);
+    s.max=max(a);
+    s.std=std(a);
+    stat=s;
     %datastats(i)
 end
 

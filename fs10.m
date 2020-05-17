@@ -1,6 +1,6 @@
 %different grid threshes
 % f3s5
-function fs10(cellsn)
+function fs10(cellsn) % f3s5
 load('./data/thresh 3D nan');
 %{
 bt=0.9:-0.1:0.2;

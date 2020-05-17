@@ -13,7 +13,7 @@ c1 = cellsn(ci(1)); c2 = cellsn(ci(3)); %171 176 %  c1 34; c2 35; 112 119
 
 fig = figure(992); clf; tic
 set(fig,'Color','w', 'Position', [200 50 800 800]); p = {}; s1 = {};
-gtop = uix.GridFlex('Parent', fig,'Spacing',5, 'BackgroundColor','w','DividerMarkings','on');
+gtop = uix.GridFlex('Parent', fig,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');
 
 %% A
 gA = uix.GridFlex('Parent',gtop,'Spacing',5, 'BackgroundColor','w','DividerMarkings','off');
