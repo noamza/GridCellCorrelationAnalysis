@@ -2,7 +2,7 @@
 
 This is the code used for the analysis presented in the paper "During hippocampal inactivation, grid cells maintain their synchrony, even when the grid pattern is lost." The data analyzed is from the study described in a previous paper, "Grid cells require excitatory drive from the hippocampus." Additionally there is code for viewing the data using a GUI (Pandora.m).
 
-![some plots and analysis made with this code](GUI_pics/i1.PNG)
+![some plots and analysis made with this code](GUI_pics/i1.png)
 
 ## Installation
 
