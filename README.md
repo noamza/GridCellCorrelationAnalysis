@@ -50,8 +50,6 @@ For licencing and usage please contact Dr. Dori Derdikman derdik@technion.ac.il
 https://derdiklab.technion.ac.il/
 
 ## More useful info
-Hope you are well. I understand you are trying to use the data and methods from https://elifesciences.org/articles/47147 (https://bio-protocol.org/rap34668)
-
 Essentially to analyze this data, the first step is to take all the cells from the raw data (Bonnevie_data_for_Almog_et_al.zip) and extrapolate location of the rat in the arena (x,y), and spike times, as well as head direction if you are interested in that.
 Each of the data files represents the recording of 1 cell, there are 301 total.
 You can see which rat, the date, and which tetrode/cell by the filename, for example:
